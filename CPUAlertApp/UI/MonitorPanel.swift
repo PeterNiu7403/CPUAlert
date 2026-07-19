@@ -3,27 +3,38 @@ import SwiftUI
 
 struct MonitorPanel: View {
     @Bindable var model: MonitorModel
+    @Bindable var settings: AppSettings
+    @Bindable var loginItemService: LoginItemService
 
     var body: some View {
         VStack(spacing: 12) {
+            if !settings.hasCompletedFirstRun {
+                FirstRunView(
+                    settings: settings,
+                    loginItemService: loginItemService,
+                    model: model
+                )
+            }
             header
             TrendSparkline(snapshots: model.trend)
                 .frame(height: 52)
 
-            Picker("Resource", selection: $model.selectedResource) {
-                Text("CPU").tag(ResourceKind.cpu)
-                Text("GPU").tag(ResourceKind.gpu)
+            Picker("panel.resource", selection: $model.selectedResource) {
+                Text("panel.cpu").tag(ResourceKind.cpu)
+                Text("panel.gpu").tag(ResourceKind.gpu)
             }
             .pickerStyle(.segmented)
             .labelsHidden()
 
             HStack {
-                Text(model.selectedResource == .cpu ? "Top processes" : "Top process groups")
+                Text(LocalizedStringKey(
+                    model.selectedResource == .cpu ? "panel.topProcesses" : "panel.topGroups"
+                ))
                     .font(.headline)
                 Spacer()
-                Picker("Rows", selection: $model.showTenRows) {
-                    Text("Top 5").tag(false)
-                    Text("Top 10").tag(true)
+                Picker("panel.rows", selection: $model.showTenRows) {
+                    Text("panel.rows5").tag(false)
+                    Text("panel.rows10").tag(true)
                 }
                 .labelsHidden()
                 .pickerStyle(.menu)
@@ -39,11 +50,11 @@ struct MonitorPanel: View {
             Divider()
             HStack {
                 SettingsLink {
-                    Label("Settings", systemImage: "gearshape")
+                    Label("action.settings", systemImage: "gearshape")
                 }
                 .buttonStyle(.plain)
                 Spacer()
-                Button("Quit CPUAlert") {
+                Button("action.quit") {
                     NSApplication.shared.terminate(nil)
                 }
                 .buttonStyle(.plain)
@@ -62,12 +73,12 @@ struct MonitorPanel: View {
     private var header: some View {
         HStack(spacing: 10) {
             metricCard(
-                title: "CPU",
+                title: "panel.cpu",
                 usage: model.snapshot.cpuUsage,
                 level: model.snapshot.cpuLevel
             )
             metricCard(
-                title: "GPU",
+                title: "panel.gpu",
                 usage: model.snapshot.gpuUsage,
                 level: model.snapshot.gpuLevel
             )
@@ -75,7 +86,7 @@ struct MonitorPanel: View {
     }
 
     private func metricCard(
-        title: String,
+        title: LocalizedStringKey,
         usage: Double?,
         level: PressureLevel
     ) -> some View {
@@ -91,9 +102,13 @@ struct MonitorPanel: View {
             Circle()
                 .fill(level.displayColor)
                 .frame(width: 9, height: 9)
+            Text(level.localizedKey)
+                .font(.caption2)
+                .foregroundStyle(.secondary)
         }
         .padding(10)
         .background(.quaternary, in: RoundedRectangle(cornerRadius: 10))
+        .accessibilityElement(children: .combine)
     }
 }
 
@@ -106,7 +121,7 @@ private struct TrendSparkline: View {
             draw(\.gpuUsage, color: .blue, in: context, size: size)
         }
         .background(.quaternary.opacity(0.55), in: RoundedRectangle(cornerRadius: 8))
-        .accessibilityLabel("CPU and GPU activity over the last 60 seconds")
+        .accessibilityLabel(Text("panel.trend.accessibility"))
     }
 
     private func draw(
@@ -151,5 +166,17 @@ private struct TrendSparkline: View {
             }
         }
         context.stroke(path, with: .color(color), lineWidth: 1.5)
+    }
+}
+
+extension PressureLevel {
+    var localizedKey: LocalizedStringKey {
+        switch self {
+        case .green: "pressure.normal"
+        case .yellow: "pressure.elevated"
+        case .orange: "pressure.high"
+        case .red: "pressure.critical"
+        case .unavailable: "value.unavailable"
+        }
     }
 }

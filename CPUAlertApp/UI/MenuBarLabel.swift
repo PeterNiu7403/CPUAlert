@@ -8,13 +8,13 @@ struct MenuBarLabel: View {
     var body: some View {
         VStack(spacing: 1) {
             row(
-                name: "CPU",
+                formatKey: "menu.cpu.format",
                 percentage: cpuPercentage,
                 usage: Double(cpuPercentage) / 100,
                 color: model.snapshot.cpuLevel.displayColor
             )
             row(
-                name: "GPU",
+                formatKey: "menu.gpu.format",
                 percentage: gpuPercentage,
                 usage: model.snapshot.gpuUsage,
                 color: model.snapshot.gpuLevel.displayColor
@@ -29,7 +29,7 @@ struct MenuBarLabel: View {
     }
 
     private func row(
-        name: String,
+        formatKey: String.LocalizationValue,
         percentage: Int?,
         usage: Double?,
         color: Color
@@ -40,7 +40,13 @@ struct MenuBarLabel: View {
                 Capsule()
                     .fill(color)
                     .frame(width: geometry.size.width * max(0, min(usage ?? 0, 1)))
-                Text(percentage.map { "\(name) \($0)%" } ?? "\(name) —")
+                Text(percentage.map {
+                    String(
+                        format: String(localized: formatKey),
+                        locale: .current,
+                        $0
+                    )
+                } ?? String(localized: "menu.gpu.unavailable"))
                     .font(.system(size: 7.5, weight: .semibold, design: .rounded))
                     .monospacedDigit()
                     .foregroundStyle(.primary)
@@ -62,8 +68,21 @@ struct MenuBarLabel: View {
     }
 
     private var accessibilityText: String {
-        let gpu = gpuPercentage.map { "\($0) percent" } ?? "unavailable"
-        return "CPU \(cpuPercentage) percent, GPU \(gpu)"
+        let cpu = String(
+            format: String(localized: "menu.cpu.accessibility.format"),
+            locale: .current,
+            cpuPercentage,
+            pressureDescription(model.snapshot.cpuLevel)
+        )
+        let gpu = gpuPercentage.map {
+            String(
+                format: String(localized: "menu.gpu.accessibility.format"),
+                locale: .current,
+                $0,
+                pressureDescription(model.snapshot.gpuLevel)
+            )
+        } ?? String(localized: "menu.gpu.accessibility.unavailable")
+        return "\(cpu); \(gpu)"
     }
 
     private func retainValidPercentages() {
@@ -72,6 +91,16 @@ struct MenuBarLabel: View {
         }
         if let usage = model.snapshot.gpuUsage {
             lastGPUPercentage = Int((usage * 100).rounded())
+        }
+    }
+
+    private func pressureDescription(_ level: PressureLevel) -> String {
+        switch level {
+        case .green: String(localized: "pressure.normal")
+        case .yellow: String(localized: "pressure.elevated")
+        case .orange: String(localized: "pressure.high")
+        case .red: String(localized: "pressure.critical")
+        case .unavailable: String(localized: "value.unavailable")
         }
     }
 }

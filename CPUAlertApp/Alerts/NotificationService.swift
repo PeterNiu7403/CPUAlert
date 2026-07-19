@@ -85,30 +85,48 @@ actor NotificationService {
         content.sound = .default
 
         if triggers[.cpu] != nil, triggers[.gpu] != nil {
-            content.title = "CPUAlert: High system load"
+            content.title = String(localized: "alert.combined.title")
             var details = [
-                "CPU \(percent(snapshot.cpuUsage))",
-                "GPU \(snapshot.gpuUsage.map(percent) ?? "—")",
+                String(format: String(localized: "alert.cpu.value.format"), percent(snapshot.cpuUsage)),
+                String(format: String(localized: "alert.gpu.value.format"), snapshot.gpuUsage.map(percent) ?? "—"),
             ]
             if let process = snapshot.processes.first?.name {
-                details.append("Top process: \(process)")
+                details.append(String(format: String(localized: "alert.topProcess.format"), process))
             }
             if let group = snapshot.gpuGroups.first?.name {
-                details.append("Top GPU group: \(group)")
+                details.append(String(format: String(localized: "alert.topGPUGroup.format"), group))
             }
             content.body = details.joined(separator: " · ")
         } else if let trigger = triggers[.cpu] {
-            content.title = "CPUAlert: CPU \(levelName(trigger.level))"
-            var body = "CPU \(percent(snapshot.cpuUsage))"
+            content.title = String(
+                format: String(localized: "alert.cpu.title.format"),
+                levelName(trigger.level)
+            )
+            var body = String(
+                format: String(localized: "alert.cpu.value.format"),
+                percent(snapshot.cpuUsage)
+            )
             if let process = snapshot.processes.first?.name {
-                body += " · Top process: \(process)"
+                body += " · " + String(
+                    format: String(localized: "alert.topProcess.format"),
+                    process
+                )
             }
             content.body = body
         } else if let trigger = triggers[.gpu] {
-            content.title = "CPUAlert: GPU \(levelName(trigger.level))"
-            var body = "GPU \(snapshot.gpuUsage.map(percent) ?? "—")"
+            content.title = String(
+                format: String(localized: "alert.gpu.title.format"),
+                levelName(trigger.level)
+            )
+            var body = String(
+                format: String(localized: "alert.gpu.value.format"),
+                snapshot.gpuUsage.map(percent) ?? "—"
+            )
             if let group = snapshot.gpuGroups.first?.name {
-                body += " · Top group: \(group)"
+                body += " · " + String(
+                    format: String(localized: "alert.topGroup.format"),
+                    group
+                )
             }
             content.body = body
         }
@@ -127,11 +145,11 @@ actor NotificationService {
 
     private func levelName(_ level: PressureLevel) -> String {
         switch level {
-        case .yellow: "elevated"
-        case .orange: "high"
-        case .red: "critical"
-        case .green: "normal"
-        case .unavailable: "unavailable"
+        case .yellow: String(localized: "alert.yellow.title")
+        case .orange: String(localized: "alert.orange.title")
+        case .red: String(localized: "alert.red.title")
+        case .green: String(localized: "pressure.normal")
+        case .unavailable: String(localized: "value.unavailable")
         }
     }
 }

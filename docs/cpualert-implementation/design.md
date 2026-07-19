@@ -11,6 +11,7 @@ The full file map, interfaces, algorithms, and verification commands live in [`.
 - A pure alert state machine handles dwell time, hysteresis, and cooldown before `UserNotifications` delivery.
 - Same-user termination remains in the GUI process. Root termination uses an on-demand, signed legacy `SMJobBless` helper with a fixed secure-coding XPC protocol, caller validation, local authentication, and repeated PID identity checks.
 - Settings use validated local persistence, `SMAppService.mainApp`, in-panel onboarding, and a String Catalog.
+- Deterministic UI launch arguments inject fixed snapshots and an in-memory settings store, keeping acceptance checks isolated from user preferences and privileged state.
 
 ## Key decisions
 

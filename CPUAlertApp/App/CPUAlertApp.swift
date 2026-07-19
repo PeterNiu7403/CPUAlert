@@ -7,8 +7,12 @@ struct CPUAlertApp: App {
 
     var body: some Scene {
         Settings {
-            Text("CPUAlert Settings")
-                .frame(width: 420, height: 260)
+            SettingsView(
+                model: appDelegate.model,
+                settings: appDelegate.settings,
+                loginItemService: appDelegate.loginItemService,
+                helperClient: appDelegate.helperClient
+            )
         }
     }
 }
@@ -18,12 +22,16 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private var statusItem: NSStatusItem?
     private let popover = NSPopover()
     private let powerState: PowerStateMonitor
-    private let model: MonitorModel
+    let model: MonitorModel
+    let settings: AppSettings
+    let loginItemService: LoginItemService
+    let helperClient: HelperClient
     #if DEBUG
     private var debugPanelWindow: NSWindow?
     #endif
 
     override init() {
+        let uiTestState = UITestState(arguments: ProcessInfo.processInfo.arguments)
         let engine = SamplingEngine(
             systemCPU: SystemCPUCollector(),
             processes: ProcessCPUCollector(),
@@ -31,12 +39,38 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             thresholds: .defaults
         )
         let powerState = PowerStateMonitor()
+        let settingsStore: any SettingsStore = uiTestState.isEnabled
+            ? InMemorySettingsStore()
+            : UserDefaults.standard
+        let settings = AppSettings(store: settingsStore, samplingEngine: engine)
+        if uiTestState.isEnabled {
+            settings.hasCompletedFirstRun = true
+            settings.showTenRows = uiTestState.showTenRows
+            settings.notificationsEnabled = false
+        }
+        let helperClient = HelperClient()
+        let terminationCoordinator = TerminationCoordinator(
+            privilegedTerminator: helperClient
+        )
+        let loginItemService = LoginItemService()
+        if !uiTestState.isEnabled {
+            settings.launchAtLogin = loginItemService.state == .enabled
+                || loginItemService.state == .requiresApproval
+        }
         self.powerState = powerState
+        self.settings = settings
+        self.helperClient = helperClient
+        self.loginItemService = loginItemService
         model = MonitorModel(
             engine: engine,
             powerState: powerState,
-            notificationService: NotificationService()
+            notificationService: NotificationService(),
+            settings: settings,
+            terminationCoordinator: terminationCoordinator,
+            fixedSnapshot: uiTestState.snapshot,
+            fixedTrend: uiTestState.trend
         )
+        model.expandedProcess = uiTestState.expandedProcess
         super.init()
     }
 
@@ -63,13 +97,18 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         popover.behavior = .transient
         popover.contentSize = NSSize(width: 360, height: 500)
         popover.contentViewController = NSHostingController(
-            rootView: MonitorPanel(model: model)
+            rootView: MonitorPanel(
+                model: model,
+                settings: settings,
+                loginItemService: loginItemService
+            )
         )
 
         self.statusItem = statusItem
 
         #if DEBUG
-        if ProcessInfo.processInfo.arguments.contains("--open-panel") {
+        if ProcessInfo.processInfo.arguments.contains("--open-panel")
+            || ProcessInfo.processInfo.arguments.contains("--ui-testing") {
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak self] in
                 self?.openDebugPanelWindow()
             }
@@ -97,9 +136,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     #if DEBUG
     private func openDebugPanelWindow() {
-        let controller = NSHostingController(rootView: MonitorPanel(model: model))
+        let controller = NSHostingController(rootView: MonitorPanel(
+            model: model,
+            settings: settings,
+            loginItemService: loginItemService
+        ))
         let window = NSWindow(contentViewController: controller)
-        window.title = "CPUAlert Monitor"
+        window.title = String(localized: "app.monitor.title")
         window.styleMask = [.titled, .closable]
         window.setContentSize(NSSize(width: 360, height: 500))
         window.center()

@@ -7,13 +7,19 @@ final class MonitorModel {
     private(set) var snapshot = MetricsSnapshot.empty
     var selectedResource: ResourceKind = .cpu
     var panelIsOpen = false
-    var showTenRows = false
+    var showTenRows: Bool {
+        didSet { settings.showTenRows = showTenRows }
+    }
     var expandedProcess: ProcessIdentity?
     private(set) var trend: [MetricsSnapshot] = []
 
     @ObservationIgnored private let engine: SamplingEngine
     @ObservationIgnored private let powerState: PowerStateMonitor
     @ObservationIgnored private let notificationService: NotificationService
+    @ObservationIgnored private let settings: AppSettings
+    @ObservationIgnored private let terminationCoordinator: TerminationCoordinator
+    @ObservationIgnored private let fixedSnapshot: MetricsSnapshot?
+    @ObservationIgnored private let fixedTrend: [MetricsSnapshot]
     @ObservationIgnored private let clock = ContinuousClock()
     @ObservationIgnored private let startedAt: ContinuousClock.Instant
     @ObservationIgnored private var observationTask: Task<Void, Never>?
@@ -22,15 +28,29 @@ final class MonitorModel {
     init(
         engine: SamplingEngine,
         powerState: PowerStateMonitor,
-        notificationService: NotificationService
+        notificationService: NotificationService,
+        settings: AppSettings,
+        terminationCoordinator: TerminationCoordinator,
+        fixedSnapshot: MetricsSnapshot? = nil,
+        fixedTrend: [MetricsSnapshot] = []
     ) {
         self.engine = engine
         self.powerState = powerState
         self.notificationService = notificationService
+        self.settings = settings
+        self.terminationCoordinator = terminationCoordinator
+        self.fixedSnapshot = fixedSnapshot
+        self.fixedTrend = fixedTrend
+        showTenRows = settings.showTenRows
         startedAt = clock.now
     }
 
     func start() {
+        if let fixedSnapshot {
+            snapshot = fixedSnapshot
+            trend = fixedTrend
+            return
+        }
         guard observationTask == nil else { return }
         observationTask = Task { [weak self] in
             guard let self else { return }
@@ -51,7 +71,7 @@ final class MonitorModel {
                     level: value.gpuLevel,
                     elapsed: elapsed
                 )
-                if !triggers.isEmpty {
+                if settings.notificationsEnabled, !triggers.isEmpty {
                     await notificationService.enqueue(triggers, snapshot: value)
                 }
                 if panelIsOpen {
@@ -70,6 +90,42 @@ final class MonitorModel {
         observationTask?.cancel()
         observationTask = nil
         Task { await engine.stop() }
+    }
+
+    func requestNotificationAuthorization() async -> Bool {
+        let granted = await notificationService.requestAuthorization()
+        settings.notificationsEnabled = granted
+        return granted
+    }
+
+    func requestGracefulTermination(_ target: ProcessMetric) async -> TerminationResult {
+        await terminationCoordinator.requestGraceful(target)
+    }
+
+    func requestForceTermination(_ target: ProcessMetric) async -> TerminationResult {
+        await terminationCoordinator.requestForce(target)
+    }
+
+    func processMetric(for identity: ProcessIdentity) -> ProcessMetric? {
+        if let existing = snapshot.processes.first(where: { $0.identity == identity }) {
+            return existing
+        }
+        guard let record = ProcessIdentityReader().currentIdentity(pid: identity.pid),
+              record.identity == identity else {
+            return nil
+        }
+        return ProcessMetric(
+            identity: identity,
+            name: record.name,
+            bundleIdentifier: nil,
+            ownerUID: record.uid,
+            cpuUsage: 0,
+            isApplication: false
+        )
+    }
+
+    var currentCadence: SamplingCadence {
+        SamplingPolicy.cadence(for: samplingContext)
     }
 
     private var samplingContext: SamplingContext {

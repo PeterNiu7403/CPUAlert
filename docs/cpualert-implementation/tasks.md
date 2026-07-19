@@ -7,9 +7,9 @@
 | Metric | Value |
 |---|---:|
 | Total tasks | 9 |
-| Completed | 7 (77.8%) |
-| Remaining | 2 (22.2%) |
-| Last updated | 2026-07-19 13:31 CST |
+| Completed | 8 (88.9%) |
+| Remaining | 1 (11.1%) |
+| Last updated | 2026-07-19 14:04 CST |
 
 ## Tasks
 
@@ -41,7 +41,10 @@
   - Completed: 2026-07-19 13:31 CST
   - Output: PID/start-time identity revalidation, protected-process policy shared by app and helper, same-user TERM with separately gated force KILL, fresh local authentication for every Root operation, fixed NSSecureCoding XPC messages, on-demand legacy blessing/removal adapter, exact-path cleanup, mutual code-signing requirements, and a 15-second idle helper.
   - Verification: focused termination tests first failed on missing types, then 6/6 passed including a real disposable child; the signed default scheme passed 24/24 tests. Xcode embedded the arm64 helper at `Contents/Library/LaunchServices/com.cpualert.helper`, both binaries passed strict and explicit Team requirement checks, both required Mach-O plist sections are present, and both system installation paths remain absent while idle.
-- [ ] 8. Settings, first run, localization, and accessibility
+- [x] 8. Settings, first run, localization, and accessibility
+  - Completed: 2026-07-19 14:04 CST
+  - Output: validated persisted thresholds, notification and login-item preferences, explicit helper controls, first-run guidance, four-tab settings, deterministic UI launch states, five/ten-row choices, English and Simplified Chinese String Catalog coverage, text-plus-color pressure semantics, and accessible process/group actions.
+  - Verification: settings tests first failed because the store and model did not exist, then 2/2 passed; the signed default scheme passed 26/26 tests. Xcode compiled the String Catalog and UI-test target. Real Computer Use checks covered Chinese normal/critical/GPU-group/first-run/settings states and an English GPU-unavailable Top-5 state; the accessibility tree exposed pressure text, correct GPU activity-share semantics, settings controls, and guarded termination actions. Strict deep signing passed, and no notification, login-item, or helper-install side effect was triggered.
 - [ ] 9. Stress fixtures, performance gates, signing, and operational documentation
 
 ## Execution notes
@@ -50,3 +53,4 @@
 - 2026-07-19: Two valid local signing identities are available. The personal Team ID is stored only in ignored `Config/Local.xcconfig`.
 - 2026-07-19: Xcode's macOS UI runner cannot enable automation mode in this desktop session. UI test sources remain buildable, while the shared default scheme skips that target and real accessibility-driven checks provide the runtime evidence.
 - 2026-07-19: The public macOS 13+ XPC code-signing requirement APIs provide the pre-delegate peer-signature gate; the helper repeats a `SecCode` validity check before exporting its object. No private `NSXPCConnection.auditToken` selector is used.
+- 2026-07-19: Deterministic UI launch states use in-memory settings and snapshots, so bilingual accessibility and unavailable-data flows can be inspected without changing the user's notification, login-item, or helper state.

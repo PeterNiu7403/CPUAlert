@@ -28,9 +28,27 @@ actor HelperClient: PrivilegedTerminationServing {
     private var connectionGeneration: UUID?
     private var helperReady = false
 
+    func isInstalled() -> Bool {
+        Self.installedPaths.contains { FileManager.default.fileExists(atPath: $0) }
+    }
+
+    func install() async -> Bool {
+        guard await authenticate(reason: String(localized: "auth.root.install.reason")) else {
+            return false
+        }
+        do {
+            try installIfNeeded()
+            return true
+        } catch {
+            return false
+        }
+    }
+
     func terminate(identity: ProcessIdentity, signal: Int32) async -> Int32 {
         guard signal == SIGTERM || signal == SIGKILL else { return EINVAL }
-        guard await authenticate() else { return ECANCELED }
+        guard await authenticate(reason: String(localized: "auth.root.terminate.reason")) else {
+            return ECANCELED
+        }
         do {
             try installIfNeeded()
             let response = try await send(HelperRequest(
@@ -50,7 +68,7 @@ actor HelperClient: PrivilegedTerminationServing {
     }
 
     func uninstall() async -> HelperCleanupResult {
-        guard await authenticate(reason: "CPUAlert needs permission to remove its Root helper.") else {
+        guard await authenticate(reason: String(localized: "auth.root.remove.reason")) else {
             return HelperCleanupResult(filesRemoved: false, registrationRemoved: false)
         }
 
@@ -76,11 +94,9 @@ actor HelperClient: PrivilegedTerminationServing {
     }
 
     @MainActor
-    private func authenticate(
-        reason: String = "CPUAlert needs permission to terminate a Root process."
-    ) async -> Bool {
+    private func authenticate(reason: String) async -> Bool {
         let context = LAContext()
-        context.localizedCancelTitle = "Cancel"
+        context.localizedCancelTitle = String(localized: "action.cancel")
         do {
             return try await context.evaluatePolicy(
                 .deviceOwnerAuthentication,

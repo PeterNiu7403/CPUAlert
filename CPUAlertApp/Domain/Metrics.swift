@@ -53,6 +53,14 @@ enum GPUSource: String, Equatable, Sendable {
     case unavailable
 }
 
+struct CollectorDurations: Equatable, Sendable {
+    let cpu: Duration
+    let gpu: Duration
+    let rankings: Duration?
+
+    static let zero = CollectorDurations(cpu: .zero, gpu: .zero, rankings: nil)
+}
+
 struct MetricsSnapshot: Equatable, Sendable {
     let cpuUsage: Double
     let gpuUsage: Double?
@@ -63,6 +71,31 @@ struct MetricsSnapshot: Equatable, Sendable {
     let gpuLevel: PressureLevel
     let gpuSource: GPUSource
     let sampledAt: Date
+    let collectorDurations: CollectorDurations
+
+    init(
+        cpuUsage: Double,
+        gpuUsage: Double?,
+        processes: [ProcessMetric],
+        gpuGroups: [GPUGroupMetric],
+        expandedThreads: [ThreadMetric],
+        cpuLevel: PressureLevel,
+        gpuLevel: PressureLevel,
+        gpuSource: GPUSource,
+        sampledAt: Date,
+        collectorDurations: CollectorDurations = .zero
+    ) {
+        self.cpuUsage = cpuUsage
+        self.gpuUsage = gpuUsage
+        self.processes = processes
+        self.gpuGroups = gpuGroups
+        self.expandedThreads = expandedThreads
+        self.cpuLevel = cpuLevel
+        self.gpuLevel = gpuLevel
+        self.gpuSource = gpuSource
+        self.sampledAt = sampledAt
+        self.collectorDurations = collectorDurations
+    }
 
     static let empty = MetricsSnapshot(
         cpuUsage: 0,
