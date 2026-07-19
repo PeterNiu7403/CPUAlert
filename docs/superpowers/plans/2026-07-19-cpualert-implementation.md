@@ -304,7 +304,7 @@ git commit -m "feat: scaffold CPUAlert menu bar app"
 - Consumes: No application runtime state.
 - Produces: `ResourceKind`, `PressureLevel`, `ProcessIdentity`, `ProcessMetric`, `ThreadMetric`, `GPUGroupMetric`, `MetricsSnapshot`, `AlertThresholds`, `SamplingContext`, `SamplingCadence`, `SamplingPolicy`, `SystemCPUCollecting`, `ProcessCPUCollecting`, and `GPUCollecting`.
 
-- [ ] **Step 1: Define the failing threshold and cadence tests**
+- [x] **Step 1: Define the failing threshold and cadence tests**
 
 Create `CPUAlertTests/SamplingPolicyTests.swift`:
 
@@ -342,7 +342,7 @@ struct SamplingPolicyTests {
 }
 ```
 
-- [ ] **Step 2: Run the focused test and verify failure**
+- [x] **Step 2: Run the focused test and verify failure**
 
 ```bash
 xcodebuild test \
@@ -354,7 +354,7 @@ xcodebuild test \
 
 Expected: compilation fails because the domain and policy types do not exist.
 
-- [ ] **Step 3: Add the immutable metric types**
+- [x] **Step 3: Add the immutable metric types**
 
 Create `Metrics.swift` with these exact public shapes:
 
@@ -439,7 +439,7 @@ struct MetricsSnapshot: Equatable, Sendable {
 }
 ```
 
-- [ ] **Step 4: Add validated thresholds and sampling context**
+- [x] **Step 4: Add validated thresholds and sampling context**
 
 Create `Configuration.swift`:
 
@@ -526,7 +526,7 @@ struct SamplingCadence: Equatable, Sendable {
 }
 ```
 
-- [ ] **Step 5: Add collector protocols and the pure cadence policy**
+- [x] **Step 5: Add collector protocols and the pure cadence policy**
 
 Create `CollectorProtocols.swift`:
 
@@ -567,13 +567,13 @@ enum SamplingPolicy {
 }
 ```
 
-- [ ] **Step 6: Run the policy tests**
+- [x] **Step 6: Run the policy tests**
 
 Run the Step 2 command again.
 
 Expected: all three tests pass.
 
-- [ ] **Step 7: Commit the domain boundary**
+- [x] **Step 7: Commit the domain boundary**
 
 ```bash
 git add CPUAlertApp/Domain CPUAlertApp/Monitoring/CollectorProtocols.swift CPUAlertApp/Monitoring/SamplingPolicy.swift CPUAlertTests/SamplingPolicyTests.swift
