@@ -1,3 +1,4 @@
+import Darwin
 import Testing
 @testable import CPUAlert
 
@@ -47,4 +48,31 @@ struct CPUCollectorTests {
             #expect(threads.allSatisfy { $0.cpuUsage.isFinite && (0...1).contains($0.cpuUsage) })
         }
     }
+
+    @Test func sustainedSingleCoreLoadAppearsNearOneCoreOfWholeMachine() async throws {
+        let collector = ProcessCPUCollector()
+        _ = try await collector.sampleProcesses()
+
+        let clock = ContinuousClock()
+        let deadline = clock.now.advanced(by: .milliseconds(600))
+        let burner = Task.detached(priority: .high) {
+            var accumulator: UInt64 = 0
+            while clock.now < deadline {
+                accumulator &+= 1
+            }
+            return accumulator
+        }
+
+        try await Task.sleep(for: .milliseconds(400))
+        let processes = try await collector.sampleProcesses()
+        _ = await burner.value
+
+        let currentProcess = processes.first { $0.identity.pid == getpid() }
+        let oneCoreShare = 1.0 / Double(ProcessInfo.processInfo.activeProcessorCount)
+        #expect(currentProcess != nil)
+        #expect((oneCoreShare * 0.5...oneCoreShare * 1.5).contains(
+            currentProcess?.cpuUsage ?? 0
+        ))
+    }
+
 }

@@ -39,12 +39,40 @@ struct ThreadMetric: Identifiable, Equatable, Sendable {
     let cpuUsage: Double
 }
 
+struct GPUGroupMemberMetric: Identifiable, Equatable, Sendable {
+    var id: ProcessIdentity { identity }
+    let identity: ProcessIdentity
+    let name: String
+    let ownerUID: UInt32
+    let isApplication: Bool
+
+    var processMetric: ProcessMetric {
+        ProcessMetric(
+            identity: identity,
+            name: name,
+            bundleIdentifier: nil,
+            ownerUID: ownerUID,
+            cpuUsage: 0,
+            isApplication: isApplication
+        )
+    }
+}
+
 struct GPUGroupMetric: Identifiable, Equatable, Sendable {
     let id: UInt64
     let name: String
     let leader: ProcessIdentity?
-    let members: [ProcessIdentity]
+    let members: [GPUGroupMemberMetric]
     let activityShare: Double
+
+    func estimatedWholeMachineUsage(systemUsage: Double?) -> Double? {
+        guard let systemUsage,
+              systemUsage.isFinite,
+              activityShare.isFinite else { return nil }
+        let boundedSystemUsage = max(0, min(systemUsage, 1))
+        let boundedActivityShare = max(0, min(activityShare, 1))
+        return boundedSystemUsage * boundedActivityShare
+    }
 }
 
 enum GPUSource: String, Equatable, Sendable {

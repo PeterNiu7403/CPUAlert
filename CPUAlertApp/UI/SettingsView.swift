@@ -10,6 +10,8 @@ struct SettingsView: View {
     @State private var orange: Double
     @State private var red: Double
     @State private var thresholdError = false
+    @State private var notificationRequestInProgress = false
+    @State private var notificationFeedbackKey: LocalizedStringKey?
     @State private var helperInstalled = false
     @State private var helperActionInProgress = false
     @State private var helperFeedbackKey: LocalizedStringKey?
@@ -42,27 +44,39 @@ struct SettingsView: View {
         }
         .padding(14)
         .frame(width: 420, height: 390)
-        .task { helperInstalled = await helperClient.isInstalled() }
+        .task {
+            loginItemService.refresh()
+            helperInstalled = await helperClient.isInstalled()
+        }
     }
 
     private var generalSection: some View {
         Form {
             Toggle("settings.general.launchAtLogin", isOn: launchAtLoginBinding)
+                .accessibilityIdentifier("settings-launch-at-login")
+            LabeledContent("settings.general.loginStatus") {
+                Text(loginItemStatusKey)
+            }
             if loginItemService.state == .requiresApproval {
-                LabeledContent("settings.general.loginStatus") {
-                    Button("loginItem.openSettings") {
-                        loginItemService.openSystemSettings()
-                    }
+                Button("loginItem.openSettings") {
+                    loginItemService.openSystemSettings()
                 }
+            }
+            if let lastError = loginItemService.lastError {
+                Text(lastError)
+                    .font(.caption)
+                    .foregroundStyle(.red)
             }
             Picker("settings.general.rows", selection: $model.showTenRows) {
                 Text("settings.general.rows5").tag(false)
                 Text("settings.general.rows10").tag(true)
             }
             .pickerStyle(.segmented)
+            .accessibilityIdentifier("settings-visible-rows")
             Button("settings.general.resetFirstRun") {
                 settings.hasCompletedFirstRun = false
             }
+            .accessibilityIdentifier("settings-reset-first-run")
         }
         .formStyle(.grouped)
     }
@@ -89,14 +103,12 @@ struct SettingsView: View {
                     .foregroundStyle(.red)
                     .font(.caption)
             }
-            LabeledContent("settings.alerts.notifications") {
-                if settings.notificationsEnabled {
-                    Text("settings.status.enabled")
-                } else {
-                    Button("onboarding.notifications") {
-                        Task { _ = await model.requestNotificationAuthorization() }
-                    }
-                }
+            Toggle("settings.alerts.notifications", isOn: notificationsBinding)
+                .disabled(notificationRequestInProgress)
+            if let notificationFeedbackKey {
+                Text(notificationFeedbackKey)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
             }
             Button("settings.alerts.reset") {
                 let defaults = AlertThresholds.defaults
@@ -171,6 +183,36 @@ struct SettingsView: View {
                 settings.launchAtLogin = accepted ? enabled : loginItemService.state == .enabled
             }
         )
+    }
+
+    private var notificationsBinding: Binding<Bool> {
+        Binding(
+            get: { settings.notificationsEnabled },
+            set: { enabled in
+                notificationFeedbackKey = nil
+                if !enabled {
+                    settings.notificationsEnabled = false
+                    return
+                }
+                notificationRequestInProgress = true
+                Task {
+                    let granted = await model.requestNotificationAuthorization()
+                    notificationFeedbackKey = granted
+                        ? "onboarding.notifications.allowed"
+                        : "onboarding.notifications.denied"
+                    notificationRequestInProgress = false
+                }
+            }
+        )
+    }
+
+    private var loginItemStatusKey: LocalizedStringKey {
+        switch loginItemService.state {
+        case .enabled: "settings.loginItem.enabled"
+        case .requiresApproval: "settings.loginItem.requiresApproval"
+        case .notRegistered: "settings.loginItem.notRegistered"
+        case .notFound: "settings.loginItem.notFound"
+        }
     }
 
     private func thresholdRow(

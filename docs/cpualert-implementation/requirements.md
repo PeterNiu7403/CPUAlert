@@ -5,7 +5,7 @@ The authoritative implementation requirements are the global constraints and fin
 ## User stories
 
 1. As a Mac user, I want glanceable whole-machine CPU and GPU pressure in the menu bar so I can identify sustained load without opening Activity Monitor.
-2. As a Mac user, I want likely CPU processes and GPU application groups ranked honestly so I can investigate a culprit without false per-process GPU precision.
+2. As a Mac user, I want likely CPU processes and GPU application groups ranked on the same whole-machine scale, with GPU rows clearly marked as estimates, so I can investigate a culprit without false per-process precision.
 3. As a Mac user, I want rate-limited sustained-load notifications so transient spikes do not become noise.
 4. As a Mac user, I want guarded process termination with identity revalidation so I can recover from runaway work without killing a reused or protected PID.
 
@@ -17,7 +17,7 @@ The authoritative implementation requirements are the global constraints and fin
 - RQ-4: WHEN a threshold remains crossed for its dwell time THEN alerts SHALL apply hysteresis, one-shot yellow/orange delivery, and a ten-minute red cooldown.
 - RQ-5: WHEN termination is requested THEN the app SHALL protect critical processes, bind the request to an exact process identity, use `SIGTERM` first, and require a second confirmation before `SIGKILL`.
 - RQ-6: WHEN Root termination is requested THEN the app SHALL authenticate locally and cross only the fixed, mutually authenticated XPC helper boundary.
-- RQ-7: WHEN optional/private GPU adapters fail THEN the app SHALL fail closed, stop GPU alerts, and clearly label coalition attribution as an estimate.
+- RQ-7: WHEN optional/private GPU adapters succeed THEN GPU group rows SHALL display global utilization multiplied by coalition activity share and clearly label the result as an estimate; WHEN those adapters fail THEN the app SHALL fail closed and stop GPU alerts.
 - RQ-8: WHEN shipped locally THEN visible copy SHALL support English and Simplified Chinese, and the Release app SHALL be signed and pass strict code-sign verification.
 
 ## Non-functional constraints

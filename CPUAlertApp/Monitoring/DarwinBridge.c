@@ -6,12 +6,39 @@
 #include <libproc.h>
 #include <mach/mach.h>
 #include <mach/mach_host.h>
+#include <mach/mach_time.h>
 #include <math.h>
 #include <pthread.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/proc_info.h>
 #include <sys/resource.h>
+
+static mach_timebase_info_data_t CPUATimebaseInfo = {0};
+static pthread_once_t CPUATimebaseOnce = PTHREAD_ONCE_INIT;
+
+static void CPUAInitializeTimebaseInfo(void) {
+    if (mach_timebase_info(&CPUATimebaseInfo) != KERN_SUCCESS) {
+        CPUATimebaseInfo.numer = 0;
+        CPUATimebaseInfo.denom = 0;
+    }
+}
+
+static bool CPUAAbsoluteTimesToNanoseconds(
+    uint64_t first,
+    uint64_t second,
+    uint64_t *output
+) {
+    if (output == NULL) return false;
+    pthread_once(&CPUATimebaseOnce, CPUAInitializeTimebaseInfo);
+    if (CPUATimebaseInfo.numer == 0 || CPUATimebaseInfo.denom == 0) return false;
+
+    __uint128_t ticks = (__uint128_t)first + (__uint128_t)second;
+    __uint128_t nanoseconds = ticks * CPUATimebaseInfo.numer / CPUATimebaseInfo.denom;
+    if (nanoseconds > UINT64_MAX) return false;
+    *output = (uint64_t)nanoseconds;
+    return true;
+}
 
 bool CPUACopySystemTicks(CPUASystemTicks *output) {
     if (output == NULL) return false;
@@ -47,7 +74,13 @@ bool CPUACopyProcessCounter(pid_t pid, CPUAProcessCounter *output) {
     output->pid = pid;
     output->start_time_ns = (uint64_t)bsd.pbi_start_tvsec * 1000000000ULL
         + (uint64_t)bsd.pbi_start_tvusec * 1000ULL;
-    output->cpu_time_ns = usage.ri_user_time + usage.ri_system_time;
+    if (!CPUAAbsoluteTimesToNanoseconds(
+        usage.ri_user_time,
+        usage.ri_system_time,
+        &output->cpu_time_ns
+    )) {
+        return false;
+    }
     output->uid = bsd.pbi_uid;
     strlcpy(output->name, bsd.pbi_name, sizeof(output->name));
     return true;
@@ -64,7 +97,13 @@ bool CPUACopyThreadCounter(pid_t pid, uint64_t thread_id, CPUAThreadCounter *out
     if (size != sizeof(info)) return false;
     memset(output, 0, sizeof(*output));
     output->thread_id = thread_id;
-    output->cpu_time_ns = info.pth_user_time + info.pth_system_time;
+    if (!CPUAAbsoluteTimesToNanoseconds(
+        info.pth_user_time,
+        info.pth_system_time,
+        &output->cpu_time_ns
+    )) {
+        return false;
+    }
     strlcpy(output->name, info.pth_name, sizeof(output->name));
     return true;
 }

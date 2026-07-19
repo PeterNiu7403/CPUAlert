@@ -17,10 +17,24 @@ struct CPUAlertApp: App {
     }
 }
 
+enum PopoverDismissalPolicy {
+    static func shouldDismissLocalEvent(
+        eventWindowNumber: Int?,
+        statusItemWindowNumber: Int?,
+        popoverWindowNumber: Int?
+    ) -> Bool {
+        guard let eventWindowNumber else { return true }
+        return eventWindowNumber != statusItemWindowNumber
+            && eventWindowNumber != popoverWindowNumber
+    }
+}
+
 @MainActor
-final class AppDelegate: NSObject, NSApplicationDelegate {
+final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
     private var statusItem: NSStatusItem?
     private let popover = NSPopover()
+    private var localMouseMonitor: Any?
+    private var globalMouseMonitor: Any?
     private let powerState: PowerStateMonitor
     let model: MonitorModel
     let settings: AppSettings
@@ -29,6 +43,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private let shouldOpenAcceptanceWindow: Bool
     private let acceptanceAppearance: NSAppearance.Name?
     private var acceptancePanelWindow: NSWindow?
+    private var settingsWindow: NSWindow?
 
     override init() {
         let arguments = ProcessInfo.processInfo.arguments
@@ -120,12 +135,14 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         button.toolTip = "CPUAlert"
 
         popover.behavior = .transient
+        popover.delegate = self
         popover.contentSize = NSSize(width: 360, height: 500)
         popover.contentViewController = NSHostingController(
             rootView: MonitorPanel(
                 model: model,
                 settings: settings,
-                loginItemService: loginItemService
+                loginItemService: loginItemService,
+                onOpenSettings: { [weak self] in self?.openSettingsWindow() }
             )
         )
 
@@ -139,8 +156,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     func applicationWillTerminate(_ notification: Notification) {
+        stopPopoverDismissalMonitoring()
         model.stop()
         powerState.stop()
+    }
+
+    func popoverDidClose(_ notification: Notification) {
+        stopPopoverDismissalMonitoring()
     }
 
     @objc
@@ -154,13 +176,64 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     private func presentPopover(relativeTo button: NSStatusBarButton) {
         popover.show(relativeTo: button.bounds, of: button, preferredEdge: .minY)
+        startPopoverDismissalMonitoring(statusButton: button)
+    }
+
+    private func closePopover() {
+        guard popover.isShown else {
+            stopPopoverDismissalMonitoring()
+            return
+        }
+        stopPopoverDismissalMonitoring()
+        popover.performClose(nil)
+    }
+
+    private func startPopoverDismissalMonitoring(statusButton: NSStatusBarButton) {
+        stopPopoverDismissalMonitoring()
+        let eventMask: NSEvent.EventTypeMask = [
+            .leftMouseDown,
+            .rightMouseDown,
+            .otherMouseDown,
+        ]
+        localMouseMonitor = NSEvent.addLocalMonitorForEvents(
+            matching: eventMask
+        ) { [weak self, weak statusButton] event in
+            guard let self else { return event }
+            if PopoverDismissalPolicy.shouldDismissLocalEvent(
+                eventWindowNumber: event.windowNumber,
+                statusItemWindowNumber: statusButton?.window?.windowNumber,
+                popoverWindowNumber: self.popover.contentViewController?.view.window?.windowNumber
+            ) {
+                self.closePopover()
+            }
+            return event
+        }
+        globalMouseMonitor = NSEvent.addGlobalMonitorForEvents(
+            matching: eventMask
+        ) { [weak self] _ in
+            DispatchQueue.main.async {
+                self?.closePopover()
+            }
+        }
+    }
+
+    private func stopPopoverDismissalMonitoring() {
+        if let localMouseMonitor {
+            NSEvent.removeMonitor(localMouseMonitor)
+            self.localMouseMonitor = nil
+        }
+        if let globalMouseMonitor {
+            NSEvent.removeMonitor(globalMouseMonitor)
+            self.globalMouseMonitor = nil
+        }
     }
 
     private func openAcceptancePanelWindow() {
         let controller = NSHostingController(rootView: MonitorPanel(
             model: model,
             settings: settings,
-            loginItemService: loginItemService
+            loginItemService: loginItemService,
+            onOpenSettings: { [weak self] in self?.openSettingsWindow() }
         ))
         let window = NSWindow(contentViewController: controller)
         window.title = String(localized: "app.monitor.title")
@@ -170,6 +243,31 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         window.makeKeyAndOrderFront(nil)
         NSApplication.shared.activate(ignoringOtherApps: true)
         acceptancePanelWindow = window
+    }
+
+    private func openSettingsWindow() {
+        closePopover()
+        let window: NSWindow
+        if let settingsWindow {
+            window = settingsWindow
+        } else {
+            let controller = NSHostingController(rootView: SettingsView(
+                model: model,
+                settings: settings,
+                loginItemService: loginItemService,
+                helperClient: helperClient
+            ))
+            let created = NSWindow(contentViewController: controller)
+            created.title = String(localized: "settings.window.title")
+            created.styleMask = [.titled, .closable, .miniaturizable]
+            created.isReleasedWhenClosed = false
+            created.setContentSize(NSSize(width: 420, height: 390))
+            created.center()
+            settingsWindow = created
+            window = created
+        }
+        window.makeKeyAndOrderFront(nil)
+        NSApplication.shared.activate(ignoringOtherApps: true)
     }
 }
 

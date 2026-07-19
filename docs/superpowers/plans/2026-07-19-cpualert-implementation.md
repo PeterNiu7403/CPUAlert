@@ -16,7 +16,7 @@
 - Keep the menu bar label approximately 52 points wide with two vertically stacked colored rows: `CPU 42%` and `GPU 18%`.
 - Normalize system and per-process CPU readings to a whole-machine `0...100%` scale.
 - Rank CPU by process; collect and display thread data only while a process row is expanded.
-- Report whole-machine GPU utilization when available. Rank GPU culprits by resource-coalition activity share and label that value as an attribution estimate, not per-process GPU utilization.
+- Report whole-machine GPU utilization when available. Rank GPU culprits by resource-coalition activity share, but display each row as `global utilization × activity share` so it is an estimated whole-machine contribution rather than a misleading per-process counter.
 - Treat IOReport and coalition access as optional. Display `GPU —`, stop GPU alerts, and continue CPU monitoring if both GPU sources fail.
 - Use green below 70%, yellow at 70-84%, orange at 85-94%, and red at 95% or above. Apply thresholds independently to CPU and GPU.
 - Require sustained load before notification: yellow 15 seconds, orange 10 seconds, red 5 seconds. Require usage to fall 5 percentage points below a threshold before leaving that level.
@@ -1341,7 +1341,7 @@ final class MonitorModel {
 
 Implement `MonitorPanel` as a fixed 360-point-wide layout with these sections in order: combined CPU/GPU header, 60-second sparkline while open, CPU/GPU segmented picker, top-5/top-10 control, ranked list, and a footer containing Settings and Quit. Use `LazyVStack`, no timers in views, and no hidden animations when the panel is closed.
 
-Implement `RankedProcessList` so CPU rows show app icon, process name, PID, and whole-machine percentage. Expanded CPU rows show the current top thread rows. GPU rows show group name, member count, and the localized label “GPU activity share”; they must not display “GPU usage”.
+Implement `RankedProcessList` so CPU rows show app icon, process name, PID, and whole-machine percentage. Expanded CPU rows show the current top thread rows. GPU rows show group name, member count, and the localized label “estimated whole-machine GPU usage”; calculate it as current global GPU utilization multiplied by coalition activity share and never imply that it is a direct per-process counter.
 
 Update `MenuBarLabel` to derive colors from `snapshot.cpuLevel` and `snapshot.gpuLevel`, retain the last integer percentages, and render unavailable GPU in secondary gray as `GPU —`.
 
@@ -1914,7 +1914,7 @@ onboarding.loginItem
 settings.privilege.legacyWarning
 ```
 
-Translate “GPU activity share” as “GPU 活动占比”; do not translate it as per-process “GPU 占用率”.
+Translate “estimated whole-machine GPU usage” as “估算整机 GPU 占用”; do not describe it as a direct per-process “GPU 占用率”.
 
 - [x] **Step 8: Add deterministic UI-test launch state**
 
@@ -2069,7 +2069,7 @@ Expected: all tests pass and analysis completes without new warnings. Exercise p
 Write `README.md` with these explicit statements:
 
 - CPU process percentages are normalized against total whole-machine capacity.
-- GPU menu usage is best-effort whole-machine utilization; GPU rankings are coalition activity shares and are not direct per-process GPU percentages.
+- GPU menu usage is best-effort whole-machine utilization; GPU ranking rows are coalition activity shares scaled by that global value and remain attribution estimates rather than direct per-process percentages.
 - IOReport and coalition APIs are private/unsupported and may fail after an OS update; CPU monitoring continues with `GPU —`.
 - `SMJobBless` is deprecated and selected only for this local development build. Both app and helper still require matching signatures.
 - CPUAlert never runs arbitrary privileged commands, never uploads data, and does not retain process history.
@@ -2112,7 +2112,7 @@ Expected: the commit succeeds and the worktree is clean.
 - [x] CPU and GPU continue updating at their expected adaptive cadence without overlapping collection loops.
 - [x] CPU process values use whole-machine normalization; thread values appear only for the expanded process.
 - [x] GPU failure produces gray `GPU —`, no GPU alert, and no CPU disruption.
-- [x] GPU rankings say “activity share” and group by application coalition.
+- [x] GPU rankings say “estimated whole-machine GPU usage”, derive it from global usage times activity share, and group by application coalition.
 - [x] Yellow, orange, red, hysteresis, sustained durations, and red cooldown match Global Constraints.
 - [x] Notification denial, helper absence, and unsupported private APIs are recoverable states.
 - [x] `SIGTERM` always precedes an optional confirmed `SIGKILL` for the same PID/start-time identity.

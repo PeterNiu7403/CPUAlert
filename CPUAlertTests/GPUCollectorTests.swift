@@ -33,6 +33,42 @@ struct GPUCollectorTests {
         #expect(shares == [20: 1.0])
     }
 
+    @Test func activityShareScalesToEstimatedWholeMachineUsage() {
+        let group = GPUGroupMetric(
+            id: 10,
+            name: "ChatGPT",
+            leader: nil,
+            members: [],
+            activityShare: 0.891
+        )
+
+        #expect(abs(
+            (group.estimatedWholeMachineUsage(systemUsage: 0.53) ?? 0) - 0.47223
+        ) < 0.000_001)
+        #expect(group.estimatedWholeMachineUsage(systemUsage: nil) == nil)
+    }
+
+    @Test func gpuGroupPreservesMemberDetailsForDisclosure() {
+        let identity = ProcessIdentity(pid: 4_201, startTimeNanoseconds: 1)
+        let member = GPUGroupMemberMetric(
+            identity: identity,
+            name: "render-worker",
+            ownerUID: 501,
+            isApplication: false
+        )
+        let group = GPUGroupMetric(
+            id: 10,
+            name: "ChatGPT",
+            leader: identity,
+            members: [member],
+            activityShare: 0.5
+        )
+
+        #expect(group.members == [member])
+        #expect(group.members.first?.identity == group.leader)
+        #expect(group.members.first?.name == "render-worker")
+    }
+
     @Test func singleDieFixtureAggregatesResidencyDeltas() throws {
         #expect(try fixtureResidencies(named: "io-report-single-die") == [
             GPUResidency(active: 40, total: 100),

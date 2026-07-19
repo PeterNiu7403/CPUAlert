@@ -47,7 +47,12 @@ struct UITestState {
                 id: UInt64(index),
                 name: index == 1 ? "Metal Fixture" : "GPU Group \(index)",
                 leader: process.identity,
-                members: [process.identity],
+                members: [GPUGroupMemberMetric(
+                    identity: process.identity,
+                    name: process.name,
+                    ownerUID: process.ownerUID,
+                    isApplication: process.isApplication
+                )],
                 activityShare: max(0.01, 0.28 - Double(index) * 0.015)
             ))
         }

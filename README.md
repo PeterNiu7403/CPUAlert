@@ -1,11 +1,54 @@
 # CPUAlert
 
-CPUAlert is a local, arm64 macOS 15+ menu-bar monitor for whole-machine CPU and GPU pressure. It keeps CPU collection available when GPU collection is unsupported, shows only bounded live rankings, and uses an authenticated on-demand helper for the small set of Root operations that cannot run in the app process.
+<p align="center">
+  <img src="Design/CPUAlert-AppIcon-Generated.png" width="128" height="128" alt="CPUAlert app icon">
+</p>
+
+<p align="center">
+  A privacy-first macOS menu-bar monitor for real-time CPU and GPU pressure.
+</p>
+
+<p align="center">
+  <a href="LICENSE"><img alt="GPL-3.0-or-later" src="https://img.shields.io/badge/license-GPL--3.0--or--later-blue.svg"></a>
+  <img alt="macOS 15+" src="https://img.shields.io/badge/macOS-15%2B-black.svg">
+  <img alt="Apple silicon" src="https://img.shields.io/badge/architecture-arm64-orange.svg">
+  <img alt="Swift 6" src="https://img.shields.io/badge/Swift-6-F05138.svg">
+</p>
+
+<p align="center">
+  English · <a href="README.zh-CN.md">简体中文</a>
+</p>
+
+CPUAlert is a local, arm64 macOS 15+ menu-bar monitor for whole-machine CPU and GPU pressure. It keeps CPU collection available when GPU collection is unsupported, shows only bounded live rankings, and uses an authenticated on-demand helper for the small set of root operations that cannot run in the app process.
+
+## Highlights
+
+- Live whole-machine CPU and best-effort GPU pressure in the menu bar.
+- Bounded CPU process rankings, expandable thread details, and expandable GPU application groups.
+- Sustained-pressure notifications with configurable thresholds and cooldowns.
+- Safe process termination with PID-reuse protection, protected-process policy, confirmation, and fresh authentication for privileged actions.
+- Launch-at-login controls, first-run guidance, diagnostics, and full English/Simplified Chinese localization.
+- No network client, telemetry, analytics, account, or process-history database.
+
+## Project status
+
+CPUAlert is an early-stage open-source project. It targets Apple silicon and macOS 15 or later. CPU monitoring uses supported process APIs; GPU monitoring depends on undocumented IOReport and coalition interfaces and can stop working after a macOS update. See [Known limitations](#known-limitations) before relying on GPU values.
+
+The repository contains source code and development fixtures. Local Apple Development signing is suitable for development on the signing Mac; a broadly distributed binary additionally requires Developer ID signing and notarization.
+
+## Repository guide
+
+- `CPUAlertApp/` — menu-bar application, collectors, alerts, settings, and UI.
+- `CPUAlertHelper/` and `CPUAlertShared/` — narrowly scoped privileged helper and shared XPC types.
+- `CPUAlertTests/` and `CPUAlertUITests/` — unit and deterministic UI acceptance tests.
+- `TestFixtures/` — opt-in CPU and GPU stress fixtures.
+- `Scripts/` — benchmark and process-sampling tools.
+- `docs/cpualert-implementation/` — requirements, design, and implementation task record.
 
 ## Metric semantics
 
 - CPU process percentages are normalized against total whole-machine capacity. A process fully occupying one logical CPU on a 14-core Mac therefore contributes about `1 / 14` of whole-machine capacity.
-- GPU menu usage is best-effort whole-machine utilization. GPU rankings are resource-coalition activity shares and are not direct per-process GPU percentages.
+- GPU menu usage is best-effort whole-machine utilization. GPU ranking rows scale each resource coalition's activity share by the current whole-machine utilization so the displayed values add up on the same scale. They remain estimates, not direct per-process GPU counters.
 - IOReport and coalition APIs are private/unsupported and may fail after an OS update. CPU monitoring continues and the UI reports `GPU —`; GPU alerts are disabled while the metric is unavailable.
 - CPU rankings retain only the current bounded result, and thread values are collected only for the one process the user expands.
 
@@ -131,3 +174,11 @@ Generated JSON and `.trace` evidence stays under ignored `build/benchmarks/`.
 - The legacy privileged-helper installation path is suitable for this local signed build, not a Mac App Store distribution.
 - macOS may require manual notification or Login Items approval even after the app requests registration.
 - The included XCUITest source uses deterministic launch states. On a machine where Xcode cannot enable UI automation mode, build the UI-test target and complete the equivalent English, Simplified Chinese, keyboard, and accessibility checks manually.
+
+## Contributing and security
+
+Bug reports, focused improvements, tests, and documentation fixes are welcome. Read [CONTRIBUTING.md](CONTRIBUTING.md) before opening a pull request. Please report security-sensitive problems through GitHub's private vulnerability-reporting flow as described in [SECURITY.md](SECURITY.md), rather than in a public issue.
+
+## License
+
+CPUAlert is licensed under the [GNU General Public License v3.0 or later](LICENSE) (`GPL-3.0-or-later`). If you distribute a modified version or a derivative work covered by the GPL, you must make the corresponding source available under the GPL as well. This is a strong copyleft license; Apache-2.0 is not, and would not impose that requirement.

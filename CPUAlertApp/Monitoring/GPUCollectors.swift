@@ -63,6 +63,7 @@ private struct CoalitionMember: Sendable {
     let coalitionID: UInt64
     let identity: ProcessIdentity
     let name: String
+    let ownerUID: UInt32
     let isApplication: Bool
 }
 
@@ -116,7 +117,21 @@ actor CoalitionGPUCollector {
                 id: coalitionID,
                 name: leader?.name ?? oldest?.name ?? "Process group",
                 leader: leader?.identity,
-                members: groupMembers.map(\.identity),
+                members: groupMembers
+                    .sorted {
+                        if $0.isApplication != $1.isApplication {
+                            return $0.isApplication && !$1.isApplication
+                        }
+                        return $0.identity.pid < $1.identity.pid
+                    }
+                    .map {
+                        GPUGroupMemberMetric(
+                            identity: $0.identity,
+                            name: $0.name,
+                            ownerUID: $0.ownerUID,
+                            isApplication: $0.isApplication
+                        )
+                    },
                 activityShare: share
             )
         }
@@ -156,15 +171,27 @@ actor CoalitionGPUCollector {
                   CPUACopyProcessCoalitionID(pid, &coalitionID),
                   coalitionID > 0 else { return nil }
             let running = NSRunningApplication(processIdentifier: pid)
+            let counterName = processName(from: &process.name)
             return CoalitionMember(
                 coalitionID: coalitionID,
                 identity: ProcessIdentity(
                     pid: pid,
                     startTimeNanoseconds: process.start_time_ns
                 ),
-                name: running?.localizedName ?? "PID \(pid)",
+                name: running?.localizedName
+                    ?? (counterName.isEmpty ? "PID \(pid)" : counterName),
+                ownerUID: process.uid,
                 isApplication: running?.activationPolicy == .regular
             )
         }
+    }
+}
+
+private func processName<Value>(from value: inout Value) -> String {
+    withUnsafeBytes(of: &value) { bytes in
+        guard let baseAddress = bytes.bindMemory(to: CChar.self).baseAddress else {
+            return ""
+        }
+        return String(cString: baseAddress)
     }
 }

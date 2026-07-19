@@ -11,6 +11,7 @@ final class MonitorModel {
         didSet { settings.showTenRows = showTenRows }
     }
     var expandedProcess: ProcessIdentity?
+    var expandedGPUGroupID: UInt64?
     private(set) var trend: [MetricsSnapshot] = []
 
     @ObservationIgnored private let engine: SamplingEngine

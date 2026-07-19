@@ -90,6 +90,9 @@ struct RankedProcessList: View {
                         .contentShape(Rectangle())
                     }
                     .buttonStyle(.plain)
+                    .accessibilityIdentifier(
+                        "cpu-process-disclosure-\(process.identity.pid)"
+                    )
                     .accessibilityHint(Text("panel.process.expandHint"))
 
                     terminationMenu(for: process)
@@ -113,6 +116,7 @@ struct RankedProcessList: View {
                                 .font(.caption.monospacedDigit())
                         }
                         .padding(.leading, 12)
+                        .accessibilityIdentifier("cpu-thread-\(thread.id)")
                     }
                 }
             }
@@ -126,7 +130,14 @@ struct RankedProcessList: View {
             emptyState("panel.gpu.attributionUnavailable")
         } else {
             ForEach(rows) { group in
-                HStack(spacing: 6) {
+                let estimatedUsage = group.estimatedWholeMachineUsage(
+                    systemUsage: model.snapshot.gpuUsage
+                )
+                Button {
+                    model.expandedGPUGroupID = model.expandedGPUGroupID == group.id
+                        ? nil
+                        : group.id
+                } label: {
                     HStack(spacing: 8) {
                         Image(systemName: "square.stack.3d.up.fill")
                             .frame(width: 24)
@@ -143,19 +154,63 @@ struct RankedProcessList: View {
                                 .foregroundStyle(.secondary)
                         }
                         Spacer(minLength: 8)
-                        Text(group.activityShare, format: .percent.precision(.fractionLength(1)))
+                        Text(estimatedUsage.map {
+                            $0.formatted(.percent.precision(.fractionLength(1)))
+                        } ?? "—")
                             .monospacedDigit()
+                        Image(systemName: "chevron.right")
+                            .font(.caption2.weight(.semibold))
+                            .foregroundStyle(.tertiary)
+                            .rotationEffect(
+                                .degrees(model.expandedGPUGroupID == group.id ? 90 : 0)
+                            )
+                            .frame(width: 10)
                     }
-                    .accessibilityElement(children: .ignore)
-                    .accessibilityLabel(
-                        Text(String(
-                            format: String(localized: "panel.gpu.accessibility.format"),
-                            locale: .current,
-                            group.name,
-                            Int((group.activityShare * 100).rounded())
-                        ))
-                    )
-                    gpuTerminationMenu(for: group)
+                }
+                .buttonStyle(.plain)
+                .contentShape(Rectangle())
+                .accessibilityIdentifier("gpu-group-disclosure-\(group.id)")
+                .accessibilityLabel(gpuAccessibilityLabel(
+                    for: group,
+                    estimatedUsage: estimatedUsage
+                ))
+                .accessibilityHint(Text("panel.gpu.expandHint"))
+
+                if model.expandedGPUGroupID == group.id {
+                    ForEach(group.members) { member in
+                        HStack(spacing: 6) {
+                            HStack(spacing: 8) {
+                                Image(systemName: member.isApplication ? "app.fill" : "gearshape.fill")
+                                    .frame(width: 20)
+                                    .foregroundStyle(.secondary)
+                                VStack(alignment: .leading, spacing: 1) {
+                                    Text(member.name)
+                                        .font(.caption)
+                                        .lineLimit(1)
+                                        .accessibilityIdentifier(
+                                            "gpu-group-member-name-\(member.identity.pid)"
+                                        )
+                                    HStack(spacing: 4) {
+                                        Text(String(
+                                            format: String(localized: "panel.process.pid.format"),
+                                            locale: .current,
+                                            member.identity.pid
+                                        ))
+                                        if member.identity == group.leader {
+                                            Text("panel.gpu.member.leader")
+                                        }
+                                    }
+                                    .font(.caption2)
+                                    .foregroundStyle(.secondary)
+                                }
+                                Spacer(minLength: 8)
+                            }
+                            .accessibilityElement(children: .combine)
+                            terminationMenu(for: member.processMetric)
+                        }
+                        .padding(.leading, 14)
+                        .accessibilityIdentifier("gpu-group-member-\(member.identity.pid)")
+                    }
                 }
             }
         }
@@ -185,38 +240,25 @@ struct RankedProcessList: View {
             .frame(maxWidth: .infinity, minHeight: 72)
     }
 
+    private func gpuAccessibilityLabel(
+        for group: GPUGroupMetric,
+        estimatedUsage: Double?
+    ) -> Text {
+        guard let estimatedUsage else {
+            return Text("\(group.name), \(String(localized: "value.unavailable"))")
+        }
+        return Text(String(
+            format: String(localized: "panel.gpu.accessibility.format"),
+            locale: .current,
+            group.name,
+            Int((estimatedUsage * 100).rounded())
+        ))
+    }
+
     private func terminationMenu(for process: ProcessMetric) -> some View {
         Menu {
             Button("action.terminate", role: .destructive) {
                 askToTerminate(process)
-            }
-        } label: {
-            Image(systemName: "ellipsis.circle")
-                .accessibilityLabel(Text("action.processActions"))
-        }
-        .menuStyle(.borderlessButton)
-        .fixedSize()
-    }
-
-    @ViewBuilder
-    private func gpuTerminationMenu(for group: GPUGroupMetric) -> some View {
-        Menu {
-            if let leader = group.leader, let process = model.processMetric(for: leader) {
-                Button("action.terminate", role: .destructive) {
-                    askToTerminate(process)
-                }
-            } else {
-                ForEach(group.members, id: \.self) { member in
-                    if let process = model.processMetric(for: member) {
-                        Button(String(
-                            format: String(localized: "action.terminate.pid.format"),
-                            locale: .current,
-                            process.identity.pid
-                        ), role: .destructive) {
-                            askToTerminate(process)
-                        }
-                    }
-                }
             }
         } label: {
             Image(systemName: "ellipsis.circle")

@@ -5,6 +5,7 @@ struct MonitorPanel: View {
     @Bindable var model: MonitorModel
     @Bindable var settings: AppSettings
     @Bindable var loginItemService: LoginItemService
+    let onOpenSettings: @MainActor () -> Void
 
     var body: some View {
         VStack(spacing: 12) {
@@ -49,7 +50,7 @@ struct MonitorPanel: View {
 
             Divider()
             HStack {
-                SettingsLink {
+                Button(action: onOpenSettings) {
                     Label("action.settings", systemImage: "gearshape")
                 }
                 .buttonStyle(.plain)
@@ -67,6 +68,7 @@ struct MonitorPanel: View {
         .onDisappear {
             model.panelIsOpen = false
             model.expandedProcess = nil
+            model.expandedGPUGroupID = nil
         }
     }
 
