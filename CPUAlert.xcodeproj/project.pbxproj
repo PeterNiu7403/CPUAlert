@@ -1,0 +1,271 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 60;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		100000000000000000000001 /* CPUAlertApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 110000000000000000000001 /* CPUAlertApp.swift */; };
+		100000000000000000000002 /* MenuBarLabel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 110000000000000000000002 /* MenuBarLabel.swift */; };
+		100000000000000000000003 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 110000000000000000000003 /* Assets.xcassets */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		120000000000000000000001 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 200000000000000000000001 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 300000000000000000000001;
+			remoteInfo = CPUAlert;
+		};
+		120000000000000000000002 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 200000000000000000000001 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 300000000000000000000001;
+			remoteInfo = CPUAlert;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		110000000000000000000001 /* CPUAlertApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CPUAlertApp.swift; sourceTree = "<group>"; };
+		110000000000000000000002 /* MenuBarLabel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MenuBarLabel.swift; sourceTree = "<group>"; };
+		110000000000000000000003 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		110000000000000000000004 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		110000000000000000000005 /* Base.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Base.xcconfig; sourceTree = "<group>"; };
+		110000000000000000000011 /* CPUAlert.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = CPUAlert.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		110000000000000000000012 /* CPUAlertHelper */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = CPUAlertHelper; sourceTree = BUILT_PRODUCTS_DIR; };
+		110000000000000000000013 /* CPUAlertTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = CPUAlertTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		110000000000000000000014 /* CPUAlertUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = CPUAlertUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		110000000000000000000015 /* CPUStress */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = CPUStress; sourceTree = BUILT_PRODUCTS_DIR; };
+		110000000000000000000016 /* GPUStress */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = GPUStress; sourceTree = BUILT_PRODUCTS_DIR; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		400000000000000000000001 /* Frameworks */ = {isa = PBXFrameworksBuildPhase; buildActionMask = 2147483647; files = (); runOnlyForDeploymentPostprocessing = 0; };
+		400000000000000000000002 /* Frameworks */ = {isa = PBXFrameworksBuildPhase; buildActionMask = 2147483647; files = (); runOnlyForDeploymentPostprocessing = 0; };
+		400000000000000000000003 /* Frameworks */ = {isa = PBXFrameworksBuildPhase; buildActionMask = 2147483647; files = (); runOnlyForDeploymentPostprocessing = 0; };
+		400000000000000000000004 /* Frameworks */ = {isa = PBXFrameworksBuildPhase; buildActionMask = 2147483647; files = (); runOnlyForDeploymentPostprocessing = 0; };
+		400000000000000000000005 /* Frameworks */ = {isa = PBXFrameworksBuildPhase; buildActionMask = 2147483647; files = (); runOnlyForDeploymentPostprocessing = 0; };
+		400000000000000000000006 /* Frameworks */ = {isa = PBXFrameworksBuildPhase; buildActionMask = 2147483647; files = (); runOnlyForDeploymentPostprocessing = 0; };
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		200000000000000000000002 = {
+			isa = PBXGroup;
+			children = (
+				200000000000000000000004 /* Config */,
+				200000000000000000000005 /* CPUAlertApp */,
+				200000000000000000000009 /* CPUAlertHelper */,
+				20000000000000000000000A /* CPUAlertTests */,
+				20000000000000000000000B /* CPUAlertUITests */,
+				20000000000000000000000C /* TestFixtures */,
+				200000000000000000000003 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		200000000000000000000003 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				110000000000000000000011 /* CPUAlert.app */,
+				110000000000000000000012 /* CPUAlertHelper */,
+				110000000000000000000013 /* CPUAlertTests.xctest */,
+				110000000000000000000014 /* CPUAlertUITests.xctest */,
+				110000000000000000000015 /* CPUStress */,
+				110000000000000000000016 /* GPUStress */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		200000000000000000000004 /* Config */ = {
+			isa = PBXGroup;
+			children = (110000000000000000000005 /* Base.xcconfig */,);
+			path = Config;
+			sourceTree = "<group>";
+		};
+		200000000000000000000005 /* CPUAlertApp */ = {
+			isa = PBXGroup;
+			children = (
+				200000000000000000000006 /* App */,
+				200000000000000000000007 /* UI */,
+				200000000000000000000008 /* Resources */,
+				110000000000000000000004 /* Info.plist */,
+			);
+			path = CPUAlertApp;
+			sourceTree = "<group>";
+		};
+		200000000000000000000006 /* App */ = {isa = PBXGroup; children = (110000000000000000000001 /* CPUAlertApp.swift */,); path = App; sourceTree = "<group>"; };
+		200000000000000000000007 /* UI */ = {isa = PBXGroup; children = (110000000000000000000002 /* MenuBarLabel.swift */,); path = UI; sourceTree = "<group>"; };
+		200000000000000000000008 /* Resources */ = {isa = PBXGroup; children = (110000000000000000000003 /* Assets.xcassets */,); path = Resources; sourceTree = "<group>"; };
+		200000000000000000000009 /* CPUAlertHelper */ = {isa = PBXGroup; children = (); path = CPUAlertHelper; sourceTree = "<group>"; };
+		20000000000000000000000A /* CPUAlertTests */ = {isa = PBXGroup; children = (); path = CPUAlertTests; sourceTree = "<group>"; };
+		20000000000000000000000B /* CPUAlertUITests */ = {isa = PBXGroup; children = (); path = CPUAlertUITests; sourceTree = "<group>"; };
+		20000000000000000000000C /* TestFixtures */ = {
+			isa = PBXGroup;
+			children = (20000000000000000000000D /* CPUStress */, 20000000000000000000000E /* GPUStress */,);
+			path = TestFixtures;
+			sourceTree = "<group>";
+		};
+		20000000000000000000000D /* CPUStress */ = {isa = PBXGroup; children = (); path = CPUStress; sourceTree = "<group>"; };
+		20000000000000000000000E /* GPUStress */ = {isa = PBXGroup; children = (); path = GPUStress; sourceTree = "<group>"; };
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		300000000000000000000001 /* CPUAlert */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 500000000000000000000002 /* Build configuration list for PBXNativeTarget "CPUAlert" */;
+			buildPhases = (410000000000000000000001 /* Sources */, 400000000000000000000001 /* Frameworks */, 420000000000000000000001 /* Resources */,);
+			buildRules = ();
+			dependencies = ();
+			name = CPUAlert;
+			productName = CPUAlert;
+			productReference = 110000000000000000000011 /* CPUAlert.app */;
+			productType = "com.apple.product-type.application";
+		};
+		300000000000000000000002 /* CPUAlertHelper */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 500000000000000000000003 /* Build configuration list for PBXNativeTarget "CPUAlertHelper" */;
+			buildPhases = (410000000000000000000002 /* Sources */, 400000000000000000000002 /* Frameworks */, 420000000000000000000002 /* Resources */,);
+			buildRules = ();
+			dependencies = ();
+			name = CPUAlertHelper;
+			productName = CPUAlertHelper;
+			productReference = 110000000000000000000012 /* CPUAlertHelper */;
+			productType = "com.apple.product-type.tool";
+		};
+		300000000000000000000003 /* CPUAlertTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 500000000000000000000004 /* Build configuration list for PBXNativeTarget "CPUAlertTests" */;
+			buildPhases = (410000000000000000000003 /* Sources */, 400000000000000000000003 /* Frameworks */, 420000000000000000000003 /* Resources */,);
+			buildRules = ();
+			dependencies = (430000000000000000000001 /* PBXTargetDependency */,);
+			name = CPUAlertTests;
+			productName = CPUAlertTests;
+			productReference = 110000000000000000000013 /* CPUAlertTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+		300000000000000000000004 /* CPUAlertUITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 500000000000000000000005 /* Build configuration list for PBXNativeTarget "CPUAlertUITests" */;
+			buildPhases = (410000000000000000000004 /* Sources */, 400000000000000000000004 /* Frameworks */, 420000000000000000000004 /* Resources */,);
+			buildRules = ();
+			dependencies = (430000000000000000000002 /* PBXTargetDependency */,);
+			name = CPUAlertUITests;
+			productName = CPUAlertUITests;
+			productReference = 110000000000000000000014 /* CPUAlertUITests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
+		300000000000000000000005 /* CPUStress */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 500000000000000000000006 /* Build configuration list for PBXNativeTarget "CPUStress" */;
+			buildPhases = (410000000000000000000005 /* Sources */, 400000000000000000000005 /* Frameworks */, 420000000000000000000005 /* Resources */,);
+			buildRules = ();
+			dependencies = ();
+			name = CPUStress;
+			productName = CPUStress;
+			productReference = 110000000000000000000015 /* CPUStress */;
+			productType = "com.apple.product-type.tool";
+		};
+		300000000000000000000006 /* GPUStress */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 500000000000000000000007 /* Build configuration list for PBXNativeTarget "GPUStress" */;
+			buildPhases = (410000000000000000000006 /* Sources */, 400000000000000000000006 /* Frameworks */, 420000000000000000000006 /* Resources */,);
+			buildRules = ();
+			dependencies = ();
+			name = GPUStress;
+			productName = GPUStress;
+			productReference = 110000000000000000000016 /* GPUStress */;
+			productType = "com.apple.product-type.tool";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		200000000000000000000001 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 2660;
+				LastUpgradeCheck = 2660;
+				TargetAttributes = {
+					300000000000000000000001 = {CreatedOnToolsVersion = 26.6;};
+					300000000000000000000002 = {CreatedOnToolsVersion = 26.6;};
+					300000000000000000000003 = {CreatedOnToolsVersion = 26.6; TestTargetID = 300000000000000000000001;};
+					300000000000000000000004 = {CreatedOnToolsVersion = 26.6; TestTargetID = 300000000000000000000001;};
+					300000000000000000000005 = {CreatedOnToolsVersion = 26.6;};
+					300000000000000000000006 = {CreatedOnToolsVersion = 26.6;};
+				};
+			};
+			buildConfigurationList = 500000000000000000000001 /* Build configuration list for PBXProject "CPUAlert" */;
+			compatibilityVersion = "Xcode 15.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (en, Base, "zh-Hans",);
+			mainGroup = 200000000000000000000002;
+			productRefGroup = 200000000000000000000003 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				300000000000000000000001 /* CPUAlert */,
+				300000000000000000000002 /* CPUAlertHelper */,
+				300000000000000000000003 /* CPUAlertTests */,
+				300000000000000000000004 /* CPUAlertUITests */,
+				300000000000000000000005 /* CPUStress */,
+				300000000000000000000006 /* GPUStress */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		420000000000000000000001 /* Resources */ = {isa = PBXResourcesBuildPhase; buildActionMask = 2147483647; files = (100000000000000000000003 /* Assets.xcassets in Resources */,); runOnlyForDeploymentPostprocessing = 0; };
+		420000000000000000000002 /* Resources */ = {isa = PBXResourcesBuildPhase; buildActionMask = 2147483647; files = (); runOnlyForDeploymentPostprocessing = 0; };
+		420000000000000000000003 /* Resources */ = {isa = PBXResourcesBuildPhase; buildActionMask = 2147483647; files = (); runOnlyForDeploymentPostprocessing = 0; };
+		420000000000000000000004 /* Resources */ = {isa = PBXResourcesBuildPhase; buildActionMask = 2147483647; files = (); runOnlyForDeploymentPostprocessing = 0; };
+		420000000000000000000005 /* Resources */ = {isa = PBXResourcesBuildPhase; buildActionMask = 2147483647; files = (); runOnlyForDeploymentPostprocessing = 0; };
+		420000000000000000000006 /* Resources */ = {isa = PBXResourcesBuildPhase; buildActionMask = 2147483647; files = (); runOnlyForDeploymentPostprocessing = 0; };
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		410000000000000000000001 /* Sources */ = {isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (100000000000000000000001 /* CPUAlertApp.swift in Sources */, 100000000000000000000002 /* MenuBarLabel.swift in Sources */,); runOnlyForDeploymentPostprocessing = 0; };
+		410000000000000000000002 /* Sources */ = {isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (); runOnlyForDeploymentPostprocessing = 0; };
+		410000000000000000000003 /* Sources */ = {isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (); runOnlyForDeploymentPostprocessing = 0; };
+		410000000000000000000004 /* Sources */ = {isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (); runOnlyForDeploymentPostprocessing = 0; };
+		410000000000000000000005 /* Sources */ = {isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (); runOnlyForDeploymentPostprocessing = 0; };
+		410000000000000000000006 /* Sources */ = {isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (); runOnlyForDeploymentPostprocessing = 0; };
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		430000000000000000000001 /* PBXTargetDependency */ = {isa = PBXTargetDependency; target = 300000000000000000000001 /* CPUAlert */; targetProxy = 120000000000000000000001 /* PBXContainerItemProxy */; };
+		430000000000000000000002 /* PBXTargetDependency */ = {isa = PBXTargetDependency; target = 300000000000000000000001 /* CPUAlert */; targetProxy = 120000000000000000000002 /* PBXContainerItemProxy */; };
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		600000000000000000000001 /* Debug */ = {isa = XCBuildConfiguration; baseConfigurationReference = 110000000000000000000005 /* Base.xcconfig */; buildSettings = {DEBUG_INFORMATION_FORMAT = dwarf; ENABLE_TESTABILITY = YES; GCC_PREPROCESSOR_DEFINITIONS = ("DEBUG=1", "$(inherited)",); MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE; ONLY_ACTIVE_ARCH = YES; SDKROOT = macosx; SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";}; name = Debug;};
+		600000000000000000000002 /* Release */ = {isa = XCBuildConfiguration; baseConfigurationReference = 110000000000000000000005 /* Base.xcconfig */; buildSettings = {DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym"; ENABLE_NS_ASSERTIONS = NO; MTL_ENABLE_DEBUG_INFO = NO; SDKROOT = macosx; SWIFT_COMPILATION_MODE = wholemodule;}; name = Release;};
+		600000000000000000000003 /* Debug */ = {isa = XCBuildConfiguration; baseConfigurationReference = 110000000000000000000005 /* Base.xcconfig */; buildSettings = {ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon; CURRENT_PROJECT_VERSION = 1; GENERATE_INFOPLIST_FILE = NO; INFOPLIST_FILE = CPUAlertApp/Info.plist; LD_RUNPATH_SEARCH_PATHS = ("$(inherited)", "@executable_path/../Frameworks",); MARKETING_VERSION = 0.1.0; PRODUCT_BUNDLE_IDENTIFIER = "$(CPU_ALERT_BUNDLE_PREFIX).app"; PRODUCT_MODULE_NAME = CPUAlert; PRODUCT_NAME = CPUAlert; SWIFT_EMIT_LOC_STRINGS = YES;}; name = Debug;};
+		600000000000000000000004 /* Release */ = {isa = XCBuildConfiguration; baseConfigurationReference = 110000000000000000000005 /* Base.xcconfig */; buildSettings = {ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon; CURRENT_PROJECT_VERSION = 1; GENERATE_INFOPLIST_FILE = NO; INFOPLIST_FILE = CPUAlertApp/Info.plist; LD_RUNPATH_SEARCH_PATHS = ("$(inherited)", "@executable_path/../Frameworks",); MARKETING_VERSION = 0.1.0; PRODUCT_BUNDLE_IDENTIFIER = "$(CPU_ALERT_BUNDLE_PREFIX).app"; PRODUCT_MODULE_NAME = CPUAlert; PRODUCT_NAME = CPUAlert; SWIFT_EMIT_LOC_STRINGS = YES;}; name = Release;};
+		600000000000000000000005 /* Debug */ = {isa = XCBuildConfiguration; baseConfigurationReference = 110000000000000000000005 /* Base.xcconfig */; buildSettings = {PRODUCT_NAME = CPUAlertHelper;}; name = Debug;};
+		600000000000000000000006 /* Release */ = {isa = XCBuildConfiguration; baseConfigurationReference = 110000000000000000000005 /* Base.xcconfig */; buildSettings = {PRODUCT_NAME = CPUAlertHelper;}; name = Release;};
+		600000000000000000000007 /* Debug */ = {isa = XCBuildConfiguration; baseConfigurationReference = 110000000000000000000005 /* Base.xcconfig */; buildSettings = {BUNDLE_LOADER = "$(TEST_HOST)"; GENERATE_INFOPLIST_FILE = YES; PRODUCT_BUNDLE_IDENTIFIER = "$(CPU_ALERT_BUNDLE_PREFIX).tests"; PRODUCT_NAME = "$(TARGET_NAME)"; TEST_HOST = "$(BUILT_PRODUCTS_DIR)/CPUAlert.app/Contents/MacOS/CPUAlert";}; name = Debug;};
+		600000000000000000000008 /* Release */ = {isa = XCBuildConfiguration; baseConfigurationReference = 110000000000000000000005 /* Base.xcconfig */; buildSettings = {BUNDLE_LOADER = "$(TEST_HOST)"; GENERATE_INFOPLIST_FILE = YES; PRODUCT_BUNDLE_IDENTIFIER = "$(CPU_ALERT_BUNDLE_PREFIX).tests"; PRODUCT_NAME = "$(TARGET_NAME)"; TEST_HOST = "$(BUILT_PRODUCTS_DIR)/CPUAlert.app/Contents/MacOS/CPUAlert";}; name = Release;};
+		600000000000000000000009 /* Debug */ = {isa = XCBuildConfiguration; baseConfigurationReference = 110000000000000000000005 /* Base.xcconfig */; buildSettings = {GENERATE_INFOPLIST_FILE = YES; PRODUCT_BUNDLE_IDENTIFIER = "$(CPU_ALERT_BUNDLE_PREFIX).uitests"; PRODUCT_NAME = "$(TARGET_NAME)"; TEST_TARGET_NAME = CPUAlert;}; name = Debug;};
+		60000000000000000000000A /* Release */ = {isa = XCBuildConfiguration; baseConfigurationReference = 110000000000000000000005 /* Base.xcconfig */; buildSettings = {GENERATE_INFOPLIST_FILE = YES; PRODUCT_BUNDLE_IDENTIFIER = "$(CPU_ALERT_BUNDLE_PREFIX).uitests"; PRODUCT_NAME = "$(TARGET_NAME)"; TEST_TARGET_NAME = CPUAlert;}; name = Release;};
+		60000000000000000000000B /* Debug */ = {isa = XCBuildConfiguration; baseConfigurationReference = 110000000000000000000005 /* Base.xcconfig */; buildSettings = {PRODUCT_NAME = CPUStress;}; name = Debug;};
+		60000000000000000000000C /* Release */ = {isa = XCBuildConfiguration; baseConfigurationReference = 110000000000000000000005 /* Base.xcconfig */; buildSettings = {PRODUCT_NAME = CPUStress;}; name = Release;};
+		60000000000000000000000D /* Debug */ = {isa = XCBuildConfiguration; baseConfigurationReference = 110000000000000000000005 /* Base.xcconfig */; buildSettings = {PRODUCT_NAME = GPUStress;}; name = Debug;};
+		60000000000000000000000E /* Release */ = {isa = XCBuildConfiguration; baseConfigurationReference = 110000000000000000000005 /* Base.xcconfig */; buildSettings = {PRODUCT_NAME = GPUStress;}; name = Release;};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		500000000000000000000001 /* Build configuration list for PBXProject "CPUAlert" */ = {isa = XCConfigurationList; buildConfigurations = (600000000000000000000001 /* Debug */, 600000000000000000000002 /* Release */,); defaultConfigurationIsVisible = 0; defaultConfigurationName = Release;};
+		500000000000000000000002 /* Build configuration list for PBXNativeTarget "CPUAlert" */ = {isa = XCConfigurationList; buildConfigurations = (600000000000000000000003 /* Debug */, 600000000000000000000004 /* Release */,); defaultConfigurationIsVisible = 0; defaultConfigurationName = Release;};
+		500000000000000000000003 /* Build configuration list for PBXNativeTarget "CPUAlertHelper" */ = {isa = XCConfigurationList; buildConfigurations = (600000000000000000000005 /* Debug */, 600000000000000000000006 /* Release */,); defaultConfigurationIsVisible = 0; defaultConfigurationName = Release;};
+		500000000000000000000004 /* Build configuration list for PBXNativeTarget "CPUAlertTests" */ = {isa = XCConfigurationList; buildConfigurations = (600000000000000000000007 /* Debug */, 600000000000000000000008 /* Release */,); defaultConfigurationIsVisible = 0; defaultConfigurationName = Release;};
+		500000000000000000000005 /* Build configuration list for PBXNativeTarget "CPUAlertUITests" */ = {isa = XCConfigurationList; buildConfigurations = (600000000000000000000009 /* Debug */, 60000000000000000000000A /* Release */,); defaultConfigurationIsVisible = 0; defaultConfigurationName = Release;};
+		500000000000000000000006 /* Build configuration list for PBXNativeTarget "CPUStress" */ = {isa = XCConfigurationList; buildConfigurations = (60000000000000000000000B /* Debug */, 60000000000000000000000C /* Release */,); defaultConfigurationIsVisible = 0; defaultConfigurationName = Release;};
+		500000000000000000000007 /* Build configuration list for PBXNativeTarget "GPUStress" */ = {isa = XCConfigurationList; buildConfigurations = (60000000000000000000000D /* Debug */, 60000000000000000000000E /* Release */,); defaultConfigurationIsVisible = 0; defaultConfigurationName = Release;};
+/* End XCConfigurationList section */
+	};
+	rootObject = 200000000000000000000001 /* Project object */;
+}
