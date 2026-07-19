@@ -595,7 +595,7 @@ git commit -m "feat: define metrics and adaptive sampling policy"
 - Consumes: `SystemCPUCollecting`, `ProcessCPUCollecting`, `ProcessIdentity`, `ProcessMetric`, and `ThreadMetric` from Task 2.
 - Produces: `SystemCPUCollector` and `ProcessCPUCollector`, with all public utilization values normalized to `0...1` for the whole machine.
 
-- [ ] **Step 1: Write failing delta-calculation tests**
+- [x] **Step 1: Write failing delta-calculation tests**
 
 Create `CPUCollectorTests.swift`:
 
@@ -631,7 +631,7 @@ struct CPUCollectorTests {
 }
 ```
 
-- [ ] **Step 2: Run the collector tests and verify failure**
+- [x] **Step 2: Run the collector tests and verify failure**
 
 ```bash
 xcodebuild test \
@@ -643,7 +643,7 @@ xcodebuild test \
 
 Expected: compilation fails because the CPU collectors and tick type do not exist.
 
-- [ ] **Step 3: Define the stable C bridge**
+- [x] **Step 3: Define the stable C bridge**
 
 Create `DarwinBridge.h` with no Objective-C or Swift types:
 
@@ -685,7 +685,7 @@ bool CPUACopyThreadCounter(pid_t pid, uint64_t thread_id, CPUAThreadCounter *out
 #endif
 ```
 
-- [ ] **Step 4: Implement public Mach and libproc primitives**
+- [x] **Step 4: Implement public Mach and libproc primitives**
 
 In `DarwinBridge.c`, implement the bridge using these exact sources:
 
@@ -758,7 +758,7 @@ bool CPUACopyThreadCounter(pid_t pid, uint64_t thread_id, CPUAThreadCounter *out
 
 Add the C file to the app target and expose the header through the app target's bridging header.
 
-- [ ] **Step 5: Implement the pure CPU formulas first**
+- [x] **Step 5: Implement the pure CPU formulas first**
 
 Create the initial portion of `CPUCollectors.swift`:
 
@@ -829,7 +829,7 @@ actor ProcessCPUCollector: ProcessCPUCollecting {
 }
 ```
 
-- [ ] **Step 6: Complete process and on-demand thread sampling**
+- [x] **Step 6: Complete process and on-demand thread sampling**
 
 Implement `sampleProcesses()` by first asking `CPUACopyAllPIDs(nil, 0)` for required bytes, allocating a PID array, and retrying once if the second call reports a larger byte count. For each PID, call `CPUACopyProcessCounter`, create `ProcessIdentity(pid:startTimeNanoseconds:)`, and calculate deltas against the matching identity only.
 
@@ -837,7 +837,7 @@ Use `DispatchTime.now().uptimeNanoseconds` as the observation clock. Drop an ent
 
 Implement `sampleThreads(for:)` with the same two-pass buffer pattern around `CPUACopyThreadIDs`. Before returning, call `CPUACopyProcessCounter` and reject the entire result unless its start time still equals `process.startTimeNanoseconds`. Keep thread baselines only for the currently expanded process, normalize with the same whole-machine denominator, and return the top 10 threads.
 
-- [ ] **Step 7: Run unit tests and a fixture smoke check**
+- [x] **Step 7: Run unit tests and a fixture smoke check**
 
 Run:
 
@@ -851,7 +851,7 @@ xcodebuild test \
 
 Expected: all three unit tests pass. A temporary diagnostic invocation of both collectors must return either an initial nil baseline or finite values in `0...1`; no PID reuse produces a delta.
 
-- [ ] **Step 8: Commit CPU collection**
+- [x] **Step 8: Commit CPU collection**
 
 ```bash
 git add CPUAlert.xcodeproj CPUAlertApp/Monitoring/DarwinBridge.h CPUAlertApp/Monitoring/DarwinBridge.c CPUAlertApp/Monitoring/CPUCollectors.swift CPUAlertTests/CPUCollectorTests.swift

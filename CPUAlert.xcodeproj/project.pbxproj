@@ -15,6 +15,9 @@
 		100000000000000000000006 /* Configuration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 110000000000000000000008 /* Configuration.swift */; };
 		100000000000000000000007 /* CollectorProtocols.swift in Sources */ = {isa = PBXBuildFile; fileRef = 110000000000000000000009 /* CollectorProtocols.swift */; };
 		100000000000000000000008 /* SamplingPolicy.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11000000000000000000000A /* SamplingPolicy.swift */; };
+		100000000000000000000009 /* CPUCollectorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11000000000000000000000B /* CPUCollectorTests.swift */; };
+		10000000000000000000000A /* DarwinBridge.c in Sources */ = {isa = PBXBuildFile; fileRef = 11000000000000000000000D /* DarwinBridge.c */; };
+		10000000000000000000000B /* CPUCollectors.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11000000000000000000000E /* CPUCollectors.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -45,6 +48,10 @@
 		110000000000000000000008 /* Configuration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Configuration.swift; sourceTree = "<group>"; };
 		110000000000000000000009 /* CollectorProtocols.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CollectorProtocols.swift; sourceTree = "<group>"; };
 		11000000000000000000000A /* SamplingPolicy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SamplingPolicy.swift; sourceTree = "<group>"; };
+		11000000000000000000000B /* CPUCollectorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CPUCollectorTests.swift; sourceTree = "<group>"; };
+		11000000000000000000000C /* DarwinBridge.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DarwinBridge.h; sourceTree = "<group>"; };
+		11000000000000000000000D /* DarwinBridge.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = DarwinBridge.c; sourceTree = "<group>"; };
+		11000000000000000000000E /* CPUCollectors.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CPUCollectors.swift; sourceTree = "<group>"; };
 		110000000000000000000011 /* CPUAlert.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = CPUAlert.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		110000000000000000000012 /* CPUAlertHelper */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = CPUAlertHelper; sourceTree = BUILT_PRODUCTS_DIR; };
 		110000000000000000000013 /* CPUAlertTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = CPUAlertTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -112,7 +119,7 @@
 		200000000000000000000007 /* UI */ = {isa = PBXGroup; children = (110000000000000000000002 /* MenuBarLabel.swift */,); path = UI; sourceTree = "<group>"; };
 		200000000000000000000008 /* Resources */ = {isa = PBXGroup; children = (110000000000000000000003 /* Assets.xcassets */,); path = Resources; sourceTree = "<group>"; };
 		200000000000000000000009 /* CPUAlertHelper */ = {isa = PBXGroup; children = (); path = CPUAlertHelper; sourceTree = "<group>"; };
-		20000000000000000000000A /* CPUAlertTests */ = {isa = PBXGroup; children = (110000000000000000000006 /* SamplingPolicyTests.swift */,); path = CPUAlertTests; sourceTree = "<group>"; };
+		20000000000000000000000A /* CPUAlertTests */ = {isa = PBXGroup; children = (110000000000000000000006 /* SamplingPolicyTests.swift */, 11000000000000000000000B /* CPUCollectorTests.swift */,); path = CPUAlertTests; sourceTree = "<group>"; };
 		20000000000000000000000B /* CPUAlertUITests */ = {isa = PBXGroup; children = (); path = CPUAlertUITests; sourceTree = "<group>"; };
 		20000000000000000000000C /* TestFixtures */ = {
 			isa = PBXGroup;
@@ -123,7 +130,7 @@
 		20000000000000000000000D /* CPUStress */ = {isa = PBXGroup; children = (); path = CPUStress; sourceTree = "<group>"; };
 		20000000000000000000000E /* GPUStress */ = {isa = PBXGroup; children = (); path = GPUStress; sourceTree = "<group>"; };
 		20000000000000000000000F /* Domain */ = {isa = PBXGroup; children = (110000000000000000000007 /* Metrics.swift */, 110000000000000000000008 /* Configuration.swift */,); path = Domain; sourceTree = "<group>"; };
-		200000000000000000000010 /* Monitoring */ = {isa = PBXGroup; children = (110000000000000000000009 /* CollectorProtocols.swift */, 11000000000000000000000A /* SamplingPolicy.swift */,); path = Monitoring; sourceTree = "<group>"; };
+		200000000000000000000010 /* Monitoring */ = {isa = PBXGroup; children = (110000000000000000000009 /* CollectorProtocols.swift */, 11000000000000000000000A /* SamplingPolicy.swift */, 11000000000000000000000C /* DarwinBridge.h */, 11000000000000000000000D /* DarwinBridge.c */, 11000000000000000000000E /* CPUCollectors.swift */,); path = Monitoring; sourceTree = "<group>"; };
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -241,9 +248,9 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
-		410000000000000000000001 /* Sources */ = {isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (100000000000000000000001 /* CPUAlertApp.swift in Sources */, 100000000000000000000002 /* MenuBarLabel.swift in Sources */, 100000000000000000000005 /* Metrics.swift in Sources */, 100000000000000000000006 /* Configuration.swift in Sources */, 100000000000000000000007 /* CollectorProtocols.swift in Sources */, 100000000000000000000008 /* SamplingPolicy.swift in Sources */,); runOnlyForDeploymentPostprocessing = 0; };
+		410000000000000000000001 /* Sources */ = {isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (100000000000000000000001 /* CPUAlertApp.swift in Sources */, 100000000000000000000002 /* MenuBarLabel.swift in Sources */, 100000000000000000000005 /* Metrics.swift in Sources */, 100000000000000000000006 /* Configuration.swift in Sources */, 100000000000000000000007 /* CollectorProtocols.swift in Sources */, 100000000000000000000008 /* SamplingPolicy.swift in Sources */, 10000000000000000000000A /* DarwinBridge.c in Sources */, 10000000000000000000000B /* CPUCollectors.swift in Sources */,); runOnlyForDeploymentPostprocessing = 0; };
 		410000000000000000000002 /* Sources */ = {isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (); runOnlyForDeploymentPostprocessing = 0; };
-		410000000000000000000003 /* Sources */ = {isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (100000000000000000000004 /* SamplingPolicyTests.swift in Sources */,); runOnlyForDeploymentPostprocessing = 0; };
+		410000000000000000000003 /* Sources */ = {isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (100000000000000000000004 /* SamplingPolicyTests.swift in Sources */, 100000000000000000000009 /* CPUCollectorTests.swift in Sources */,); runOnlyForDeploymentPostprocessing = 0; };
 		410000000000000000000004 /* Sources */ = {isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (); runOnlyForDeploymentPostprocessing = 0; };
 		410000000000000000000005 /* Sources */ = {isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (); runOnlyForDeploymentPostprocessing = 0; };
 		410000000000000000000006 /* Sources */ = {isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (); runOnlyForDeploymentPostprocessing = 0; };
@@ -257,8 +264,8 @@
 /* Begin XCBuildConfiguration section */
 		600000000000000000000001 /* Debug */ = {isa = XCBuildConfiguration; baseConfigurationReference = 110000000000000000000005 /* Base.xcconfig */; buildSettings = {DEBUG_INFORMATION_FORMAT = dwarf; ENABLE_TESTABILITY = YES; GCC_PREPROCESSOR_DEFINITIONS = ("DEBUG=1", "$(inherited)",); MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE; ONLY_ACTIVE_ARCH = YES; SDKROOT = macosx; SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";}; name = Debug;};
 		600000000000000000000002 /* Release */ = {isa = XCBuildConfiguration; baseConfigurationReference = 110000000000000000000005 /* Base.xcconfig */; buildSettings = {DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym"; ENABLE_NS_ASSERTIONS = NO; MTL_ENABLE_DEBUG_INFO = NO; SDKROOT = macosx; SWIFT_COMPILATION_MODE = wholemodule;}; name = Release;};
-		600000000000000000000003 /* Debug */ = {isa = XCBuildConfiguration; baseConfigurationReference = 110000000000000000000005 /* Base.xcconfig */; buildSettings = {ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon; CURRENT_PROJECT_VERSION = 1; GENERATE_INFOPLIST_FILE = NO; INFOPLIST_FILE = CPUAlertApp/Info.plist; LD_RUNPATH_SEARCH_PATHS = ("$(inherited)", "@executable_path/../Frameworks",); MARKETING_VERSION = 0.1.0; PRODUCT_BUNDLE_IDENTIFIER = "$(CPU_ALERT_BUNDLE_PREFIX).app"; PRODUCT_MODULE_NAME = CPUAlert; PRODUCT_NAME = CPUAlert; SWIFT_EMIT_LOC_STRINGS = YES;}; name = Debug;};
-		600000000000000000000004 /* Release */ = {isa = XCBuildConfiguration; baseConfigurationReference = 110000000000000000000005 /* Base.xcconfig */; buildSettings = {ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon; CURRENT_PROJECT_VERSION = 1; GENERATE_INFOPLIST_FILE = NO; INFOPLIST_FILE = CPUAlertApp/Info.plist; LD_RUNPATH_SEARCH_PATHS = ("$(inherited)", "@executable_path/../Frameworks",); MARKETING_VERSION = 0.1.0; PRODUCT_BUNDLE_IDENTIFIER = "$(CPU_ALERT_BUNDLE_PREFIX).app"; PRODUCT_MODULE_NAME = CPUAlert; PRODUCT_NAME = CPUAlert; SWIFT_EMIT_LOC_STRINGS = YES;}; name = Release;};
+		600000000000000000000003 /* Debug */ = {isa = XCBuildConfiguration; baseConfigurationReference = 110000000000000000000005 /* Base.xcconfig */; buildSettings = {ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon; CURRENT_PROJECT_VERSION = 1; GENERATE_INFOPLIST_FILE = NO; INFOPLIST_FILE = CPUAlertApp/Info.plist; LD_RUNPATH_SEARCH_PATHS = ("$(inherited)", "@executable_path/../Frameworks",); MARKETING_VERSION = 0.1.0; PRODUCT_BUNDLE_IDENTIFIER = "$(CPU_ALERT_BUNDLE_PREFIX).app"; PRODUCT_MODULE_NAME = CPUAlert; PRODUCT_NAME = CPUAlert; SWIFT_EMIT_LOC_STRINGS = YES; SWIFT_OBJC_BRIDGING_HEADER = CPUAlertApp/Monitoring/DarwinBridge.h;}; name = Debug;};
+		600000000000000000000004 /* Release */ = {isa = XCBuildConfiguration; baseConfigurationReference = 110000000000000000000005 /* Base.xcconfig */; buildSettings = {ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon; CURRENT_PROJECT_VERSION = 1; GENERATE_INFOPLIST_FILE = NO; INFOPLIST_FILE = CPUAlertApp/Info.plist; LD_RUNPATH_SEARCH_PATHS = ("$(inherited)", "@executable_path/../Frameworks",); MARKETING_VERSION = 0.1.0; PRODUCT_BUNDLE_IDENTIFIER = "$(CPU_ALERT_BUNDLE_PREFIX).app"; PRODUCT_MODULE_NAME = CPUAlert; PRODUCT_NAME = CPUAlert; SWIFT_EMIT_LOC_STRINGS = YES; SWIFT_OBJC_BRIDGING_HEADER = CPUAlertApp/Monitoring/DarwinBridge.h;}; name = Release;};
 		600000000000000000000005 /* Debug */ = {isa = XCBuildConfiguration; baseConfigurationReference = 110000000000000000000005 /* Base.xcconfig */; buildSettings = {PRODUCT_NAME = CPUAlertHelper;}; name = Debug;};
 		600000000000000000000006 /* Release */ = {isa = XCBuildConfiguration; baseConfigurationReference = 110000000000000000000005 /* Base.xcconfig */; buildSettings = {PRODUCT_NAME = CPUAlertHelper;}; name = Release;};
 		600000000000000000000007 /* Debug */ = {isa = XCBuildConfiguration; baseConfigurationReference = 110000000000000000000005 /* Base.xcconfig */; buildSettings = {BUNDLE_LOADER = "$(TEST_HOST)"; GENERATE_INFOPLIST_FILE = YES; PRODUCT_BUNDLE_IDENTIFIER = "$(CPU_ALERT_BUNDLE_PREFIX).tests"; PRODUCT_NAME = "$(TARGET_NAME)"; TEST_HOST = "$(BUILT_PRODUCTS_DIR)/CPUAlert.app/Contents/MacOS/CPUAlert";}; name = Debug;};

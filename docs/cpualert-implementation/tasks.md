@@ -7,9 +7,9 @@
 | Metric | Value |
 |---|---:|
 | Total tasks | 9 |
-| Completed | 2 (22.2%) |
-| Remaining | 7 (77.8%) |
-| Last updated | 2026-07-19 12:16 CST |
+| Completed | 3 (33.3%) |
+| Remaining | 6 (66.7%) |
+| Last updated | 2026-07-19 12:22 CST |
 
 ## Tasks
 
@@ -21,7 +21,10 @@
   - Completed: 2026-07-19 12:16 CST
   - Output: immutable metric value types, validated alert thresholds, sampling context/cadence, collector protocols, and pure sampling policy.
   - Verification: focused test first failed on missing `AlertThresholds`, then passed 3 Swift Testing cases covering exact thresholds, five-point hysteresis, visibility, elevated pressure, and low battery.
-- [ ] 3. Whole-machine, process, and thread CPU collectors
+- [x] 3. Whole-machine, process, and thread CPU collectors
+  - Completed: 2026-07-19 12:22 CST
+  - Output: stable C bridge over Mach/libproc, normalized system and process delta collectors, PID-start-time baselines, app metadata decoration, cached top rankings, and on-demand thread sampling.
+  - Verification: focused suite first failed on missing collector types, then passed 4 tests including live system/process/thread smoke sampling; the xcresult summary reports 4/4 passed on arm64 macOS.
 - [ ] 4. Fail-closed GPU utilization and coalition attribution
 - [ ] 5. Unified sampling engine and monitor panel
 - [ ] 6. Sustained alerts and notification delivery
