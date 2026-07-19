@@ -17,7 +17,8 @@ The full file map, interfaces, algorithms, and verification commands live in [`.
 1. Use `MenuBarExtra` unless the Task 1 rendering gate proves the colored fixed-height label is clipped or stripped.
 2. Treat precise per-process GPU utilization as unavailable; show global utilization and coalition attribution estimates as different concepts.
 3. Keep collectors and policies behind narrow protocols so deterministic tests do not require live system load.
-4. Keep personal signing Team IDs in ignored `Config/Local.xcconfig`; commit only the shared signing policy.
+4. Keep the local signing selection in ignored `Config/Local.xcconfig`; mutual app/helper requirements pin the certificate leaf's exact Team identifier because `SMJobBless` requires it in both embedded plists.
+5. Use the public macOS XPC peer code-signing requirement APIs for the audit-token-bound pre-delegate gate, then repeat `SecCode` validity checking before assigning the helper's exported object. Do not rely on a private `NSXPCConnection.auditToken` selector.
 
 ## Test strategy
 

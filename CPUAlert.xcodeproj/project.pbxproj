@@ -33,7 +33,40 @@
 		100000000000000000000018 /* AlertEngineTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11000000000000000000002B /* AlertEngineTests.swift */; };
 		100000000000000000000019 /* AlertEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11000000000000000000002C /* AlertEngine.swift */; };
 		10000000000000000000001A /* NotificationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11000000000000000000002D /* NotificationService.swift */; };
+		10000000000000000000001B /* ProtectedProcessPolicyTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11000000000000000000002E /* ProtectedProcessPolicyTests.swift */; };
+		10000000000000000000001C /* TerminationCoordinatorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11000000000000000000002F /* TerminationCoordinatorTests.swift */; };
+		10000000000000000000001D /* HelperProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = 110000000000000000000030 /* HelperProtocol.swift */; };
+		10000000000000000000001E /* ProcessIdentityReader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 110000000000000000000031 /* ProcessIdentityReader.swift */; };
+		10000000000000000000001F /* ProtectedProcessPolicy.swift in Sources */ = {isa = PBXBuildFile; fileRef = 110000000000000000000032 /* ProtectedProcessPolicy.swift */; };
+		100000000000000000000020 /* TerminationCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 110000000000000000000033 /* TerminationCoordinator.swift */; };
+		100000000000000000000021 /* LegacyBlessingInstaller.m in Sources */ = {isa = PBXBuildFile; fileRef = 110000000000000000000035 /* LegacyBlessingInstaller.m */; };
+		100000000000000000000022 /* HelperClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 110000000000000000000037 /* HelperClient.swift */; };
+		100000000000000000000023 /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 110000000000000000000038 /* Security.framework */; };
+		100000000000000000000024 /* ServiceManagement.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 110000000000000000000039 /* ServiceManagement.framework */; };
+		100000000000000000000025 /* LocalAuthentication.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 11000000000000000000003A /* LocalAuthentication.framework */; };
+		100000000000000000000026 /* HelperProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = 110000000000000000000030 /* HelperProtocol.swift */; };
+		100000000000000000000027 /* ProcessIdentityReader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 110000000000000000000031 /* ProcessIdentityReader.swift */; };
+		100000000000000000000028 /* ProtectedProcessPolicy.swift in Sources */ = {isa = PBXBuildFile; fileRef = 110000000000000000000032 /* ProtectedProcessPolicy.swift */; };
+		100000000000000000000029 /* Metrics.swift in Sources */ = {isa = PBXBuildFile; fileRef = 110000000000000000000007 /* Metrics.swift */; };
+		10000000000000000000002A /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11000000000000000000003B /* main.swift */; };
+		10000000000000000000002B /* HelperService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11000000000000000000003C /* HelperService.swift */; };
+		10000000000000000000002C /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 110000000000000000000038 /* Security.framework */; };
+		10000000000000000000002D /* com.cpualert.helper in Copy Helper */ = {isa = PBXBuildFile; fileRef = 110000000000000000000012 /* com.cpualert.helper */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 /* End PBXBuildFile section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		440000000000000000000001 /* Copy Helper */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = Contents/Library/LaunchServices;
+			dstSubfolderSpec = 1;
+			files = (
+				10000000000000000000002D /* com.cpualert.helper in Copy Helper */,
+			);
+			name = "Copy Helper";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXContainerItemProxy section */
 		120000000000000000000001 /* PBXContainerItemProxy */ = {
@@ -49,6 +82,13 @@
 			proxyType = 1;
 			remoteGlobalIDString = 300000000000000000000001;
 			remoteInfo = CPUAlert;
+		};
+		120000000000000000000003 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 200000000000000000000001 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 300000000000000000000002;
+			remoteInfo = CPUAlertHelper;
 		};
 /* End PBXContainerItemProxy section */
 
@@ -82,8 +122,25 @@
 		11000000000000000000002B /* AlertEngineTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AlertEngineTests.swift; sourceTree = "<group>"; };
 		11000000000000000000002C /* AlertEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AlertEngine.swift; sourceTree = "<group>"; };
 		11000000000000000000002D /* NotificationService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationService.swift; sourceTree = "<group>"; };
+		11000000000000000000002E /* ProtectedProcessPolicyTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProtectedProcessPolicyTests.swift; sourceTree = "<group>"; };
+		11000000000000000000002F /* TerminationCoordinatorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TerminationCoordinatorTests.swift; sourceTree = "<group>"; };
+		110000000000000000000030 /* HelperProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HelperProtocol.swift; sourceTree = "<group>"; };
+		110000000000000000000031 /* ProcessIdentityReader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProcessIdentityReader.swift; sourceTree = "<group>"; };
+		110000000000000000000032 /* ProtectedProcessPolicy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProtectedProcessPolicy.swift; sourceTree = "<group>"; };
+		110000000000000000000033 /* TerminationCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TerminationCoordinator.swift; sourceTree = "<group>"; };
+		110000000000000000000034 /* LegacyBlessingInstaller.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = LegacyBlessingInstaller.h; sourceTree = "<group>"; };
+		110000000000000000000035 /* LegacyBlessingInstaller.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = LegacyBlessingInstaller.m; sourceTree = "<group>"; };
+		110000000000000000000036 /* CPUAlert-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "CPUAlert-Bridging-Header.h"; sourceTree = "<group>"; };
+		110000000000000000000037 /* HelperClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HelperClient.swift; sourceTree = "<group>"; };
+		110000000000000000000038 /* Security.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Security.framework; path = System/Library/Frameworks/Security.framework; sourceTree = SDKROOT; };
+		110000000000000000000039 /* ServiceManagement.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ServiceManagement.framework; path = System/Library/Frameworks/ServiceManagement.framework; sourceTree = SDKROOT; };
+		11000000000000000000003A /* LocalAuthentication.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = LocalAuthentication.framework; path = System/Library/Frameworks/LocalAuthentication.framework; sourceTree = SDKROOT; };
+		11000000000000000000003B /* main.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = main.swift; sourceTree = "<group>"; };
+		11000000000000000000003C /* HelperService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HelperService.swift; sourceTree = "<group>"; };
+		11000000000000000000003D /* Helper-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "Helper-Info.plist"; sourceTree = "<group>"; };
+		11000000000000000000003E /* Launchd.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Launchd.plist; sourceTree = "<group>"; };
 		110000000000000000000011 /* CPUAlert.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = CPUAlert.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		110000000000000000000012 /* CPUAlertHelper */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = CPUAlertHelper; sourceTree = BUILT_PRODUCTS_DIR; };
+		110000000000000000000012 /* com.cpualert.helper */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = com.cpualert.helper; sourceTree = BUILT_PRODUCTS_DIR; };
 		110000000000000000000013 /* CPUAlertTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = CPUAlertTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		110000000000000000000014 /* CPUAlertUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = CPUAlertUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		110000000000000000000015 /* CPUStress */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = CPUStress; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -91,8 +148,8 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
-		400000000000000000000001 /* Frameworks */ = {isa = PBXFrameworksBuildPhase; buildActionMask = 2147483647; files = (100000000000000000000010 /* IOKit.framework in Frameworks */,); runOnlyForDeploymentPostprocessing = 0; };
-		400000000000000000000002 /* Frameworks */ = {isa = PBXFrameworksBuildPhase; buildActionMask = 2147483647; files = (); runOnlyForDeploymentPostprocessing = 0; };
+		400000000000000000000001 /* Frameworks */ = {isa = PBXFrameworksBuildPhase; buildActionMask = 2147483647; files = (100000000000000000000010 /* IOKit.framework in Frameworks */, 100000000000000000000023 /* Security.framework in Frameworks */, 100000000000000000000024 /* ServiceManagement.framework in Frameworks */, 100000000000000000000025 /* LocalAuthentication.framework in Frameworks */,); runOnlyForDeploymentPostprocessing = 0; };
+		400000000000000000000002 /* Frameworks */ = {isa = PBXFrameworksBuildPhase; buildActionMask = 2147483647; files = (10000000000000000000002C /* Security.framework in Frameworks */,); runOnlyForDeploymentPostprocessing = 0; };
 		400000000000000000000003 /* Frameworks */ = {isa = PBXFrameworksBuildPhase; buildActionMask = 2147483647; files = (); runOnlyForDeploymentPostprocessing = 0; };
 		400000000000000000000004 /* Frameworks */ = {isa = PBXFrameworksBuildPhase; buildActionMask = 2147483647; files = (); runOnlyForDeploymentPostprocessing = 0; };
 		400000000000000000000005 /* Frameworks */ = {isa = PBXFrameworksBuildPhase; buildActionMask = 2147483647; files = (); runOnlyForDeploymentPostprocessing = 0; };
@@ -105,6 +162,7 @@
 			children = (
 				200000000000000000000004 /* Config */,
 				200000000000000000000005 /* CPUAlertApp */,
+				200000000000000000000014 /* CPUAlertShared */,
 				200000000000000000000009 /* CPUAlertHelper */,
 				20000000000000000000000A /* CPUAlertTests */,
 				20000000000000000000000B /* CPUAlertUITests */,
@@ -118,7 +176,7 @@
 			isa = PBXGroup;
 			children = (
 				110000000000000000000011 /* CPUAlert.app */,
-				110000000000000000000012 /* CPUAlertHelper */,
+				110000000000000000000012 /* com.cpualert.helper */,
 				110000000000000000000013 /* CPUAlertTests.xctest */,
 				110000000000000000000014 /* CPUAlertUITests.xctest */,
 				110000000000000000000015 /* CPUStress */,
@@ -140,9 +198,11 @@
 				20000000000000000000000F /* Domain */,
 				200000000000000000000010 /* Monitoring */,
 				200000000000000000000013 /* Alerts */,
+				200000000000000000000015 /* Termination */,
 				200000000000000000000007 /* UI */,
 				200000000000000000000008 /* Resources */,
 				110000000000000000000004 /* Info.plist */,
+				110000000000000000000036 /* CPUAlert-Bridging-Header.h */,
 			);
 			path = CPUAlertApp;
 			sourceTree = "<group>";
@@ -150,8 +210,8 @@
 		200000000000000000000006 /* App */ = {isa = PBXGroup; children = (110000000000000000000001 /* CPUAlertApp.swift */, 110000000000000000000027 /* MonitorModel.swift */,); path = App; sourceTree = "<group>"; };
 		200000000000000000000007 /* UI */ = {isa = PBXGroup; children = (110000000000000000000002 /* MenuBarLabel.swift */, 110000000000000000000028 /* MonitorPanel.swift */, 110000000000000000000029 /* RankedProcessList.swift */,); path = UI; sourceTree = "<group>"; };
 		200000000000000000000008 /* Resources */ = {isa = PBXGroup; children = (110000000000000000000003 /* Assets.xcassets */,); path = Resources; sourceTree = "<group>"; };
-		200000000000000000000009 /* CPUAlertHelper */ = {isa = PBXGroup; children = (); path = CPUAlertHelper; sourceTree = "<group>"; };
-		20000000000000000000000A /* CPUAlertTests */ = {isa = PBXGroup; children = (110000000000000000000006 /* SamplingPolicyTests.swift */, 11000000000000000000000B /* CPUCollectorTests.swift */, 11000000000000000000000F /* GPUCollectorTests.swift */, 110000000000000000000024 /* SamplingEngineTests.swift */, 11000000000000000000002B /* AlertEngineTests.swift */, 200000000000000000000011 /* Fixtures */,); path = CPUAlertTests; sourceTree = "<group>"; };
+		200000000000000000000009 /* CPUAlertHelper */ = {isa = PBXGroup; children = (11000000000000000000003B /* main.swift */, 11000000000000000000003C /* HelperService.swift */, 11000000000000000000003D /* Helper-Info.plist */, 11000000000000000000003E /* Launchd.plist */,); path = CPUAlertHelper; sourceTree = "<group>"; };
+		20000000000000000000000A /* CPUAlertTests */ = {isa = PBXGroup; children = (110000000000000000000006 /* SamplingPolicyTests.swift */, 11000000000000000000000B /* CPUCollectorTests.swift */, 11000000000000000000000F /* GPUCollectorTests.swift */, 110000000000000000000024 /* SamplingEngineTests.swift */, 11000000000000000000002B /* AlertEngineTests.swift */, 11000000000000000000002E /* ProtectedProcessPolicyTests.swift */, 11000000000000000000002F /* TerminationCoordinatorTests.swift */, 200000000000000000000011 /* Fixtures */,); path = CPUAlertTests; sourceTree = "<group>"; };
 		20000000000000000000000B /* CPUAlertUITests */ = {isa = PBXGroup; children = (11000000000000000000002A /* CPUAlertUITests.swift */,); path = CPUAlertUITests; sourceTree = "<group>"; };
 		20000000000000000000000C /* TestFixtures */ = {
 			isa = PBXGroup;
@@ -164,17 +224,19 @@
 		20000000000000000000000F /* Domain */ = {isa = PBXGroup; children = (110000000000000000000007 /* Metrics.swift */, 110000000000000000000008 /* Configuration.swift */,); path = Domain; sourceTree = "<group>"; };
 		200000000000000000000010 /* Monitoring */ = {isa = PBXGroup; children = (110000000000000000000009 /* CollectorProtocols.swift */, 11000000000000000000000A /* SamplingPolicy.swift */, 11000000000000000000000C /* DarwinBridge.h */, 11000000000000000000000D /* DarwinBridge.c */, 11000000000000000000000E /* CPUCollectors.swift */, 110000000000000000000020 /* GPUCollectors.swift */, 110000000000000000000025 /* SamplingEngine.swift */, 110000000000000000000026 /* PowerStateMonitor.swift */,); path = Monitoring; sourceTree = "<group>"; };
 		200000000000000000000011 /* Fixtures */ = {isa = PBXGroup; children = (110000000000000000000021 /* io-report-single-die.plist */, 110000000000000000000022 /* io-report-multi-die.plist */,); path = Fixtures; sourceTree = "<group>"; };
-		200000000000000000000012 /* Frameworks */ = {isa = PBXGroup; children = (110000000000000000000023 /* IOKit.framework */,); name = Frameworks; sourceTree = "<group>"; };
+		200000000000000000000012 /* Frameworks */ = {isa = PBXGroup; children = (110000000000000000000023 /* IOKit.framework */, 110000000000000000000038 /* Security.framework */, 110000000000000000000039 /* ServiceManagement.framework */, 11000000000000000000003A /* LocalAuthentication.framework */,); name = Frameworks; sourceTree = "<group>"; };
 		200000000000000000000013 /* Alerts */ = {isa = PBXGroup; children = (11000000000000000000002C /* AlertEngine.swift */, 11000000000000000000002D /* NotificationService.swift */,); path = Alerts; sourceTree = "<group>"; };
+		200000000000000000000014 /* CPUAlertShared */ = {isa = PBXGroup; children = (110000000000000000000030 /* HelperProtocol.swift */, 110000000000000000000031 /* ProcessIdentityReader.swift */,); path = CPUAlertShared; sourceTree = "<group>"; };
+		200000000000000000000015 /* Termination */ = {isa = PBXGroup; children = (110000000000000000000032 /* ProtectedProcessPolicy.swift */, 110000000000000000000033 /* TerminationCoordinator.swift */, 110000000000000000000037 /* HelperClient.swift */, 110000000000000000000034 /* LegacyBlessingInstaller.h */, 110000000000000000000035 /* LegacyBlessingInstaller.m */,); path = Termination; sourceTree = "<group>"; };
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
 		300000000000000000000001 /* CPUAlert */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 500000000000000000000002 /* Build configuration list for PBXNativeTarget "CPUAlert" */;
-			buildPhases = (410000000000000000000001 /* Sources */, 400000000000000000000001 /* Frameworks */, 420000000000000000000001 /* Resources */,);
+			buildPhases = (410000000000000000000001 /* Sources */, 400000000000000000000001 /* Frameworks */, 420000000000000000000001 /* Resources */, 440000000000000000000001 /* Copy Helper */,);
 			buildRules = ();
-			dependencies = ();
+			dependencies = (430000000000000000000003 /* PBXTargetDependency */,);
 			name = CPUAlert;
 			productName = CPUAlert;
 			productReference = 110000000000000000000011 /* CPUAlert.app */;
@@ -187,8 +249,8 @@
 			buildRules = ();
 			dependencies = ();
 			name = CPUAlertHelper;
-			productName = CPUAlertHelper;
-			productReference = 110000000000000000000012 /* CPUAlertHelper */;
+			productName = com.cpualert.helper;
+			productReference = 110000000000000000000012 /* com.cpualert.helper */;
 			productType = "com.apple.product-type.tool";
 		};
 		300000000000000000000003 /* CPUAlertTests */ = {
@@ -283,9 +345,9 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
-		410000000000000000000001 /* Sources */ = {isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (100000000000000000000001 /* CPUAlertApp.swift in Sources */, 100000000000000000000002 /* MenuBarLabel.swift in Sources */, 100000000000000000000005 /* Metrics.swift in Sources */, 100000000000000000000006 /* Configuration.swift in Sources */, 100000000000000000000007 /* CollectorProtocols.swift in Sources */, 100000000000000000000008 /* SamplingPolicy.swift in Sources */, 10000000000000000000000A /* DarwinBridge.c in Sources */, 10000000000000000000000B /* CPUCollectors.swift in Sources */, 10000000000000000000000D /* GPUCollectors.swift in Sources */, 100000000000000000000012 /* SamplingEngine.swift in Sources */, 100000000000000000000013 /* PowerStateMonitor.swift in Sources */, 100000000000000000000014 /* MonitorModel.swift in Sources */, 100000000000000000000015 /* MonitorPanel.swift in Sources */, 100000000000000000000016 /* RankedProcessList.swift in Sources */, 100000000000000000000019 /* AlertEngine.swift in Sources */, 10000000000000000000001A /* NotificationService.swift in Sources */,); runOnlyForDeploymentPostprocessing = 0; };
-		410000000000000000000002 /* Sources */ = {isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (); runOnlyForDeploymentPostprocessing = 0; };
-		410000000000000000000003 /* Sources */ = {isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (100000000000000000000004 /* SamplingPolicyTests.swift in Sources */, 100000000000000000000009 /* CPUCollectorTests.swift in Sources */, 10000000000000000000000C /* GPUCollectorTests.swift in Sources */, 100000000000000000000011 /* SamplingEngineTests.swift in Sources */, 100000000000000000000018 /* AlertEngineTests.swift in Sources */,); runOnlyForDeploymentPostprocessing = 0; };
+		410000000000000000000001 /* Sources */ = {isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (100000000000000000000001 /* CPUAlertApp.swift in Sources */, 100000000000000000000002 /* MenuBarLabel.swift in Sources */, 100000000000000000000005 /* Metrics.swift in Sources */, 100000000000000000000006 /* Configuration.swift in Sources */, 100000000000000000000007 /* CollectorProtocols.swift in Sources */, 100000000000000000000008 /* SamplingPolicy.swift in Sources */, 10000000000000000000000A /* DarwinBridge.c in Sources */, 10000000000000000000000B /* CPUCollectors.swift in Sources */, 10000000000000000000000D /* GPUCollectors.swift in Sources */, 100000000000000000000012 /* SamplingEngine.swift in Sources */, 100000000000000000000013 /* PowerStateMonitor.swift in Sources */, 100000000000000000000014 /* MonitorModel.swift in Sources */, 100000000000000000000015 /* MonitorPanel.swift in Sources */, 100000000000000000000016 /* RankedProcessList.swift in Sources */, 100000000000000000000019 /* AlertEngine.swift in Sources */, 10000000000000000000001A /* NotificationService.swift in Sources */, 10000000000000000000001D /* HelperProtocol.swift in Sources */, 10000000000000000000001E /* ProcessIdentityReader.swift in Sources */, 10000000000000000000001F /* ProtectedProcessPolicy.swift in Sources */, 100000000000000000000020 /* TerminationCoordinator.swift in Sources */, 100000000000000000000021 /* LegacyBlessingInstaller.m in Sources */, 100000000000000000000022 /* HelperClient.swift in Sources */,); runOnlyForDeploymentPostprocessing = 0; };
+		410000000000000000000002 /* Sources */ = {isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (100000000000000000000026 /* HelperProtocol.swift in Sources */, 100000000000000000000027 /* ProcessIdentityReader.swift in Sources */, 100000000000000000000028 /* ProtectedProcessPolicy.swift in Sources */, 100000000000000000000029 /* Metrics.swift in Sources */, 10000000000000000000002A /* main.swift in Sources */, 10000000000000000000002B /* HelperService.swift in Sources */,); runOnlyForDeploymentPostprocessing = 0; };
+		410000000000000000000003 /* Sources */ = {isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (100000000000000000000004 /* SamplingPolicyTests.swift in Sources */, 100000000000000000000009 /* CPUCollectorTests.swift in Sources */, 10000000000000000000000C /* GPUCollectorTests.swift in Sources */, 100000000000000000000011 /* SamplingEngineTests.swift in Sources */, 100000000000000000000018 /* AlertEngineTests.swift in Sources */, 10000000000000000000001B /* ProtectedProcessPolicyTests.swift in Sources */, 10000000000000000000001C /* TerminationCoordinatorTests.swift in Sources */,); runOnlyForDeploymentPostprocessing = 0; };
 		410000000000000000000004 /* Sources */ = {isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (100000000000000000000017 /* CPUAlertUITests.swift in Sources */,); runOnlyForDeploymentPostprocessing = 0; };
 		410000000000000000000005 /* Sources */ = {isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (); runOnlyForDeploymentPostprocessing = 0; };
 		410000000000000000000006 /* Sources */ = {isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (); runOnlyForDeploymentPostprocessing = 0; };
@@ -294,15 +356,16 @@
 /* Begin PBXTargetDependency section */
 		430000000000000000000001 /* PBXTargetDependency */ = {isa = PBXTargetDependency; target = 300000000000000000000001 /* CPUAlert */; targetProxy = 120000000000000000000001 /* PBXContainerItemProxy */; };
 		430000000000000000000002 /* PBXTargetDependency */ = {isa = PBXTargetDependency; target = 300000000000000000000001 /* CPUAlert */; targetProxy = 120000000000000000000002 /* PBXContainerItemProxy */; };
+		430000000000000000000003 /* PBXTargetDependency */ = {isa = PBXTargetDependency; target = 300000000000000000000002 /* CPUAlertHelper */; targetProxy = 120000000000000000000003 /* PBXContainerItemProxy */; };
 /* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
 		600000000000000000000001 /* Debug */ = {isa = XCBuildConfiguration; baseConfigurationReference = 110000000000000000000005 /* Base.xcconfig */; buildSettings = {DEBUG_INFORMATION_FORMAT = dwarf; ENABLE_TESTABILITY = YES; GCC_PREPROCESSOR_DEFINITIONS = ("DEBUG=1", "$(inherited)",); MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE; ONLY_ACTIVE_ARCH = YES; SDKROOT = macosx; SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";}; name = Debug;};
 		600000000000000000000002 /* Release */ = {isa = XCBuildConfiguration; baseConfigurationReference = 110000000000000000000005 /* Base.xcconfig */; buildSettings = {DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym"; ENABLE_NS_ASSERTIONS = NO; MTL_ENABLE_DEBUG_INFO = NO; SDKROOT = macosx; SWIFT_COMPILATION_MODE = wholemodule;}; name = Release;};
-		600000000000000000000003 /* Debug */ = {isa = XCBuildConfiguration; baseConfigurationReference = 110000000000000000000005 /* Base.xcconfig */; buildSettings = {ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon; CURRENT_PROJECT_VERSION = 1; GENERATE_INFOPLIST_FILE = NO; INFOPLIST_FILE = CPUAlertApp/Info.plist; LD_RUNPATH_SEARCH_PATHS = ("$(inherited)", "@executable_path/../Frameworks",); MARKETING_VERSION = 0.1.0; PRODUCT_BUNDLE_IDENTIFIER = "$(CPU_ALERT_BUNDLE_PREFIX).app"; PRODUCT_MODULE_NAME = CPUAlert; PRODUCT_NAME = CPUAlert; SWIFT_EMIT_LOC_STRINGS = YES; SWIFT_OBJC_BRIDGING_HEADER = CPUAlertApp/Monitoring/DarwinBridge.h;}; name = Debug;};
-		600000000000000000000004 /* Release */ = {isa = XCBuildConfiguration; baseConfigurationReference = 110000000000000000000005 /* Base.xcconfig */; buildSettings = {ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon; CURRENT_PROJECT_VERSION = 1; GENERATE_INFOPLIST_FILE = NO; INFOPLIST_FILE = CPUAlertApp/Info.plist; LD_RUNPATH_SEARCH_PATHS = ("$(inherited)", "@executable_path/../Frameworks",); MARKETING_VERSION = 0.1.0; PRODUCT_BUNDLE_IDENTIFIER = "$(CPU_ALERT_BUNDLE_PREFIX).app"; PRODUCT_MODULE_NAME = CPUAlert; PRODUCT_NAME = CPUAlert; SWIFT_EMIT_LOC_STRINGS = YES; SWIFT_OBJC_BRIDGING_HEADER = CPUAlertApp/Monitoring/DarwinBridge.h;}; name = Release;};
-		600000000000000000000005 /* Debug */ = {isa = XCBuildConfiguration; baseConfigurationReference = 110000000000000000000005 /* Base.xcconfig */; buildSettings = {PRODUCT_NAME = CPUAlertHelper;}; name = Debug;};
-		600000000000000000000006 /* Release */ = {isa = XCBuildConfiguration; baseConfigurationReference = 110000000000000000000005 /* Base.xcconfig */; buildSettings = {PRODUCT_NAME = CPUAlertHelper;}; name = Release;};
+		600000000000000000000003 /* Debug */ = {isa = XCBuildConfiguration; baseConfigurationReference = 110000000000000000000005 /* Base.xcconfig */; buildSettings = {ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon; CURRENT_PROJECT_VERSION = 1; GENERATE_INFOPLIST_FILE = NO; INFOPLIST_FILE = CPUAlertApp/Info.plist; LD_RUNPATH_SEARCH_PATHS = ("$(inherited)", "@executable_path/../Frameworks",); MARKETING_VERSION = 0.1.0; PRODUCT_BUNDLE_IDENTIFIER = "$(CPU_ALERT_BUNDLE_PREFIX).app"; PRODUCT_MODULE_NAME = CPUAlert; PRODUCT_NAME = CPUAlert; SWIFT_EMIT_LOC_STRINGS = YES; SWIFT_OBJC_BRIDGING_HEADER = "CPUAlertApp/CPUAlert-Bridging-Header.h";}; name = Debug;};
+		600000000000000000000004 /* Release */ = {isa = XCBuildConfiguration; baseConfigurationReference = 110000000000000000000005 /* Base.xcconfig */; buildSettings = {ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon; CURRENT_PROJECT_VERSION = 1; GENERATE_INFOPLIST_FILE = NO; INFOPLIST_FILE = CPUAlertApp/Info.plist; LD_RUNPATH_SEARCH_PATHS = ("$(inherited)", "@executable_path/../Frameworks",); MARKETING_VERSION = 0.1.0; PRODUCT_BUNDLE_IDENTIFIER = "$(CPU_ALERT_BUNDLE_PREFIX).app"; PRODUCT_MODULE_NAME = CPUAlert; PRODUCT_NAME = CPUAlert; SWIFT_EMIT_LOC_STRINGS = YES; SWIFT_OBJC_BRIDGING_HEADER = "CPUAlertApp/CPUAlert-Bridging-Header.h";}; name = Release;};
+		600000000000000000000005 /* Debug */ = {isa = XCBuildConfiguration; baseConfigurationReference = 110000000000000000000005 /* Base.xcconfig */; buildSettings = {CODE_SIGN_INJECT_BASE_ENTITLEMENTS = NO; OTHER_LDFLAGS = ("$(inherited)", "-sectcreate", __TEXT, __info_plist, "$(SRCROOT)/CPUAlertHelper/Helper-Info.plist", "-sectcreate", __TEXT, __launchd_plist, "$(SRCROOT)/CPUAlertHelper/Launchd.plist",); PRODUCT_BUNDLE_IDENTIFIER = com.cpualert.helper; PRODUCT_NAME = com.cpualert.helper; SKIP_INSTALL = YES;}; name = Debug;};
+		600000000000000000000006 /* Release */ = {isa = XCBuildConfiguration; baseConfigurationReference = 110000000000000000000005 /* Base.xcconfig */; buildSettings = {CODE_SIGN_INJECT_BASE_ENTITLEMENTS = NO; OTHER_LDFLAGS = ("$(inherited)", "-sectcreate", __TEXT, __info_plist, "$(SRCROOT)/CPUAlertHelper/Helper-Info.plist", "-sectcreate", __TEXT, __launchd_plist, "$(SRCROOT)/CPUAlertHelper/Launchd.plist",); PRODUCT_BUNDLE_IDENTIFIER = com.cpualert.helper; PRODUCT_NAME = com.cpualert.helper; SKIP_INSTALL = YES;}; name = Release;};
 		600000000000000000000007 /* Debug */ = {isa = XCBuildConfiguration; baseConfigurationReference = 110000000000000000000005 /* Base.xcconfig */; buildSettings = {BUNDLE_LOADER = "$(TEST_HOST)"; GENERATE_INFOPLIST_FILE = YES; PRODUCT_BUNDLE_IDENTIFIER = "$(CPU_ALERT_BUNDLE_PREFIX).tests"; PRODUCT_NAME = "$(TARGET_NAME)"; TEST_HOST = "$(BUILT_PRODUCTS_DIR)/CPUAlert.app/Contents/MacOS/CPUAlert";}; name = Debug;};
 		600000000000000000000008 /* Release */ = {isa = XCBuildConfiguration; baseConfigurationReference = 110000000000000000000005 /* Base.xcconfig */; buildSettings = {BUNDLE_LOADER = "$(TEST_HOST)"; GENERATE_INFOPLIST_FILE = YES; PRODUCT_BUNDLE_IDENTIFIER = "$(CPU_ALERT_BUNDLE_PREFIX).tests"; PRODUCT_NAME = "$(TARGET_NAME)"; TEST_HOST = "$(BUILT_PRODUCTS_DIR)/CPUAlert.app/Contents/MacOS/CPUAlert";}; name = Release;};
 		600000000000000000000009 /* Debug */ = {isa = XCBuildConfiguration; baseConfigurationReference = 110000000000000000000005 /* Base.xcconfig */; buildSettings = {GENERATE_INFOPLIST_FILE = YES; PRODUCT_BUNDLE_IDENTIFIER = "$(CPU_ALERT_BUNDLE_PREFIX).uitests"; PRODUCT_NAME = "$(TARGET_NAME)"; TEST_TARGET_NAME = CPUAlert;}; name = Debug;};

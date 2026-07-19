@@ -20,6 +20,11 @@
 	<string>$(CURRENT_PROJECT_VERSION)</string>
     <key>NSUserNotificationAlertStyle</key>
     <string>alert</string>
+    <key>SMPrivilegedExecutables</key>
+    <dict>
+        <key>com.cpualert.helper</key>
+        <string>identifier "com.cpualert.helper" and anchor apple generic and certificate leaf[subject.OU] = "H28G76Z652"</string>
+    </dict>
     <key>LSMinimumSystemVersion</key>
     <string>15.0</string>
     <key>LSUIElement</key>

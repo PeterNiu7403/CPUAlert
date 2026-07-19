@@ -7,9 +7,9 @@
 | Metric | Value |
 |---|---:|
 | Total tasks | 9 |
-| Completed | 6 (66.7%) |
-| Remaining | 3 (33.3%) |
-| Last updated | 2026-07-19 13:06 CST |
+| Completed | 7 (77.8%) |
+| Remaining | 2 (22.2%) |
+| Last updated | 2026-07-19 13:31 CST |
 
 ## Tasks
 
@@ -37,7 +37,10 @@
   - Completed: 2026-07-19 13:06 CST
   - Output: independent resource alert state machines, approved sustained-duration gates, ten-minute red repeat interval, cached notification authorization, two-second CPU/GPU merge window, and transient top-offender notification context.
   - Verification: focused tests first failed on missing alert types, then all three timing scenarios passed; the signed default scheme reports 18/18 passing tests. Denied or errored notification authorization is cached as a normal state and does not stop monitoring.
-- [ ] 7. Safe process termination and on-demand Root helper
+- [x] 7. Safe process termination and on-demand Root helper
+  - Completed: 2026-07-19 13:31 CST
+  - Output: PID/start-time identity revalidation, protected-process policy shared by app and helper, same-user TERM with separately gated force KILL, fresh local authentication for every Root operation, fixed NSSecureCoding XPC messages, on-demand legacy blessing/removal adapter, exact-path cleanup, mutual code-signing requirements, and a 15-second idle helper.
+  - Verification: focused termination tests first failed on missing types, then 6/6 passed including a real disposable child; the signed default scheme passed 24/24 tests. Xcode embedded the arm64 helper at `Contents/Library/LaunchServices/com.cpualert.helper`, both binaries passed strict and explicit Team requirement checks, both required Mach-O plist sections are present, and both system installation paths remain absent while idle.
 - [ ] 8. Settings, first run, localization, and accessibility
 - [ ] 9. Stress fixtures, performance gates, signing, and operational documentation
 
@@ -46,3 +49,4 @@
 - 2026-07-19: Full Xcode is available at `/Applications/Xcode.app`; the global developer directory still points to CommandLineTools, so commands use an explicit `DEVELOPER_DIR`.
 - 2026-07-19: Two valid local signing identities are available. The personal Team ID is stored only in ignored `Config/Local.xcconfig`.
 - 2026-07-19: Xcode's macOS UI runner cannot enable automation mode in this desktop session. UI test sources remain buildable, while the shared default scheme skips that target and real accessibility-driven checks provide the runtime evidence.
+- 2026-07-19: The public macOS 13+ XPC code-signing requirement APIs provide the pre-delegate peer-signature gate; the helper repeats a `SecCode` validity check before exporting its object. No private `NSXPCConnection.auditToken` selector is used.
