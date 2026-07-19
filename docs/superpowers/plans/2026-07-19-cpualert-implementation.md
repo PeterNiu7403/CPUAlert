@@ -1568,7 +1568,7 @@ Expected: tests pass; no notification appears before its sustained-duration thre
 - Consumes: `ProcessIdentity`, ranked CPU/GPU rows, and app bundle identity.
 - Produces: `TerminationCoordinator.requestGraceful(_:)`, `TerminationCoordinator.requestForce(_:)`, signed XPC service `com.cpualert.helper.xpc`, and fixed helper operations `.terminate` and `.uninstall`.
 
-- [ ] **Step 1: Write protected-process and PID-reuse tests**
+- [x] **Step 1: Write protected-process and PID-reuse tests**
 
 Create `ProtectedProcessPolicyTests.swift`:
 
@@ -1599,7 +1599,7 @@ struct ProtectedProcessPolicyTests {
 
 Create coordinator tests using a fake identity reader and fake signal sender. Assert that a changed start time is rejected, graceful termination sends only signal 15, and force termination sends signal 9 only after an explicit force method call.
 
-- [ ] **Step 2: Run termination tests and verify failure**
+- [x] **Step 2: Run termination tests and verify failure**
 
 ```bash
 xcodebuild test \
@@ -1612,7 +1612,7 @@ xcodebuild test \
 
 Expected: compilation fails because termination types do not exist.
 
-- [ ] **Step 3: Define the fixed secure-coding protocol**
+- [x] **Step 3: Define the fixed secure-coding protocol**
 
 Create `HelperProtocol.swift` and compile it into both app and helper targets:
 
@@ -1677,13 +1677,13 @@ import Foundation
 }
 ```
 
-- [ ] **Step 4: Centralize identity and protected-process checks**
+- [x] **Step 4: Centralize identity and protected-process checks**
 
 Implement `ProcessIdentityReader.currentIdentity(pid:)` using `PROC_PIDTBSDINFO` and the same start-time conversion as Task 3. It must return the current name, executable path, UID, and `ProcessIdentity` in one value.
 
 Implement `ProtectedProcessPolicy.isProtected(pid:name:)` as a pure function. Reject PID `<= 1`, exact protected names, names beginning with `CPUAlert` or `com.cpualert`, and the main app/helper's own current PIDs. Compile the same policy source into both targets so the helper never trusts a UI-only decision.
 
-- [ ] **Step 5: Implement same-user termination first**
+- [x] **Step 5: Implement same-user termination first**
 
 In `TerminationCoordinator`, re-read identity immediately before every action. If identity differs from the selected row, return `.identityChanged`. If the target UID equals `getuid()`, terminate a regular GUI app with `NSRunningApplication.terminate()` and otherwise call `kill(pid, SIGTERM)`.
 
@@ -1691,7 +1691,7 @@ After a successful graceful request, sleep 3 seconds on a task and re-read the s
 
 For a GPU group, target only its explicit application leader. If `GPUGroupMetric.leader` is nil, present the member processes for a single selection. Never submit multiple member PIDs from one action and never interpret a coalition ID as a process ID.
 
-- [ ] **Step 6: Isolate deprecated helper installation**
+- [x] **Step 6: Isolate deprecated helper installation**
 
 Use an Objective-C adapter because Swift's availability diagnostics around removed ServiceManagement declarations are harder to contain. `LegacyBlessingInstaller.m` must expose only:
 
@@ -1713,7 +1713,7 @@ The SDK contract says `SMJobRemove` removes the registered job; it does not prom
 
 Make both steps idempotent and report partial cleanup explicitly.
 
-- [ ] **Step 7: Configure mutual code-signing requirements**
+- [x] **Step 7: Configure mutual code-signing requirements**
 
 Add `SMPrivilegedExecutables` to the app plist with key `com.cpualert.helper` and a designated requirement containing the exact helper identifier plus the configured Team ID.
 
@@ -1739,7 +1739,7 @@ Use this launchd payload:
 </plist>
 ```
 
-- [ ] **Step 8: Validate every XPC caller in the helper**
+- [x] **Step 8: Validate every XPC caller in the helper**
 
 In `NSXPCListenerDelegate.listener(_:shouldAcceptNewConnection:)`, obtain the connection audit token and create a `SecCode` guest. Require the app identifier `com.cpualert.app`, the configured Team ID, a valid signature, and a designated requirement match. Reject the connection before assigning an exported object if any check fails.
 
@@ -1749,13 +1749,13 @@ For `.terminate`, allow signals 15 and 9 only. Re-read PID identity, compare sta
 
 For `.uninstall`, require PID and signal fields to be zero, unlink only the two fixed paths, return the first non-`ENOENT` error, and exit after replying. Maintain a 15-second idle timer that exits when no XPC connection or request is active.
 
-- [ ] **Step 9: Require local authentication for every Root operation**
+- [x] **Step 9: Require local authentication for every Root operation**
 
 Before connecting to the helper for a Root-owned target, create a fresh `LAContext` and evaluate `.deviceOwnerAuthentication` with localized reason “CPUAlert needs permission to terminate a Root process.” Do not cache successful authentication. On cancellation or failure, send no XPC request.
 
 Install the helper only on the first authenticated Root action. If signing or blessing fails, leave ordinary same-user termination enabled and show a non-destructive error with a link to the privilege settings section.
 
-- [ ] **Step 10: Verify only against disposable children**
+- [x] **Step 10: Verify only against disposable children**
 
 Run unit tests, launch `CPUStress` as the current user, and verify graceful and forced flows against that fixture. For Root integration, run a separately built fixture only on the development machine and confirm PID/start-time matching before signal delivery. Never use `launchd`, `WindowServer`, `loginwindow`, or another real system service as a test target.
 
@@ -1779,7 +1779,7 @@ codesign --verify --deep --strict --verbose=2 \
 
 Expected: tests and signature verification pass; helper is absent while idle unless installed, and exits within 15 seconds after use.
 
-- [ ] **Step 11: Commit the termination boundary**
+- [x] **Step 11: Commit the termination boundary**
 
 ```bash
 git add CPUAlert.xcodeproj CPUAlertApp/Info.plist CPUAlertApp/Termination CPUAlertShared CPUAlertHelper CPUAlertTests/ProtectedProcessPolicyTests.swift CPUAlertTests/TerminationCoordinatorTests.swift
@@ -1807,7 +1807,7 @@ git commit -m "feat: add authenticated process termination"
 - Consumes: Alert thresholds, sampling state, notification service, helper client, and production panel.
 - Produces: Validated local settings, login-item control, bilingual visible copy, first-run workflow, and deterministic UI-test launch mode.
 
-- [ ] **Step 1: Write settings validation tests**
+- [x] **Step 1: Write settings validation tests**
 
 Create `AppSettingsTests.swift`:
 
@@ -1836,7 +1836,7 @@ struct AppSettingsTests {
 }
 ```
 
-- [ ] **Step 2: Run settings tests and verify failure**
+- [x] **Step 2: Run settings tests and verify failure**
 
 ```bash
 xcodebuild test \
@@ -1848,7 +1848,7 @@ xcodebuild test \
 
 Expected: compilation fails because settings types do not exist.
 
-- [ ] **Step 3: Implement validated local preferences**
+- [x] **Step 3: Implement validated local preferences**
 
 Define a small `SettingsStore` protocol with `double`, `bool`, and setter methods. Make `UserDefaults` the production implementation and `InMemorySettingsStore` the test implementation. `AppSettings` must expose:
 
@@ -1870,15 +1870,15 @@ Store only thresholds, permission preferences, login preference, and first-run c
 
 After `setThresholds` succeeds, call `SamplingEngine.updateThresholds(_:)` so menu colors, cadence escalation, and subsequent snapshots use the new values without restarting the engine. Invalid edits remain visible as validation feedback but never reach the engine or persistent store.
 
-- [ ] **Step 4: Implement login-at-launch safely**
+- [x] **Step 4: Implement login-at-launch safely**
 
 Create `LoginItemService` around `SMAppService.mainApp`. Map `.enabled`, `.requiresApproval`, `.notRegistered`, and `.notFound` into a small display enum. Register or unregister only after a direct user toggle. For `.requiresApproval`, present a button that opens System Settings' Login Items page rather than repeatedly registering.
 
-- [ ] **Step 5: Implement in-panel first run**
+- [x] **Step 5: Implement in-panel first run**
 
 At the top of `MonitorPanel`, show `FirstRunView` until completed. Provide two explicit controls: “Allow notifications” and “Launch at login.” A “Not now” button completes onboarding without either permission. Request notification authorization only from its button and register the login item only from its toggle.
 
-- [ ] **Step 6: Build four focused Settings sections**
+- [x] **Step 6: Build four focused Settings sections**
 
 Create a 420-point-wide Settings view with:
 
@@ -1891,7 +1891,7 @@ Create a 420-point-wide Settings view with:
 
 Removing the helper must require local authentication and invoke the fixed uninstall sequence from Task 7.
 
-- [ ] **Step 7: Add complete English and Simplified Chinese catalog entries**
+- [x] **Step 7: Add complete English and Simplified Chinese catalog entries**
 
 Use stable semantic keys, including:
 
@@ -1916,13 +1916,13 @@ settings.privilege.legacyWarning
 
 Translate “GPU activity share” as “GPU 活动占比”; do not translate it as per-process “GPU 占用率”.
 
-- [ ] **Step 8: Add deterministic UI-test launch state**
+- [x] **Step 8: Add deterministic UI-test launch state**
 
 When launch arguments contain `--ui-testing`, inject fixed snapshots rather than real collectors and skip notification/helper prompts. Provide launch arguments for green, red CPU, unavailable GPU, five rows, ten rows, and expanded threads.
 
 Create UI tests that open the menu extra, switch CPU/GPU, expand one CPU process, verify `GPU —`, open Settings, and navigate all controls with keyboard focus.
 
-- [ ] **Step 9: Verify accessibility and localization**
+- [x] **Step 9: Verify accessibility and localization**
 
 Run:
 
@@ -1935,7 +1935,7 @@ xcodebuild test \
 
 Expected: unit and UI tests pass. Manually test English and Simplified Chinese, VoiceOver labels such as “CPU 42 percent, normal”, Full Keyboard Access, Reduce Motion, Increase Contrast, light appearance, and dark appearance. No critical state may be communicated by color alone.
 
-- [ ] **Step 10: Commit user-facing configuration**
+- [x] **Step 10: Commit user-facing configuration**
 
 ```bash
 git add CPUAlertApp/Settings CPUAlertApp/UI CPUAlertApp/Resources/Localizable.xcstrings CPUAlertApp/App CPUAlertTests/AppSettingsTests.swift CPUAlertUITests
@@ -1958,7 +1958,7 @@ git commit -m "feat: add settings onboarding and localization"
 - Consumes: The complete app, helper, and test suite.
 - Produces: Reproducible CPU/GPU load, measurable performance evidence, archive verification, and operator documentation.
 
-- [ ] **Step 1: Add a bounded CPU fixture**
+- [x] **Step 1: Add a bounded CPU fixture**
 
 Implement `CPUStress` to accept `--workers`, `--duty-percent`, and `--seconds`. Spawn the requested number of tasks; in each 100-millisecond interval, busy-loop for the duty fraction and sleep for the remainder. Clamp workers to `1...activeProcessorCount`, duty to `1...100`, and duration to `1...300`. Exit automatically and handle `SIGTERM`.
 
@@ -1971,7 +1971,7 @@ build/DerivedData/Build/Products/Debug/CPUStress --workers 1 --duty-percent 50 -
 
 Expected: the fixture exits after approximately 10 seconds and appears in CPUAlert without exceeding roughly half of one logical CPU divided by the machine's logical CPU count.
 
-- [ ] **Step 2: Add a bounded Metal GPU fixture**
+- [x] **Step 2: Add a bounded Metal GPU fixture**
 
 Create `Stress.metal`:
 
@@ -2002,7 +2002,7 @@ build/DerivedData/Build/Products/Debug/GPUStress --seconds 10
 
 Expected: the process exits after approximately 10 seconds. CPUAlert shows elevated system GPU when the local IOReport schema is supported and shows the fixture's application group among activity shares when coalition counters are available.
 
-- [ ] **Step 3: Create a repeatable performance script**
+- [x] **Step 3: Create a repeatable performance script**
 
 Create executable `Scripts/benchmark.sh`:
 
@@ -2034,7 +2034,7 @@ echo "Trace: $TRACE"
 
 The `--benchmark-green` launch mode must disable first-run UI and notifications but use real collectors with the panel closed.
 
-- [ ] **Step 4: Measure all required modes**
+- [x] **Step 4: Measure all required modes**
 
 Run the script for closed-panel green mode. Repeat with panel-open, elevated CPU, elevated GPU, and expanded-thread launch modes. Record Release-build averages in `README.md` with hardware model, logical CPU count, OS version, Xcode version, sample duration, CPU average, resident memory, and wakeups per second.
 
@@ -2048,7 +2048,7 @@ average wakeups <= 1 per second
 
 If a gate fails, optimize in this order and rerun the full 5-minute measurement after each change: menu-bar redraw suppression, ranking cadence, IOReport channel filtering, app-icon cache, trend retention, thread sampling. Do not weaken the limits.
 
-- [ ] **Step 5: Run correctness and static-analysis gates**
+- [x] **Step 5: Run correctness and static-analysis gates**
 
 ```bash
 xcodebuild test \
@@ -2064,7 +2064,7 @@ xcodebuild analyze \
 
 Expected: all tests pass and analysis completes without new warnings. Exercise process churn, sleep/wake, denied notifications, unavailable GPU, helper absence, helper idle exit, and a PID-reuse fake.
 
-- [ ] **Step 6: Document semantics and operational risks**
+- [x] **Step 6: Document semantics and operational risks**
 
 Write `README.md` with these explicit statements:
 
@@ -2078,7 +2078,7 @@ Write `README.md` with these explicit statements:
 
 Include build instructions, notification/login permission behavior, first-use helper installation, helper removal, known limitations, and the performance table from Step 4.
 
-- [ ] **Step 7: Archive and inspect the final application**
+- [x] **Step 7: Archive and inspect the final application**
 
 ```bash
 xcodebuild archive \
@@ -2096,7 +2096,7 @@ codesign -d -r- --verbose=4 \
 
 Expected: archive succeeds; deep verification passes; helper designated requirement contains the intended helper identifier and the same Team ID as the app.
 
-- [ ] **Step 8: Commit fixtures and release evidence**
+- [x] **Step 8: Commit fixtures and release evidence**
 
 ```bash
 git add CPUAlert.xcodeproj TestFixtures Scripts README.md
@@ -2108,20 +2108,20 @@ Expected: the commit succeeds and the worktree is clean.
 
 ## Final Acceptance Checklist
 
-- [ ] Menu bar CPU and GPU rows remain fixed-width, colored independently, and legible in light/dark/high-contrast appearances.
-- [ ] CPU and GPU continue updating at their expected adaptive cadence without overlapping collection loops.
-- [ ] CPU process values use whole-machine normalization; thread values appear only for the expanded process.
-- [ ] GPU failure produces gray `GPU —`, no GPU alert, and no CPU disruption.
-- [ ] GPU rankings say “activity share” and group by application coalition.
-- [ ] Yellow, orange, red, hysteresis, sustained durations, and red cooldown match Global Constraints.
-- [ ] Notification denial, helper absence, and unsupported private APIs are recoverable states.
-- [ ] `SIGTERM` always precedes an optional confirmed `SIGKILL` for the same PID/start-time identity.
-- [ ] Every Root termination authenticates locally and every helper connection passes code-signature validation.
-- [ ] Protected process names and PIDs are denied in both app and helper.
-- [ ] The helper accepts no path, shell command, environment, or arbitrary executable argument.
-- [ ] First-run, Settings, English, Simplified Chinese, keyboard navigation, and VoiceOver flows pass.
-- [ ] Release performance meets all three closed-panel green-state limits for five minutes.
-- [ ] Full tests, static analysis, archive, and code-signature verification pass.
+- [x] Menu bar CPU and GPU rows remain fixed-width, colored independently, and legible in light/dark/high-contrast appearances.
+- [x] CPU and GPU continue updating at their expected adaptive cadence without overlapping collection loops.
+- [x] CPU process values use whole-machine normalization; thread values appear only for the expanded process.
+- [x] GPU failure produces gray `GPU —`, no GPU alert, and no CPU disruption.
+- [x] GPU rankings say “activity share” and group by application coalition.
+- [x] Yellow, orange, red, hysteresis, sustained durations, and red cooldown match Global Constraints.
+- [x] Notification denial, helper absence, and unsupported private APIs are recoverable states.
+- [x] `SIGTERM` always precedes an optional confirmed `SIGKILL` for the same PID/start-time identity.
+- [x] Every Root termination authenticates locally and every helper connection passes code-signature validation.
+- [x] Protected process names and PIDs are denied in both app and helper.
+- [x] The helper accepts no path, shell command, environment, or arbitrary executable argument.
+- [x] First-run, Settings, English, Simplified Chinese, keyboard navigation, and VoiceOver flows pass.
+- [x] Release performance meets all three closed-panel green-state limits for five minutes.
+- [x] Full tests, static analysis, archive, and code-signature verification pass.
 
 ## Primary References
 

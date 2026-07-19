@@ -24,4 +24,5 @@ The authoritative implementation requirements are the global constraints and fin
 
 - No third-party runtime dependencies, telemetry, networking, history persistence, or extra system-monitoring scope.
 - Closed-panel green-state target: at most 0.3% CPU, 40 MB resident memory, and one wakeup per second over five minutes in Release.
+- The memory gate uses macOS task-owned physical footprint (`ri_phys_footprint`); raw RSS, including shared framework and profiler mappings, remains a separate diagnostic value.
 - The privileged helper remains on demand and exposes no arbitrary command execution.

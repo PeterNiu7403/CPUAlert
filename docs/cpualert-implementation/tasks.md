@@ -7,9 +7,9 @@
 | Metric | Value |
 |---|---:|
 | Total tasks | 9 |
-| Completed | 8 (88.9%) |
-| Remaining | 1 (11.1%) |
-| Last updated | 2026-07-19 14:04 CST |
+| Completed | 9 (100%) |
+| Remaining | 0 (0%) |
+| Last updated | 2026-07-19 15:09 CST |
 
 ## Tasks
 
@@ -45,7 +45,10 @@
   - Completed: 2026-07-19 14:04 CST
   - Output: validated persisted thresholds, notification and login-item preferences, explicit helper controls, first-run guidance, four-tab settings, deterministic UI launch states, five/ten-row choices, English and Simplified Chinese String Catalog coverage, text-plus-color pressure semantics, and accessible process/group actions.
   - Verification: settings tests first failed because the store and model did not exist, then 2/2 passed; the signed default scheme passed 26/26 tests. Xcode compiled the String Catalog and UI-test target. Real Computer Use checks covered Chinese normal/critical/GPU-group/first-run/settings states and an English GPU-unavailable Top-5 state; the accessibility tree exposed pressure text, correct GPU activity-share semantics, settings controls, and guarded termination actions. Strict deep signing passed, and no notification, login-item, or helper-install side effect was triggered.
-- [ ] 9. Stress fixtures, performance gates, signing, and operational documentation
+- [x] 9. Stress fixtures, performance gates, signing, and operational documentation
+  - Completed: 2026-07-19 15:09 CST
+  - Output: bounded CPU and Metal fixtures with automatic/SIGTERM exit, official Metal-toolchain build support, five isolated Release benchmark modes, Time Profiler traces attached to exact PIDs, `proc_pid_rusage` CPU/memory/wakeup sampling, sensitive-environment trace rejection, complete operational/privacy documentation, and a signed Release archive.
+  - Verification: CPUStress ran 10.49 seconds at a requested 50% duty and GPUStress ran 10.64 seconds with 1,260 command buffers; both also exited cleanly on SIGTERM. All five Release modes completed 300-second Time Profiler runs. The final-code closed-green rerun measured 0.0151% CPU, 20.562 MB average task-owned resident footprint, and 0.1033 package-idle wakeups/s, passing all three hard gates. The signed scheme passed 29/29 tests, Release static analysis succeeded, warning-free application validation/archive succeeded, app and embedded helper passed strict and explicit Team/identifier code-sign checks as arm64 binaries, the archived app launched cleanly, high-contrast dark UI/accessibility inspection passed, and helper installation paths remained absent.
 
 ## Execution notes
 
@@ -54,3 +57,5 @@
 - 2026-07-19: Xcode's macOS UI runner cannot enable automation mode in this desktop session. UI test sources remain buildable, while the shared default scheme skips that target and real accessibility-driven checks provide the runtime evidence.
 - 2026-07-19: The public macOS 13+ XPC code-signing requirement APIs provide the pre-delegate peer-signature gate; the helper repeats a `SecCode` validity check before exporting its object. No private `NSXPCConnection.auditToken` selector is used.
 - 2026-07-19: Deterministic UI launch states use in-memory settings and snapshots, so bilingual accessibility and unavailable-data flows can be inspected without changing the user's notification, login-item, or helper state.
+- 2026-07-19: Xcode's official Metal Toolchain 17F109 was installed after the GPU fixture build reported the component missing.
+- 2026-07-19: Time Profiler traces capture target environments by default. Benchmark launches now use a minimal environment, scan every saved trace for sensitive variable keys, and delete a failing trace; the pre-hardening generated trace was removed.

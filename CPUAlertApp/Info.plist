@@ -25,9 +25,11 @@
         <key>com.cpualert.helper</key>
         <string>identifier "com.cpualert.helper" and anchor apple generic and certificate leaf[subject.OU] = "H28G76Z652"</string>
     </dict>
-    <key>LSMinimumSystemVersion</key>
-    <string>15.0</string>
-    <key>LSUIElement</key>
-    <true/>
+	<key>LSApplicationCategoryType</key>
+	<string>public.app-category.utilities</string>
+	<key>LSMinimumSystemVersion</key>
+	<string>15.0</string>
+	<key>LSUIElement</key>
+	<true/>
 </dict>
 </plist>

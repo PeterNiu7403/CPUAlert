@@ -26,12 +26,14 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     let settings: AppSettings
     let loginItemService: LoginItemService
     let helperClient: HelperClient
-    #if DEBUG
-    private var debugPanelWindow: NSWindow?
-    #endif
+    private let shouldOpenAcceptanceWindow: Bool
+    private let acceptanceAppearance: NSAppearance.Name?
+    private var acceptancePanelWindow: NSWindow?
 
     override init() {
-        let uiTestState = UITestState(arguments: ProcessInfo.processInfo.arguments)
+        let arguments = ProcessInfo.processInfo.arguments
+        let uiTestState = UITestState(arguments: arguments)
+        let benchmarkMode = BenchmarkMode(arguments: arguments)
         let engine = SamplingEngine(
             systemCPU: SystemCPUCollector(),
             processes: ProcessCPUCollector(),
@@ -39,11 +41,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             thresholds: .defaults
         )
         let powerState = PowerStateMonitor()
-        let settingsStore: any SettingsStore = uiTestState.isEnabled
+        let usesIsolatedSettings = uiTestState.isEnabled || benchmarkMode != nil
+        let settingsStore: any SettingsStore = usesIsolatedSettings
             ? InMemorySettingsStore()
             : UserDefaults.standard
         let settings = AppSettings(store: settingsStore, samplingEngine: engine)
-        if uiTestState.isEnabled {
+        if usesIsolatedSettings {
             settings.hasCompletedFirstRun = true
             settings.showTenRows = uiTestState.showTenRows
             settings.notificationsEnabled = false
@@ -53,7 +56,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             privilegedTerminator: helperClient
         )
         let loginItemService = LoginItemService()
-        if !uiTestState.isEnabled {
+        if !usesIsolatedSettings {
             settings.launchAtLogin = loginItemService.state == .enabled
                 || loginItemService.state == .requiresApproval
         }
@@ -71,10 +74,32 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             fixedTrend: uiTestState.trend
         )
         model.expandedProcess = uiTestState.expandedProcess
+        if let expandedPID = benchmarkMode?.expandedPID,
+           let record = ProcessIdentityReader().currentIdentity(pid: expandedPID) {
+            model.expandedProcess = record.identity
+        }
+        model.panelIsOpen = benchmarkMode?.opensPanel ?? false
+        #if DEBUG
+        shouldOpenAcceptanceWindow = uiTestState.isEnabled
+            || benchmarkMode?.opensPanel == true
+            || arguments.contains("--open-panel")
+        #else
+        shouldOpenAcceptanceWindow = benchmarkMode?.opensPanel == true
+        #endif
+        if arguments.contains("--appearance-high-contrast-dark") {
+            acceptanceAppearance = .accessibilityHighContrastDarkAqua
+        } else if arguments.contains("--appearance-dark") {
+            acceptanceAppearance = .darkAqua
+        } else {
+            acceptanceAppearance = nil
+        }
         super.init()
     }
 
     func applicationDidFinishLaunching(_ notification: Notification) {
+        if let acceptanceAppearance {
+            NSApplication.shared.appearance = NSAppearance(named: acceptanceAppearance)
+        }
         let statusItem = NSStatusBar.system.statusItem(withLength: 56)
         guard let button = statusItem.button else { return }
 
@@ -106,14 +131,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
         self.statusItem = statusItem
 
-        #if DEBUG
-        if ProcessInfo.processInfo.arguments.contains("--open-panel")
-            || ProcessInfo.processInfo.arguments.contains("--ui-testing") {
+        if shouldOpenAcceptanceWindow {
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak self] in
-                self?.openDebugPanelWindow()
+                self?.openAcceptancePanelWindow()
             }
         }
-        #endif
     }
 
     func applicationWillTerminate(_ notification: Notification) {
@@ -134,8 +156,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         popover.show(relativeTo: button.bounds, of: button, preferredEdge: .minY)
     }
 
-    #if DEBUG
-    private func openDebugPanelWindow() {
+    private func openAcceptancePanelWindow() {
         let controller = NSHostingController(rootView: MonitorPanel(
             model: model,
             settings: settings,
@@ -148,9 +169,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         window.center()
         window.makeKeyAndOrderFront(nil)
         NSApplication.shared.activate(ignoringOtherApps: true)
-        debugPanelWindow = window
+        acceptancePanelWindow = window
     }
-    #endif
 }
 
 private final class PassThroughHostingView<Content: View>: NSHostingView<Content> {

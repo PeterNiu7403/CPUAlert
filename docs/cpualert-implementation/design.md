@@ -20,6 +20,7 @@ The full file map, interfaces, algorithms, and verification commands live in [`.
 3. Keep collectors and policies behind narrow protocols so deterministic tests do not require live system load.
 4. Keep the local signing selection in ignored `Config/Local.xcconfig`; mutual app/helper requirements pin the certificate leaf's exact Team identifier because `SMJobBless` requires it in both embedded plists.
 5. Use the public macOS XPC peer code-signing requirement APIs for the audit-token-bound pre-delegate gate, then repeat `SecCode` validity checking before assigning the helper's exported object. Do not rely on a private `NSXPCConnection.auditToken` selector.
+6. Attach Time Profiler to an explicitly launched Release PID with a minimal environment. Measure CPU time, task-owned physical footprint, raw RSS, and package-idle wakeups through `proc_pid_rusage`; reject traces containing sensitive environment-variable keys.
 
 ## Test strategy
 
