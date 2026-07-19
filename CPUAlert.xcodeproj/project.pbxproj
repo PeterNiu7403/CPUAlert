@@ -23,6 +23,13 @@
 		10000000000000000000000E /* io-report-single-die.plist in Resources */ = {isa = PBXBuildFile; fileRef = 110000000000000000000021 /* io-report-single-die.plist */; };
 		10000000000000000000000F /* io-report-multi-die.plist in Resources */ = {isa = PBXBuildFile; fileRef = 110000000000000000000022 /* io-report-multi-die.plist */; };
 		100000000000000000000010 /* IOKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 110000000000000000000023 /* IOKit.framework */; };
+		100000000000000000000011 /* SamplingEngineTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 110000000000000000000024 /* SamplingEngineTests.swift */; };
+		100000000000000000000012 /* SamplingEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = 110000000000000000000025 /* SamplingEngine.swift */; };
+		100000000000000000000013 /* PowerStateMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 110000000000000000000026 /* PowerStateMonitor.swift */; };
+		100000000000000000000014 /* MonitorModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 110000000000000000000027 /* MonitorModel.swift */; };
+		100000000000000000000015 /* MonitorPanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 110000000000000000000028 /* MonitorPanel.swift */; };
+		100000000000000000000016 /* RankedProcessList.swift in Sources */ = {isa = PBXBuildFile; fileRef = 110000000000000000000029 /* RankedProcessList.swift */; };
+		100000000000000000000017 /* CPUAlertUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11000000000000000000002A /* CPUAlertUITests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -62,6 +69,13 @@
 		110000000000000000000021 /* io-report-single-die.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "io-report-single-die.plist"; sourceTree = "<group>"; };
 		110000000000000000000022 /* io-report-multi-die.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "io-report-multi-die.plist"; sourceTree = "<group>"; };
 		110000000000000000000023 /* IOKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = IOKit.framework; path = System/Library/Frameworks/IOKit.framework; sourceTree = SDKROOT; };
+		110000000000000000000024 /* SamplingEngineTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SamplingEngineTests.swift; sourceTree = "<group>"; };
+		110000000000000000000025 /* SamplingEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SamplingEngine.swift; sourceTree = "<group>"; };
+		110000000000000000000026 /* PowerStateMonitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PowerStateMonitor.swift; sourceTree = "<group>"; };
+		110000000000000000000027 /* MonitorModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MonitorModel.swift; sourceTree = "<group>"; };
+		110000000000000000000028 /* MonitorPanel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MonitorPanel.swift; sourceTree = "<group>"; };
+		110000000000000000000029 /* RankedProcessList.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RankedProcessList.swift; sourceTree = "<group>"; };
+		11000000000000000000002A /* CPUAlertUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CPUAlertUITests.swift; sourceTree = "<group>"; };
 		110000000000000000000011 /* CPUAlert.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = CPUAlert.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		110000000000000000000012 /* CPUAlertHelper */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = CPUAlertHelper; sourceTree = BUILT_PRODUCTS_DIR; };
 		110000000000000000000013 /* CPUAlertTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = CPUAlertTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -126,12 +140,12 @@
 			path = CPUAlertApp;
 			sourceTree = "<group>";
 		};
-		200000000000000000000006 /* App */ = {isa = PBXGroup; children = (110000000000000000000001 /* CPUAlertApp.swift */,); path = App; sourceTree = "<group>"; };
-		200000000000000000000007 /* UI */ = {isa = PBXGroup; children = (110000000000000000000002 /* MenuBarLabel.swift */,); path = UI; sourceTree = "<group>"; };
+		200000000000000000000006 /* App */ = {isa = PBXGroup; children = (110000000000000000000001 /* CPUAlertApp.swift */, 110000000000000000000027 /* MonitorModel.swift */,); path = App; sourceTree = "<group>"; };
+		200000000000000000000007 /* UI */ = {isa = PBXGroup; children = (110000000000000000000002 /* MenuBarLabel.swift */, 110000000000000000000028 /* MonitorPanel.swift */, 110000000000000000000029 /* RankedProcessList.swift */,); path = UI; sourceTree = "<group>"; };
 		200000000000000000000008 /* Resources */ = {isa = PBXGroup; children = (110000000000000000000003 /* Assets.xcassets */,); path = Resources; sourceTree = "<group>"; };
 		200000000000000000000009 /* CPUAlertHelper */ = {isa = PBXGroup; children = (); path = CPUAlertHelper; sourceTree = "<group>"; };
-		20000000000000000000000A /* CPUAlertTests */ = {isa = PBXGroup; children = (110000000000000000000006 /* SamplingPolicyTests.swift */, 11000000000000000000000B /* CPUCollectorTests.swift */, 11000000000000000000000F /* GPUCollectorTests.swift */, 200000000000000000000011 /* Fixtures */,); path = CPUAlertTests; sourceTree = "<group>"; };
-		20000000000000000000000B /* CPUAlertUITests */ = {isa = PBXGroup; children = (); path = CPUAlertUITests; sourceTree = "<group>"; };
+		20000000000000000000000A /* CPUAlertTests */ = {isa = PBXGroup; children = (110000000000000000000006 /* SamplingPolicyTests.swift */, 11000000000000000000000B /* CPUCollectorTests.swift */, 11000000000000000000000F /* GPUCollectorTests.swift */, 110000000000000000000024 /* SamplingEngineTests.swift */, 200000000000000000000011 /* Fixtures */,); path = CPUAlertTests; sourceTree = "<group>"; };
+		20000000000000000000000B /* CPUAlertUITests */ = {isa = PBXGroup; children = (11000000000000000000002A /* CPUAlertUITests.swift */,); path = CPUAlertUITests; sourceTree = "<group>"; };
 		20000000000000000000000C /* TestFixtures */ = {
 			isa = PBXGroup;
 			children = (20000000000000000000000D /* CPUStress */, 20000000000000000000000E /* GPUStress */,);
@@ -141,7 +155,7 @@
 		20000000000000000000000D /* CPUStress */ = {isa = PBXGroup; children = (); path = CPUStress; sourceTree = "<group>"; };
 		20000000000000000000000E /* GPUStress */ = {isa = PBXGroup; children = (); path = GPUStress; sourceTree = "<group>"; };
 		20000000000000000000000F /* Domain */ = {isa = PBXGroup; children = (110000000000000000000007 /* Metrics.swift */, 110000000000000000000008 /* Configuration.swift */,); path = Domain; sourceTree = "<group>"; };
-		200000000000000000000010 /* Monitoring */ = {isa = PBXGroup; children = (110000000000000000000009 /* CollectorProtocols.swift */, 11000000000000000000000A /* SamplingPolicy.swift */, 11000000000000000000000C /* DarwinBridge.h */, 11000000000000000000000D /* DarwinBridge.c */, 11000000000000000000000E /* CPUCollectors.swift */, 110000000000000000000020 /* GPUCollectors.swift */,); path = Monitoring; sourceTree = "<group>"; };
+		200000000000000000000010 /* Monitoring */ = {isa = PBXGroup; children = (110000000000000000000009 /* CollectorProtocols.swift */, 11000000000000000000000A /* SamplingPolicy.swift */, 11000000000000000000000C /* DarwinBridge.h */, 11000000000000000000000D /* DarwinBridge.c */, 11000000000000000000000E /* CPUCollectors.swift */, 110000000000000000000020 /* GPUCollectors.swift */, 110000000000000000000025 /* SamplingEngine.swift */, 110000000000000000000026 /* PowerStateMonitor.swift */,); path = Monitoring; sourceTree = "<group>"; };
 		200000000000000000000011 /* Fixtures */ = {isa = PBXGroup; children = (110000000000000000000021 /* io-report-single-die.plist */, 110000000000000000000022 /* io-report-multi-die.plist */,); path = Fixtures; sourceTree = "<group>"; };
 		200000000000000000000012 /* Frameworks */ = {isa = PBXGroup; children = (110000000000000000000023 /* IOKit.framework */,); name = Frameworks; sourceTree = "<group>"; };
 /* End PBXGroup section */
@@ -261,10 +275,10 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
-		410000000000000000000001 /* Sources */ = {isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (100000000000000000000001 /* CPUAlertApp.swift in Sources */, 100000000000000000000002 /* MenuBarLabel.swift in Sources */, 100000000000000000000005 /* Metrics.swift in Sources */, 100000000000000000000006 /* Configuration.swift in Sources */, 100000000000000000000007 /* CollectorProtocols.swift in Sources */, 100000000000000000000008 /* SamplingPolicy.swift in Sources */, 10000000000000000000000A /* DarwinBridge.c in Sources */, 10000000000000000000000B /* CPUCollectors.swift in Sources */, 10000000000000000000000D /* GPUCollectors.swift in Sources */,); runOnlyForDeploymentPostprocessing = 0; };
+		410000000000000000000001 /* Sources */ = {isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (100000000000000000000001 /* CPUAlertApp.swift in Sources */, 100000000000000000000002 /* MenuBarLabel.swift in Sources */, 100000000000000000000005 /* Metrics.swift in Sources */, 100000000000000000000006 /* Configuration.swift in Sources */, 100000000000000000000007 /* CollectorProtocols.swift in Sources */, 100000000000000000000008 /* SamplingPolicy.swift in Sources */, 10000000000000000000000A /* DarwinBridge.c in Sources */, 10000000000000000000000B /* CPUCollectors.swift in Sources */, 10000000000000000000000D /* GPUCollectors.swift in Sources */, 100000000000000000000012 /* SamplingEngine.swift in Sources */, 100000000000000000000013 /* PowerStateMonitor.swift in Sources */, 100000000000000000000014 /* MonitorModel.swift in Sources */, 100000000000000000000015 /* MonitorPanel.swift in Sources */, 100000000000000000000016 /* RankedProcessList.swift in Sources */,); runOnlyForDeploymentPostprocessing = 0; };
 		410000000000000000000002 /* Sources */ = {isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (); runOnlyForDeploymentPostprocessing = 0; };
-		410000000000000000000003 /* Sources */ = {isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (100000000000000000000004 /* SamplingPolicyTests.swift in Sources */, 100000000000000000000009 /* CPUCollectorTests.swift in Sources */, 10000000000000000000000C /* GPUCollectorTests.swift in Sources */,); runOnlyForDeploymentPostprocessing = 0; };
-		410000000000000000000004 /* Sources */ = {isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (); runOnlyForDeploymentPostprocessing = 0; };
+		410000000000000000000003 /* Sources */ = {isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (100000000000000000000004 /* SamplingPolicyTests.swift in Sources */, 100000000000000000000009 /* CPUCollectorTests.swift in Sources */, 10000000000000000000000C /* GPUCollectorTests.swift in Sources */, 100000000000000000000011 /* SamplingEngineTests.swift in Sources */,); runOnlyForDeploymentPostprocessing = 0; };
+		410000000000000000000004 /* Sources */ = {isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (100000000000000000000017 /* CPUAlertUITests.swift in Sources */,); runOnlyForDeploymentPostprocessing = 0; };
 		410000000000000000000005 /* Sources */ = {isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (); runOnlyForDeploymentPostprocessing = 0; };
 		410000000000000000000006 /* Sources */ = {isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (); runOnlyForDeploymentPostprocessing = 0; };
 /* End PBXSourcesBuildPhase section */

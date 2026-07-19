@@ -12,7 +12,7 @@
          <TestableReference skipped="NO">
             <BuildableReference BuildableIdentifier="primary" BlueprintIdentifier="300000000000000000000003" BuildableName="CPUAlertTests.xctest" BlueprintName="CPUAlertTests" ReferencedContainer="container:CPUAlert.xcodeproj"/>
          </TestableReference>
-         <TestableReference skipped="NO">
+         <TestableReference skipped="YES">
             <BuildableReference BuildableIdentifier="primary" BlueprintIdentifier="300000000000000000000004" BuildableName="CPUAlertUITests.xctest" BlueprintName="CPUAlertUITests" ReferencedContainer="container:CPUAlert.xcodeproj"/>
          </TestableReference>
       </Testables>

@@ -7,9 +7,9 @@
 | Metric | Value |
 |---|---:|
 | Total tasks | 9 |
-| Completed | 4 (44.4%) |
-| Remaining | 5 (55.6%) |
-| Last updated | 2026-07-19 12:37 CST |
+| Completed | 5 (55.6%) |
+| Remaining | 4 (44.4%) |
+| Last updated | 2026-07-19 12:59 CST |
 
 ## Tasks
 
@@ -29,7 +29,10 @@
   - Completed: 2026-07-19 12:37 CST
   - Output: dynamically loaded IOReport adapter with IOAccelerator fallback, explicit unavailable semantics, overflow-safe weighted residency aggregation, resource-coalition GPU attribution, and deterministic single-/multi-die fixtures.
   - Verification: focused suite first failed because GPU types were absent, then the signed test build succeeded and the xcresult summary reported 7/7 passing tests, including current-hardware live sampling and fail-closed range checks.
-- [ ] 5. Unified sampling engine and monitor panel
+- [x] 5. Unified sampling engine and monitor panel
+  - Completed: 2026-07-19 12:59 CST
+  - Output: resilient single-task sampling stream, adaptive ranking cache, power-state notifications, one main-actor presentation model, fixed-width live panel, CPU thread expansion, GPU coalition ranking, sparkline, and model-driven menu label.
+  - Verification: engine test first failed on the missing type; the default signed scheme then passed 15/15 tests. A Debug-only `--open-panel` harness plus real Computer Use inspection verified sustained CPU/GPU refresh, the 60-second trend, CPU/GPU switching without collector restart, and explicit “GPU activity share” rows. The compiled XCUITest is skipped in the default scheme because this Mac timed out enabling Xcode UI automation mode; the equivalent interaction was completed manually through accessibility inspection.
 - [ ] 6. Sustained alerts and notification delivery
 - [ ] 7. Safe process termination and on-demand Root helper
 - [ ] 8. Settings, first run, localization, and accessibility
@@ -39,3 +42,4 @@
 
 - 2026-07-19: Full Xcode is available at `/Applications/Xcode.app`; the global developer directory still points to CommandLineTools, so commands use an explicit `DEVELOPER_DIR`.
 - 2026-07-19: Two valid local signing identities are available. The personal Team ID is stored only in ignored `Config/Local.xcconfig`.
+- 2026-07-19: Xcode's macOS UI runner cannot enable automation mode in this desktop session. UI test sources remain buildable, while the shared default scheme skips that target and real accessibility-driven checks provide the runtime evidence.

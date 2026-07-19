@@ -1172,7 +1172,7 @@ git commit -m "feat: add fail-closed GPU monitoring"
 - Consumes: Collector protocols, metric types, thresholds, and cadence policy from Tasks 2-4.
 - Produces: `SamplingEngine.snapshots(context:) -> AsyncStream<MetricsSnapshot>` and `MonitorModel`, the only metric state read by SwiftUI.
 
-- [ ] **Step 1: Write a failing single-cycle engine test with fakes**
+- [x] **Step 1: Write a failing single-cycle engine test with fakes**
 
 Create `SamplingEngineTests.swift`:
 
@@ -1218,7 +1218,7 @@ struct SamplingEngineTests {
 }
 ```
 
-- [ ] **Step 2: Run the engine test and verify failure**
+- [x] **Step 2: Run the engine test and verify failure**
 
 ```bash
 xcodebuild test \
@@ -1230,7 +1230,7 @@ xcodebuild test \
 
 Expected: compilation fails because `SamplingEngine` does not exist.
 
-- [ ] **Step 3: Implement one-cycle collection and cached rankings**
+- [x] **Step 3: Implement one-cycle collection and cached rankings**
 
 Create `SamplingEngine.swift` with an actor that owns collectors, previous pressure levels, the last successful rankings, and a single running task. Implement this exact entry surface:
 
@@ -1265,13 +1265,13 @@ In `collectOnce`, run system CPU and system GPU concurrently with `async let`. R
 
 In `snapshots`, create exactly one task. On each iteration, obtain context, derive cadence, determine whether the monotonic time has reached the ranking deadline, yield one snapshot, and sleep for the system cadence. Use `ContinuousClock` for scheduling and `Date` only for display timestamps. Cancel the task and finish the continuation in `stop()` and `onTermination`.
 
-- [ ] **Step 4: Run the engine test**
+- [x] **Step 4: Run the engine test**
 
 Run the Step 2 command again.
 
 Expected: the test passes with independent yellow CPU and green GPU levels.
 
-- [ ] **Step 5: Add the main-actor presentation model**
+- [x] **Step 5: Add the main-actor presentation model**
 
 Before the presentation model, create `PowerStateMonitor.swift`. Link IOKit and use `IOPSCopyPowerSourcesInfo`, `IOPSCopyPowerSourcesList`, and `IOPSGetPowerSourceDescription` to report `lowBattery = true` when the internal battery is not charging and its current/max capacity is at or below 20%, or when `ProcessInfo.processInfo.isLowPowerModeEnabled` is true. Refresh from the IOPowerSources notification run-loop source and `NSProcessInfoPowerStateDidChange`; do not poll from a SwiftUI view.
 
@@ -1337,7 +1337,7 @@ final class MonitorModel {
 }
 ```
 
-- [ ] **Step 6: Build the compact panel**
+- [x] **Step 6: Build the compact panel**
 
 Implement `MonitorPanel` as a fixed 360-point-wide layout with these sections in order: combined CPU/GPU header, 60-second sparkline while open, CPU/GPU segmented picker, top-5/top-10 control, ranked list, and a footer containing Settings and Quit. Use `LazyVStack`, no timers in views, and no hidden animations when the panel is closed.
 
@@ -1345,11 +1345,11 @@ Implement `RankedProcessList` so CPU rows show app icon, process name, PID, and 
 
 Update `MenuBarLabel` to derive colors from `snapshot.cpuLevel` and `snapshot.gpuLevel`, retain the last integer percentages, and render unavailable GPU in secondary gray as `GPU —`.
 
-- [ ] **Step 7: Compose production dependencies once**
+- [x] **Step 7: Compose production dependencies once**
 
 In `CPUAlertApp`, construct one `SamplingEngine`, one `PowerStateMonitor`, one `MonitorModel`, and inject that model into both the menu label and panel. Attach `.task { model.start() }` to the menu-bar label so sampling starts when the status item mounts rather than waiting for the panel to open; the guard in `start()` prevents duplicates. Set `panelIsOpen` from panel appearance/disappearance and call `stop()` during application termination.
 
-- [ ] **Step 8: Run tests and manual UI checks**
+- [x] **Step 8: Run tests and manual UI checks**
 
 ```bash
 xcodebuild test \
@@ -1360,7 +1360,7 @@ xcodebuild test \
 
 Expected: all tests pass. Manually confirm the panel does not steal focus unexpectedly, switching resources does not restart collectors, thread rows disappear when collapsed, and closing the panel clears trend history and returns to background cadence.
 
-- [ ] **Step 9: Commit the working monitor**
+- [x] **Step 9: Commit the working monitor**
 
 ```bash
 git add CPUAlertApp/App CPUAlertApp/Monitoring/SamplingEngine.swift CPUAlertApp/Monitoring/PowerStateMonitor.swift CPUAlertApp/UI CPUAlertTests/SamplingEngineTests.swift

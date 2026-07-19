@@ -17,17 +17,30 @@ struct CPUAlertApp: App {
 final class AppDelegate: NSObject, NSApplicationDelegate {
     private var statusItem: NSStatusItem?
     private let popover = NSPopover()
+    private let powerState: PowerStateMonitor
+    private let model: MonitorModel
+    #if DEBUG
+    private var debugPanelWindow: NSWindow?
+    #endif
+
+    override init() {
+        let engine = SamplingEngine(
+            systemCPU: SystemCPUCollector(),
+            processes: ProcessCPUCollector(),
+            gpu: SystemGPUCollector(),
+            thresholds: .defaults
+        )
+        let powerState = PowerStateMonitor()
+        self.powerState = powerState
+        model = MonitorModel(engine: engine, powerState: powerState)
+        super.init()
+    }
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         let statusItem = NSStatusBar.system.statusItem(withLength: 56)
         guard let button = statusItem.button else { return }
 
-        let label = MenuBarLabel(
-            cpuUsage: 0.42,
-            gpuUsage: 0.18,
-            cpuColor: .green,
-            gpuColor: .green
-        )
+        let label = MenuBarLabel(model: model)
         let hostingView = PassThroughHostingView(rootView: label)
         hostingView.translatesAutoresizingMaskIntoConstraints = false
         button.addSubview(hostingView)
@@ -44,14 +57,25 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         button.toolTip = "CPUAlert"
 
         popover.behavior = .transient
-        popover.contentSize = NSSize(width: 260, height: 96)
+        popover.contentSize = NSSize(width: 360, height: 500)
         popover.contentViewController = NSHostingController(
-            rootView: Text("CPUAlert rendering spike")
-                .padding()
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
+            rootView: MonitorPanel(model: model)
         )
 
         self.statusItem = statusItem
+
+        #if DEBUG
+        if ProcessInfo.processInfo.arguments.contains("--open-panel") {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak self] in
+                self?.openDebugPanelWindow()
+            }
+        }
+        #endif
+    }
+
+    func applicationWillTerminate(_ notification: Notification) {
+        model.stop()
+        powerState.stop()
     }
 
     @objc
@@ -59,9 +83,27 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         if popover.isShown {
             popover.performClose(sender)
         } else {
-            popover.show(relativeTo: sender.bounds, of: sender, preferredEdge: .minY)
+            presentPopover(relativeTo: sender)
         }
     }
+
+    private func presentPopover(relativeTo button: NSStatusBarButton) {
+        popover.show(relativeTo: button.bounds, of: button, preferredEdge: .minY)
+    }
+
+    #if DEBUG
+    private func openDebugPanelWindow() {
+        let controller = NSHostingController(rootView: MonitorPanel(model: model))
+        let window = NSWindow(contentViewController: controller)
+        window.title = "CPUAlert Monitor"
+        window.styleMask = [.titled, .closable]
+        window.setContentSize(NSSize(width: 360, height: 500))
+        window.center()
+        window.makeKeyAndOrderFront(nil)
+        NSApplication.shared.activate(ignoringOtherApps: true)
+        debugPanelWindow = window
+    }
+    #endif
 }
 
 private final class PassThroughHostingView<Content: View>: NSHostingView<Content> {
