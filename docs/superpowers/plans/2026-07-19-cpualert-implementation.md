@@ -874,7 +874,7 @@ git commit -m "feat: collect normalized CPU metrics"
 - Consumes: `GPUCollecting`, `GPUSource`, `GPUGroupMetric`, `ProcessIdentity`, and process-counter primitives from the Darwin bridge.
 - Produces: `SystemGPUCollector` and `CoalitionGPUCollector`; both return explicit unavailable results rather than throwing through the monitoring loop.
 
-- [ ] **Step 1: Write failing pure aggregation tests**
+- [x] **Step 1: Write failing pure aggregation tests**
 
 Create `GPUCollectorTests.swift`:
 
@@ -915,7 +915,7 @@ struct GPUCollectorTests {
 }
 ```
 
-- [ ] **Step 2: Run GPU tests and verify failure**
+- [x] **Step 2: Run GPU tests and verify failure**
 
 ```bash
 xcodebuild test \
@@ -927,7 +927,7 @@ xcodebuild test \
 
 Expected: compilation fails because GPU collector types do not exist.
 
-- [ ] **Step 3: Extend the C bridge with opaque GPU results**
+- [x] **Step 3: Extend the C bridge with opaque GPU results**
 
 Append these stable structures and functions to `DarwinBridge.h`:
 
@@ -955,7 +955,7 @@ bool CPUACopyProcessCoalitionID(pid_t pid, uint64_t *output);
 bool CPUACopyCoalitionGPUCounter(uint64_t coalition_id, CPUACoalitionGPUCounter *output);
 ```
 
-- [ ] **Step 4: Implement runtime symbol loading without link-time private dependencies**
+- [x] **Step 4: Implement runtime symbol loading without link-time private dependencies**
 
 In `DarwinBridge.c`, use `dlopen` and `dlsym` for the complete required IOReport symbol set:
 
@@ -983,7 +983,7 @@ coalition_info_resource_usage
 
 Read `COALITION_TYPE_RESOURCE` from `proc_pidcoalitioninfo`, then copy `gpu_time` from `coalition_resource_usage`. Return false for absent, zero, or malformed coalition IDs. `CPUACreateGPUContext` must still allocate a context when IOReport is unavailable but the IOAccelerator fallback can be queried; return `NULL` only when allocation itself fails.
 
-- [ ] **Step 5: Implement Swift aggregation and attribution**
+- [x] **Step 5: Implement Swift aggregation and attribution**
 
 Create `GPUCollectors.swift` with these pure operations and actor boundaries:
 
@@ -1137,17 +1137,17 @@ actor CoalitionGPUCollector {
 
 Import AppKit for `NSRunningApplication`. Keep AppKit objects on the main actor and return only immutable Sendable member values to the collector actor.
 
-- [ ] **Step 6: Add deterministic IOReport fixtures**
+- [x] **Step 6: Add deterministic IOReport fixtures**
 
 Store plist fixtures containing channel name, die identifier, state name, previous residency, and current residency. Include one single-die case and one two-die Ultra case. Parse them only in tests and assert weighted aggregation; production code must not depend on fixture names or exact chip-generation labels.
 
-- [ ] **Step 7: Run tests and validate degradation**
+- [x] **Step 7: Run tests and validate degradation**
 
 Run the Step 2 command again.
 
 Expected: four pure tests and both fixture tests pass. On the development Mac, a smoke sample returns either a finite `0...1` utilization with `.ioReport`/`.ioAccelerator`, or `(nil, .unavailable)` without affecting the CPU collector.
 
-- [ ] **Step 8: Commit the optional GPU adapter**
+- [x] **Step 8: Commit the optional GPU adapter**
 
 ```bash
 git add CPUAlertApp/Monitoring/DarwinBridge.h CPUAlertApp/Monitoring/DarwinBridge.c CPUAlertApp/Monitoring/GPUCollectors.swift CPUAlertTests/GPUCollectorTests.swift CPUAlertTests/Fixtures

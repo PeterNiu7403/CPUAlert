@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>channels</key>
+    <array>
+        <dict>
+            <key>channelName</key>
+            <string>GPU Performance State Residency</string>
+            <key>dieIdentifier</key>
+            <string>die0</string>
+            <key>states</key>
+            <array>
+                <dict>
+                    <key>name</key><string>Active</string>
+                    <key>previous</key><integer>100</integer>
+                    <key>current</key><integer>140</integer>
+                </dict>
+                <dict>
+                    <key>name</key><string>Idle</string>
+                    <key>previous</key><integer>200</integer>
+                    <key>current</key><integer>260</integer>
+                </dict>
+            </array>
+        </dict>
+    </array>
+</dict>
+</plist>

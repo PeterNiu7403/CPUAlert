@@ -7,9 +7,9 @@
 | Metric | Value |
 |---|---:|
 | Total tasks | 9 |
-| Completed | 3 (33.3%) |
-| Remaining | 6 (66.7%) |
-| Last updated | 2026-07-19 12:22 CST |
+| Completed | 4 (44.4%) |
+| Remaining | 5 (55.6%) |
+| Last updated | 2026-07-19 12:37 CST |
 
 ## Tasks
 
@@ -25,7 +25,10 @@
   - Completed: 2026-07-19 12:22 CST
   - Output: stable C bridge over Mach/libproc, normalized system and process delta collectors, PID-start-time baselines, app metadata decoration, cached top rankings, and on-demand thread sampling.
   - Verification: focused suite first failed on missing collector types, then passed 4 tests including live system/process/thread smoke sampling; the xcresult summary reports 4/4 passed on arm64 macOS.
-- [ ] 4. Fail-closed GPU utilization and coalition attribution
+- [x] 4. Fail-closed GPU utilization and coalition attribution
+  - Completed: 2026-07-19 12:37 CST
+  - Output: dynamically loaded IOReport adapter with IOAccelerator fallback, explicit unavailable semantics, overflow-safe weighted residency aggregation, resource-coalition GPU attribution, and deterministic single-/multi-die fixtures.
+  - Verification: focused suite first failed because GPU types were absent, then the signed test build succeeded and the xcresult summary reported 7/7 passing tests, including current-hardware live sampling and fail-closed range checks.
 - [ ] 5. Unified sampling engine and monitor panel
 - [ ] 6. Sustained alerts and notification delivery
 - [ ] 7. Safe process termination and on-demand Root helper
