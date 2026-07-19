@@ -13,11 +13,21 @@ final class MonitorModel {
 
     @ObservationIgnored private let engine: SamplingEngine
     @ObservationIgnored private let powerState: PowerStateMonitor
+    @ObservationIgnored private let notificationService: NotificationService
+    @ObservationIgnored private let clock = ContinuousClock()
+    @ObservationIgnored private let startedAt: ContinuousClock.Instant
     @ObservationIgnored private var observationTask: Task<Void, Never>?
+    @ObservationIgnored private var alertEngine = AlertEngine()
 
-    init(engine: SamplingEngine, powerState: PowerStateMonitor) {
+    init(
+        engine: SamplingEngine,
+        powerState: PowerStateMonitor,
+        notificationService: NotificationService
+    ) {
         self.engine = engine
         self.powerState = powerState
+        self.notificationService = notificationService
+        startedAt = clock.now
     }
 
     func start() {
@@ -30,6 +40,20 @@ final class MonitorModel {
             for await value in stream {
                 guard !Task.isCancelled else { break }
                 snapshot = value
+                let elapsed = clock.now - startedAt
+                var triggers = alertEngine.evaluate(
+                    resource: .cpu,
+                    level: value.cpuLevel,
+                    elapsed: elapsed
+                )
+                triggers += alertEngine.evaluate(
+                    resource: .gpu,
+                    level: value.gpuLevel,
+                    elapsed: elapsed
+                )
+                if !triggers.isEmpty {
+                    await notificationService.enqueue(triggers, snapshot: value)
+                }
                 if panelIsOpen {
                     trend.append(value)
                     trend.removeAll {

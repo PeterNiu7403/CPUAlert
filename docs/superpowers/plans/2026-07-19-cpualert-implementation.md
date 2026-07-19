@@ -1382,7 +1382,7 @@ git commit -m "feat: display live CPU and GPU rankings"
 - Consumes: `MetricsSnapshot`, `ResourceKind`, and `PressureLevel`.
 - Produces: `AlertEngine.evaluate(resource:level:elapsed:) -> [AlertTrigger]` and `NotificationService.enqueue(_:snapshot:)`.
 
-- [ ] **Step 1: Write failing alert timing tests**
+- [x] **Step 1: Write failing alert timing tests**
 
 Create `AlertEngineTests.swift` using explicit monotonic durations:
 
@@ -1424,7 +1424,7 @@ struct AlertEngineTests {
 }
 ```
 
-- [ ] **Step 2: Run alert tests and verify failure**
+- [x] **Step 2: Run alert tests and verify failure**
 
 ```bash
 xcodebuild test \
@@ -1436,7 +1436,7 @@ xcodebuild test \
 
 Expected: compilation fails because the alert types do not exist.
 
-- [ ] **Step 3: Implement the per-resource state machine**
+- [x] **Step 3: Implement the per-resource state machine**
 
 Create `AlertEngine.swift`:
 
@@ -1505,13 +1505,13 @@ struct AlertEngine: Sendable {
 }
 ```
 
-- [ ] **Step 4: Run the timing tests**
+- [x] **Step 4: Run the timing tests**
 
 Run the Step 2 command again.
 
 Expected: all timing tests pass with elapsed values interpreted as absolute monotonic offsets and `enteredAt` set only on actual level entry.
 
-- [ ] **Step 5: Implement notification authorization and merging**
+- [x] **Step 5: Implement notification authorization and merging**
 
 Create `NotificationService` as an actor wrapping `UNUserNotificationCenter`. Provide:
 
@@ -1526,11 +1526,11 @@ Queue triggers for a 2-second merge window. If CPU and GPU triggers are pending,
 
 Treat denied permission as a normal result: cache authorization state, skip future delivery attempts, and leave menu colors unchanged.
 
-- [ ] **Step 6: Feed snapshots into alerts**
+- [x] **Step 6: Feed snapshots into alerts**
 
 In `MonitorModel`, own one `AlertEngine`, one `NotificationService`, and a start-time `ContinuousClock.Instant`. After assigning each snapshot, evaluate CPU and GPU against the same elapsed duration and pass the combined trigger array to `NotificationService.enqueue`.
 
-- [ ] **Step 7: Run all tests and commit**
+- [x] **Step 7: Run all tests and commit**
 
 ```bash
 xcodebuild test \

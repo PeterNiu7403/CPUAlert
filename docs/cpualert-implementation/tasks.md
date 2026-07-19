@@ -7,9 +7,9 @@
 | Metric | Value |
 |---|---:|
 | Total tasks | 9 |
-| Completed | 5 (55.6%) |
-| Remaining | 4 (44.4%) |
-| Last updated | 2026-07-19 12:59 CST |
+| Completed | 6 (66.7%) |
+| Remaining | 3 (33.3%) |
+| Last updated | 2026-07-19 13:06 CST |
 
 ## Tasks
 
@@ -33,7 +33,10 @@
   - Completed: 2026-07-19 12:59 CST
   - Output: resilient single-task sampling stream, adaptive ranking cache, power-state notifications, one main-actor presentation model, fixed-width live panel, CPU thread expansion, GPU coalition ranking, sparkline, and model-driven menu label.
   - Verification: engine test first failed on the missing type; the default signed scheme then passed 15/15 tests. A Debug-only `--open-panel` harness plus real Computer Use inspection verified sustained CPU/GPU refresh, the 60-second trend, CPU/GPU switching without collector restart, and explicit “GPU activity share” rows. The compiled XCUITest is skipped in the default scheme because this Mac timed out enabling Xcode UI automation mode; the equivalent interaction was completed manually through accessibility inspection.
-- [ ] 6. Sustained alerts and notification delivery
+- [x] 6. Sustained alerts and notification delivery
+  - Completed: 2026-07-19 13:06 CST
+  - Output: independent resource alert state machines, approved sustained-duration gates, ten-minute red repeat interval, cached notification authorization, two-second CPU/GPU merge window, and transient top-offender notification context.
+  - Verification: focused tests first failed on missing alert types, then all three timing scenarios passed; the signed default scheme reports 18/18 passing tests. Denied or errored notification authorization is cached as a normal state and does not stop monitoring.
 - [ ] 7. Safe process termination and on-demand Root helper
 - [ ] 8. Settings, first run, localization, and accessibility
 - [ ] 9. Stress fixtures, performance gates, signing, and operational documentation

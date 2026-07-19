@@ -32,7 +32,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         )
         let powerState = PowerStateMonitor()
         self.powerState = powerState
-        model = MonitorModel(engine: engine, powerState: powerState)
+        model = MonitorModel(
+            engine: engine,
+            powerState: powerState,
+            notificationService: NotificationService()
+        )
         super.init()
     }
 
