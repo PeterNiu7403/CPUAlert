@@ -2,6 +2,8 @@
 
 Thank you for helping improve CPUAlert. Contributions should preserve the project's privacy, safety, and metric-honesty guarantees.
 
+Participation in the project is governed by our [Code of Conduct](CODE_OF_CONDUCT.md).
+
 ## Before you start
 
 - Search existing issues before opening a new one.
