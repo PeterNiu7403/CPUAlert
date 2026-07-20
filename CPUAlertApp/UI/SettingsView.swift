@@ -165,6 +165,9 @@ struct SettingsView: View {
             LabeledContent("settings.diagnostics.gpuDuration") {
                 Text(duration(model.snapshot.collectorDurations.gpu))
             }
+            LabeledContent("settings.diagnostics.memoryDuration") {
+                Text(duration(model.snapshot.collectorDurations.memory))
+            }
             LabeledContent("settings.diagnostics.rankingDuration") {
                 Text(model.snapshot.collectorDurations.rankings.map(duration) ?? String(localized: "value.unavailable"))
             }

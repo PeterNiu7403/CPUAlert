@@ -56,6 +56,27 @@ bool CPUACopySystemTicks(CPUASystemTicks *output) {
     return true;
 }
 
+bool CPUACopySystemMemoryStatistics(CPUASystemMemoryStatistics *output) {
+    if (output == NULL) return false;
+    vm_size_t page_size = 0;
+    if (host_page_size(mach_host_self(), &page_size) != KERN_SUCCESS) return false;
+
+    vm_statistics64_data_t statistics = {0};
+    mach_msg_type_number_t count = HOST_VM_INFO64_COUNT;
+    kern_return_t result = host_statistics64(
+        mach_host_self(), HOST_VM_INFO64,
+        (host_info64_t)&statistics, &count
+    );
+    if (result != KERN_SUCCESS) return false;
+
+    memset(output, 0, sizeof(*output));
+    output->page_size = page_size;
+    output->active_pages = statistics.active_count;
+    output->wired_pages = statistics.wire_count;
+    output->compressed_pages = statistics.compressor_page_count;
+    return true;
+}
+
 int CPUACopyAllPIDs(pid_t *buffer, int buffer_bytes) {
     return proc_listpids(PROC_ALL_PIDS, 0, buffer, buffer_bytes);
 }
@@ -81,6 +102,7 @@ bool CPUACopyProcessCounter(pid_t pid, CPUAProcessCounter *output) {
     )) {
         return false;
     }
+    output->physical_footprint_bytes = usage.ri_phys_footprint;
     output->uid = bsd.pbi_uid;
     strlcpy(output->name, bsd.pbi_name, sizeof(output->name));
     return true;

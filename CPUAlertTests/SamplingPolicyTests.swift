@@ -27,5 +27,28 @@ struct SamplingPolicyTests {
         #expect(SamplingPolicy.cadence(for: .openGreen) == .interactive)
         #expect(SamplingPolicy.cadence(for: .closedYellow) == .interactive)
         #expect(SamplingPolicy.cadence(for: .closedGreenLowBattery) == .lowBattery)
+
+        let memoryElevated = SamplingContext(
+            panelIsOpen: false,
+            lowBattery: false,
+            cpuLevel: .green,
+            gpuLevel: .green,
+            memoryLevel: .yellow,
+            expandedProcess: nil
+        )
+        #expect(SamplingPolicy.cadence(for: memoryElevated) == .interactive)
+
+        let expanded = SamplingContext(
+            panelIsOpen: true,
+            lowBattery: false,
+            cpuLevel: .green,
+            gpuLevel: .green,
+            expandedProcess: ProcessIdentity(pid: 42, startTimeNanoseconds: 1)
+        )
+        #expect(SamplingPolicy.cadence(for: expanded) == SamplingCadence(
+            system: .seconds(1),
+            ranking: .seconds(1),
+            thread: .seconds(1)
+        ))
     }
 }

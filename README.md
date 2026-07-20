@@ -5,7 +5,7 @@
 </p>
 
 <p align="center">
-  A privacy-first macOS menu-bar monitor for real-time CPU and GPU pressure.
+  A privacy-first macOS menu-bar monitor for real-time CPU, GPU, and memory pressure.
 </p>
 
 <p align="center">
@@ -19,12 +19,15 @@
   English · <a href="README.zh-CN.md">简体中文</a>
 </p>
 
-CPUAlert is a local, arm64 macOS 15+ menu-bar monitor for whole-machine CPU and GPU pressure. It keeps CPU collection available when GPU collection is unsupported, shows only bounded live rankings, and uses an authenticated on-demand helper for the small set of root operations that cannot run in the app process.
+CPUAlert is a local, arm64 macOS 15+ menu-bar monitor for whole-machine CPU, GPU, and memory pressure. It keeps CPU and memory collection available when GPU collection is unsupported, shows only bounded live rankings, and uses an authenticated on-demand helper for the small set of root operations that cannot run in the app process.
+
+The current release is **0.2.1 (Build 6)**. See the [changelog](CHANGELOG.md) for the complete update notes and validation record.
 
 ## Highlights
 
-- Live whole-machine CPU and best-effort GPU pressure in the menu bar.
-- Bounded CPU process rankings, expandable thread details, and expandable GPU application groups.
+- A fixed-width C/G/M triptych for live whole-machine CPU, best-effort GPU, and memory pressure.
+- Bounded CPU and physical-memory process rankings, expandable thread details, and expandable GPU application groups.
+- Explicit memory release: select current-user applications, confirm, and ask them to quit normally; CPUAlert never runs `purge` or silently force-quits a batch.
 - Sustained-pressure notifications with configurable thresholds and cooldowns.
 - Safe process termination with PID-reuse protection, protected-process policy, confirmation, and fresh authentication for privileged actions.
 - Launch-at-login controls, first-run guidance, diagnostics, and full English/Simplified Chinese localization.
@@ -43,14 +46,17 @@ The repository contains source code and development fixtures. Local Apple Develo
 - `CPUAlertTests/` and `CPUAlertUITests/` — unit and deterministic UI acceptance tests.
 - `TestFixtures/` — opt-in CPU and GPU stress fixtures.
 - `Scripts/` — benchmark and process-sampling tools.
+- `CHANGELOG.md` — versioned user-facing update notes and release validation.
 - `docs/cpualert-implementation/` — requirements, design, and implementation task record.
+- `docs/memory-monitoring-and-cleanup/` — memory monitoring, cleanup, and three-resource menu-bar specification.
 
 ## Metric semantics
 
 - CPU process percentages are normalized against total whole-machine capacity. A process fully occupying one logical CPU on a 14-core Mac therefore contributes about `1 / 14` of whole-machine capacity.
 - GPU menu usage is best-effort whole-machine utilization. GPU ranking rows scale each resource coalition's activity share by the current whole-machine utilization so the displayed values add up on the same scale. They remain estimates, not direct per-process GPU counters.
+- Memory pressure-related usage is `active + wired + compressed`, capped at physical memory. Inactive/file-cache pages are intentionally not presented as memory that must be cleared. Process rankings use `ri_phys_footprint`.
 - IOReport and coalition APIs are private/unsupported and may fail after an OS update. CPU monitoring continues and the UI reports `GPU —`; GPU alerts are disabled while the metric is unavailable.
-- CPU rankings retain only the current bounded result, and thread values are collected only for the one process the user expands.
+- CPU and memory rankings share one bounded process scan; thread values are collected only for the one process the user expands.
 
 ## Build and run
 
@@ -84,7 +90,7 @@ xcodebuild test \
   -derivedDataPath build/DerivedData
 ```
 
-The app is an `LSUIElement`; launch the built `.app` and use its CPU/GPU menu-bar item. It does not create a normal Dock icon.
+The app is an `LSUIElement`; launch the built `.app` and use its CPU/GPU/memory menu-bar item. It does not create a normal Dock icon.
 
 The GPU fixture requires Xcode's official Metal toolchain component. If Xcode reports that it is missing:
 
@@ -100,6 +106,7 @@ DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer \
 - The first-run card can be dismissed without enabling either permission and can be restored from General settings.
 - No helper is installed at launch. The first privileged termination or an explicit install action requests fresh local device-owner authentication, then invokes `SMJobBless`.
 - Same-user `SIGTERM` stays in the app process. `SIGKILL` is a separate confirmed action. Root termination authenticates every time and rechecks PID plus process start time before signaling.
+- The memory-release sheet starts with no selection, includes only current-user regular applications, and never escalates a batch to `SIGKILL`.
 
 ## Privileged helper and removal
 
@@ -158,6 +165,8 @@ Closed-panel green result:
 | Resident footprint | ≤ 40 MB | 20.562 MB | Pass |
 | Package-idle wakeups | ≤ 1/s | 0.1033/s | Pass |
 
+The 0.2.1 memory-monitoring release also passed a 10.03-second closed-panel regression check: 0.0109% average CPU, 21.093 MB average physical footprint, and 0 package-idle wakeups/s.
+
 Reproduce one mode or all five:
 
 ```bash
@@ -171,6 +180,7 @@ Generated JSON and `.trace` evidence stays under ignored `build/benchmarks/`.
 
 - GPU availability depends on undocumented IOReport schemas and coalition counters. OS updates can remove or rename the required channels.
 - Coalition activity share is attribution among observed groups, not a percentage of total GPU hardware capacity.
+- Memory-release estimates are process physical footprints, not a guarantee of bytes reclaimed; shared pages, compression, unsaved work, and application quit behavior affect the result.
 - The legacy privileged-helper installation path is suitable for this local signed build, not a Mac App Store distribution.
 - macOS may require manual notification or Login Items approval even after the app requests registration.
 - The included XCUITest source uses deterministic launch states. On a machine where Xcode cannot enable UI automation mode, build the UI-test target and complete the equivalent English, Simplified Chinese, keyboard, and accessibility checks manually.

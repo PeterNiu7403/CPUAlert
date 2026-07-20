@@ -90,7 +90,8 @@ actor CoalitionGPUCollector {
     }
 
     func sample() async -> [GPUGroupMetric] {
-        let members = await Self.copyMembers()
+        let applications = await RunningApplicationCatalog.shared.snapshot()
+        let members = Self.copyMembers(applications: applications)
         let grouped = Dictionary(grouping: members, by: \.coalitionID)
         var current: [UInt64: UInt64] = [:]
         for coalitionID in grouped.keys {
@@ -140,8 +141,9 @@ actor CoalitionGPUCollector {
         .map { $0 }
     }
 
-    @MainActor
-    private static func copyMembers() -> [CoalitionMember] {
+    private static func copyMembers(
+        applications: [pid_t: RunningApplicationMetadata]
+    ) -> [CoalitionMember] {
         let requiredBytes = Int(CPUACopyAllPIDs(nil, 0))
         guard requiredBytes > 0 else { return [] }
         let stride = MemoryLayout<pid_t>.stride
@@ -170,7 +172,7 @@ actor CoalitionGPUCollector {
             guard CPUACopyProcessCounter(pid, &process),
                   CPUACopyProcessCoalitionID(pid, &coalitionID),
                   coalitionID > 0 else { return nil }
-            let running = NSRunningApplication(processIdentifier: pid)
+            let running = applications[pid]
             let counterName = processName(from: &process.name)
             return CoalitionMember(
                 coalitionID: coalitionID,
@@ -181,7 +183,7 @@ actor CoalitionGPUCollector {
                 name: running?.localizedName
                     ?? (counterName.isEmpty ? "PID \(pid)" : counterName),
                 ownerUID: process.uid,
-                isApplication: running?.activationPolicy == .regular
+                isApplication: running?.isRegularApplication == true
             )
         }
     }

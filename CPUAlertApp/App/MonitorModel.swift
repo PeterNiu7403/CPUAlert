@@ -72,6 +72,11 @@ final class MonitorModel {
                     level: value.gpuLevel,
                     elapsed: elapsed
                 )
+                triggers += alertEngine.evaluate(
+                    resource: .memory,
+                    level: value.memoryLevel,
+                    elapsed: elapsed
+                )
                 if settings.notificationsEnabled, !triggers.isEmpty {
                     await notificationService.enqueue(triggers, snapshot: value)
                 }
@@ -107,8 +112,18 @@ final class MonitorModel {
         await terminationCoordinator.requestForce(target)
     }
 
+    var memoryCleanupCandidates: [ProcessMetric] {
+        MemoryCleanupPolicy.candidates(from: snapshot.memoryProcesses)
+    }
+
+    func requestMemoryCleanup(_ targets: [ProcessMetric]) async -> [MemoryCleanupOutcome] {
+        await terminationCoordinator.requestGraceful(targets)
+    }
+
     func processMetric(for identity: ProcessIdentity) -> ProcessMetric? {
-        if let existing = snapshot.processes.first(where: { $0.identity == identity }) {
+        if let existing = (snapshot.processes + snapshot.memoryProcesses).first(
+            where: { $0.identity == identity }
+        ) {
             return existing
         }
         guard let record = ProcessIdentityReader().currentIdentity(pid: identity.pid),
@@ -121,6 +136,7 @@ final class MonitorModel {
             bundleIdentifier: nil,
             ownerUID: record.uid,
             cpuUsage: 0,
+            physicalFootprintBytes: 0,
             isApplication: false
         )
     }
@@ -135,6 +151,7 @@ final class MonitorModel {
             lowBattery: powerState.lowBattery,
             cpuLevel: snapshot.cpuLevel,
             gpuLevel: snapshot.gpuLevel,
+            memoryLevel: snapshot.memoryLevel,
             expandedProcess: expandedProcess
         )
     }

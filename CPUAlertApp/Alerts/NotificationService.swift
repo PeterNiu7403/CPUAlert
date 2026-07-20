@@ -84,17 +84,39 @@ actor NotificationService {
         let content = UNMutableNotificationContent()
         content.sound = .default
 
-        if triggers[.cpu] != nil, triggers[.gpu] != nil {
+        if triggers.count > 1 {
             content.title = String(localized: "alert.combined.title")
-            var details = [
-                String(format: String(localized: "alert.cpu.value.format"), percent(snapshot.cpuUsage)),
-                String(format: String(localized: "alert.gpu.value.format"), snapshot.gpuUsage.map(percent) ?? "—"),
-            ]
-            if let process = snapshot.processes.first?.name {
+            var details: [String] = []
+            if triggers[.cpu] != nil {
+                details.append(String(
+                    format: String(localized: "alert.cpu.value.format"),
+                    percent(snapshot.cpuUsage)
+                ))
+            }
+            if triggers[.gpu] != nil {
+                details.append(String(
+                    format: String(localized: "alert.gpu.value.format"),
+                    snapshot.gpuUsage.map(percent) ?? "—"
+                ))
+            }
+            if triggers[.memory] != nil {
+                details.append(String(
+                    format: String(localized: "alert.memory.value.format"),
+                    snapshot.memoryUsage.map(percent) ?? "—"
+                ))
+            }
+            if triggers[.cpu] != nil, let process = snapshot.processes.first?.name {
                 details.append(String(format: String(localized: "alert.topProcess.format"), process))
             }
-            if let group = snapshot.gpuGroups.first?.name {
+            if triggers[.gpu] != nil, let group = snapshot.gpuGroups.first?.name {
                 details.append(String(format: String(localized: "alert.topGPUGroup.format"), group))
+            }
+            if triggers[.memory] != nil,
+               let process = snapshot.memoryProcesses.first?.name {
+                details.append(String(
+                    format: String(localized: "alert.topMemoryProcess.format"),
+                    process
+                ))
             }
             content.body = details.joined(separator: " · ")
         } else if let trigger = triggers[.cpu] {
@@ -126,6 +148,22 @@ actor NotificationService {
                 body += " · " + String(
                     format: String(localized: "alert.topGroup.format"),
                     group
+                )
+            }
+            content.body = body
+        } else if let trigger = triggers[.memory] {
+            content.title = String(
+                format: String(localized: "alert.memory.title.format"),
+                levelName(trigger.level)
+            )
+            var body = String(
+                format: String(localized: "alert.memory.value.format"),
+                snapshot.memoryUsage.map(percent) ?? "—"
+            )
+            if let process = snapshot.memoryProcesses.first?.name {
+                body += " · " + String(
+                    format: String(localized: "alert.topMemoryProcess.format"),
+                    process
                 )
             }
             content.body = body

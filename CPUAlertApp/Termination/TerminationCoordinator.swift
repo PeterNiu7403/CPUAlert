@@ -26,6 +26,42 @@ enum TerminationResult: Equatable, Sendable {
     case failed(Int32)
 }
 
+struct MemoryCleanupOutcome: Identifiable, Equatable, Sendable {
+    var id: ProcessIdentity { target.identity }
+    let target: ProcessMetric
+    let result: TerminationResult
+}
+
+enum MemoryCleanupPolicy {
+    static func candidates(
+        from processes: [ProcessMetric],
+        currentUID: UInt32 = getuid()
+    ) -> [ProcessMetric] {
+        var seen: Set<ProcessIdentity> = []
+        return processes.filter { process in
+            guard seen.insert(process.identity).inserted,
+                  process.ownerUID == currentUID,
+                  process.isApplication,
+                  process.physicalFootprintBytes > 0 else { return false }
+            return !ProtectedProcessPolicy.isProtected(
+                pid: process.identity.pid,
+                name: process.name
+            )
+        }.sorted {
+            $0.physicalFootprintBytes == $1.physicalFootprintBytes
+                ? $0.identity.pid < $1.identity.pid
+                : $0.physicalFootprintBytes > $1.physicalFootprintBytes
+        }
+    }
+
+    static func estimatedFootprint(of processes: [ProcessMetric]) -> UInt64 {
+        processes.reduce(into: UInt64.zero) { result, process in
+            let addition = result.addingReportingOverflow(process.physicalFootprintBytes)
+            result = addition.overflow ? .max : addition.partialValue
+        }
+    }
+}
+
 actor TerminationCoordinator {
     private let identityReader: any ProcessIdentityReading
     private let signalSender: any SignalSending
@@ -112,6 +148,19 @@ actor TerminationCoordinator {
                 signal: SIGKILL
             )
         return errorCode == 0 ? .terminated : .failed(errorCode)
+    }
+
+    func requestGraceful(_ targets: [ProcessMetric]) async -> [MemoryCleanupOutcome] {
+        var outcomes: [MemoryCleanupOutcome] = []
+        outcomes.reserveCapacity(targets.count)
+        for target in targets {
+            guard !Task.isCancelled else { break }
+            outcomes.append(MemoryCleanupOutcome(
+                target: target,
+                result: await requestGraceful(target)
+            ))
+        }
+        return outcomes
     }
 
     static func leaderTarget(for group: GPUGroupMetric) -> ProcessIdentity? {

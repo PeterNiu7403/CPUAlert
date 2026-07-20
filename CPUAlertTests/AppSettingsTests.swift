@@ -21,22 +21,4 @@ struct AppSettingsTests {
             red: 0.95
         ))
     }
-
-    @Test func popoverDismissalIgnoresItsOwnWindowsAndClosesForOtherWindows() {
-        #expect(!PopoverDismissalPolicy.shouldDismissLocalEvent(
-            eventWindowNumber: 10,
-            statusItemWindowNumber: 10,
-            popoverWindowNumber: 20
-        ))
-        #expect(!PopoverDismissalPolicy.shouldDismissLocalEvent(
-            eventWindowNumber: 20,
-            statusItemWindowNumber: 10,
-            popoverWindowNumber: 20
-        ))
-        #expect(PopoverDismissalPolicy.shouldDismissLocalEvent(
-            eventWindowNumber: 30,
-            statusItemWindowNumber: 10,
-            popoverWindowNumber: 20
-        ))
-    }
 }

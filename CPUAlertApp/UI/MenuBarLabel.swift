@@ -2,61 +2,75 @@ import SwiftUI
 
 struct MenuBarLabel: View {
     @Bindable var model: MonitorModel
-    @State private var lastCPUPercentage = 0
+    @State private var lastCPUPercentage: Int?
     @State private var lastGPUPercentage: Int?
+    @State private var lastMemoryPercentage: Int?
 
     var body: some View {
-        VStack(spacing: 1) {
-            row(
-                formatKey: "menu.cpu.format",
+        HStack(spacing: 3) {
+            metric(
+                symbol: "C",
                 percentage: cpuPercentage,
-                usage: Double(cpuPercentage) / 100,
-                color: model.snapshot.cpuLevel.displayColor
+                level: model.snapshot.cpuLevel,
+                normalColor: .cyan
             )
-            row(
-                formatKey: "menu.gpu.format",
+            metric(
+                symbol: "G",
                 percentage: gpuPercentage,
-                usage: model.snapshot.gpuUsage,
-                color: model.snapshot.gpuLevel.displayColor
+                level: model.snapshot.gpuLevel,
+                normalColor: .purple
+            )
+            metric(
+                symbol: "M",
+                percentage: memoryPercentage,
+                level: model.snapshot.memoryLevel,
+                normalColor: .mint
             )
         }
-        .frame(width: 52, height: 18)
+        .frame(width: 78, height: 20)
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(accessibilityText)
+        .accessibilityIdentifier("menu-bar-triptych")
         .task { model.start() }
         .onAppear { retainValidPercentages() }
         .onChange(of: model.snapshot) { _, _ in retainValidPercentages() }
     }
 
-    private func row(
-        formatKey: String.LocalizationValue,
+    private func metric(
+        symbol: String,
         percentage: Int?,
-        usage: Double?,
-        color: Color
+        level: PressureLevel,
+        normalColor: Color
     ) -> some View {
-        GeometryReader { geometry in
-            ZStack(alignment: .leading) {
-                Capsule().fill(color.opacity(0.20))
-                Capsule()
-                    .fill(color)
-                    .frame(width: geometry.size.width * max(0, min(usage ?? 0, 1)))
-                Text(percentage.map {
-                    String(
-                        format: String(localized: formatKey),
-                        locale: .current,
-                        $0
-                    )
-                } ?? String(localized: "menu.gpu.unavailable"))
-                    .font(.system(size: 7.5, weight: .semibold, design: .rounded))
+        VStack(spacing: 2) {
+            HStack(alignment: .firstTextBaseline, spacing: 1) {
+                Text(symbol)
+                    .font(.system(size: 6.5, weight: .bold, design: .rounded))
+                    .foregroundStyle(.secondary)
+                Spacer(minLength: 0)
+                Text(percentage.map(String.init) ?? "—")
+                    .font(.system(size: 9, weight: .semibold, design: .rounded))
                     .monospacedDigit()
                     .foregroundStyle(.primary)
-                    .frame(maxWidth: .infinity)
             }
+            GeometryReader { geometry in
+                ZStack(alignment: .leading) {
+                    Capsule().fill(indicatorColor(level, normal: normalColor).opacity(0.18))
+                    Capsule()
+                        .fill(indicatorColor(level, normal: normalColor))
+                        .frame(
+                            width: geometry.size.width
+                                * CGFloat(max(0, min(Double(percentage ?? 0) / 100, 1)))
+                        )
+                }
+            }
+            .frame(height: 2.5)
         }
-        .frame(height: 8)
+        .frame(width: 24, height: 18)
+        .accessibilityHidden(true)
     }
 
-    private var cpuPercentage: Int {
+    private var cpuPercentage: Int? {
         model.snapshot.cpuLevel == .unavailable
             ? lastCPUPercentage
             : Int((model.snapshot.cpuUsage * 100).rounded())
@@ -67,13 +81,19 @@ struct MenuBarLabel: View {
         return lastGPUPercentage
     }
 
+    private var memoryPercentage: Int? {
+        lastMemoryPercentage
+    }
+
     private var accessibilityText: String {
-        let cpu = String(
-            format: String(localized: "menu.cpu.accessibility.format"),
-            locale: .current,
-            cpuPercentage,
-            pressureDescription(model.snapshot.cpuLevel)
-        )
+        let cpu = cpuPercentage.map {
+            String(
+                format: String(localized: "menu.cpu.accessibility.format"),
+                locale: .current,
+                $0,
+                pressureDescription(model.snapshot.cpuLevel)
+            )
+        } ?? String(localized: "menu.cpu.accessibility.unavailable")
         let gpu = gpuPercentage.map {
             String(
                 format: String(localized: "menu.gpu.accessibility.format"),
@@ -82,7 +102,15 @@ struct MenuBarLabel: View {
                 pressureDescription(model.snapshot.gpuLevel)
             )
         } ?? String(localized: "menu.gpu.accessibility.unavailable")
-        return "\(cpu); \(gpu)"
+        let memory = memoryPercentage.map {
+            String(
+                format: String(localized: "menu.memory.accessibility.format"),
+                locale: .current,
+                $0,
+                pressureDescription(model.snapshot.memoryLevel)
+            )
+        } ?? String(localized: "menu.memory.accessibility.unavailable")
+        return "\(cpu); \(gpu); \(memory)"
     }
 
     private func retainValidPercentages() {
@@ -91,6 +119,17 @@ struct MenuBarLabel: View {
         }
         if let usage = model.snapshot.gpuUsage {
             lastGPUPercentage = Int((usage * 100).rounded())
+        }
+        if let usage = model.snapshot.memory?.usage {
+            lastMemoryPercentage = Int((usage * 100).rounded())
+        }
+    }
+
+    private func indicatorColor(_ level: PressureLevel, normal: Color) -> Color {
+        switch level {
+        case .green: normal
+        case .yellow, .orange, .red: level.displayColor
+        case .unavailable: .secondary
         }
     }
 

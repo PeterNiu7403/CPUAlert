@@ -104,6 +104,31 @@ struct GPUCollectorTests {
         })
     }
 
+    @Test func groupSamplingKeepsMainActorResponsive() async throws {
+        let collector = SystemGPUCollector()
+        _ = await RunningApplicationCatalog.shared.snapshot()
+        let heartbeat = Task { @MainActor in
+            let clock = ContinuousClock()
+            var lastBeat = clock.now
+            var worstDelay = Duration.zero
+            for _ in 0..<250 {
+                try? await Task.sleep(for: .milliseconds(2))
+                let now = clock.now
+                worstDelay = max(worstDelay, lastBeat.duration(to: now))
+                lastBeat = now
+            }
+            return worstDelay
+        }
+
+        try await Task.sleep(for: .milliseconds(10))
+        for _ in 0..<12 {
+            _ = try await collector.sampleGroups()
+        }
+        let worstDelay = await heartbeat.value
+        print("Main-actor heartbeat worst delay: \(worstDelay)")
+        #expect(worstDelay < .milliseconds(10))
+    }
+
     private func fixtureResidencies(named name: String) throws -> [GPUResidency] {
         let bundle = Bundle(for: GPUFixtureBundleMarker.self)
         let url = try #require(bundle.url(forResource: name, withExtension: "plist"))

@@ -11,10 +11,13 @@ struct RankedProcessList: View {
 
     var body: some View {
         LazyVStack(spacing: 4) {
-            if model.selectedResource == .cpu {
+            switch model.selectedResource {
+            case .cpu:
                 cpuRows
-            } else {
+            case .gpu:
                 gpuRows
+            case .memory:
+                memoryRows
             }
             if let terminationFeedback {
                 Text(terminationFeedback)
@@ -58,6 +61,39 @@ struct RankedProcessList: View {
     }
 
     @ViewBuilder
+    private var memoryRows: some View {
+        let rows = model.snapshot.memoryProcesses.prefix(model.showTenRows ? 10 : 5)
+        if rows.isEmpty {
+            emptyState("panel.memory.collecting")
+        } else {
+            ForEach(rows) { process in
+                HStack(spacing: 8) {
+                    ProcessIcon(identity: process.identity)
+                    VStack(alignment: .leading, spacing: 1) {
+                        Text(process.name)
+                            .lineLimit(1)
+                        Text(String(
+                            format: String(localized: "panel.process.pid.format"),
+                            locale: .current,
+                            process.identity.pid
+                        ))
+                            .font(.caption2)
+                            .foregroundStyle(.secondary)
+                    }
+                    Spacer(minLength: 8)
+                    Text(MemoryFormatting.bytes(process.physicalFootprintBytes))
+                        .monospacedDigit()
+                        .foregroundStyle(.primary)
+                    terminationMenu(for: process)
+                }
+                .frame(minHeight: 38)
+                .accessibilityElement(children: .contain)
+                .accessibilityIdentifier("memory-process-\(process.identity.pid)")
+            }
+        }
+    }
+
+    @ViewBuilder
     private var cpuRows: some View {
         let rows = model.snapshot.processes.prefix(model.showTenRows ? 10 : 5)
         if rows.isEmpty {
@@ -71,21 +107,21 @@ struct RankedProcessList: View {
                             : process.identity
                     } label: {
                         HStack(spacing: 8) {
-                        processIcon(process)
-                        VStack(alignment: .leading, spacing: 1) {
-                            Text(process.name)
-                                .lineLimit(1)
-                            Text(String(
-                                format: String(localized: "panel.process.pid.format"),
-                                locale: .current,
-                                process.identity.pid
-                            ))
-                                .font(.caption2)
-                                .foregroundStyle(.secondary)
-                        }
-                        Spacer(minLength: 8)
-                        Text(process.cpuUsage, format: .percent.precision(.fractionLength(1)))
-                            .monospacedDigit()
+                            ProcessIcon(identity: process.identity)
+                            VStack(alignment: .leading, spacing: 1) {
+                                Text(process.name)
+                                    .lineLimit(1)
+                                Text(String(
+                                    format: String(localized: "panel.process.pid.format"),
+                                    locale: .current,
+                                    process.identity.pid
+                                ))
+                                    .font(.caption2)
+                                    .foregroundStyle(.secondary)
+                            }
+                            Spacer(minLength: 8)
+                            Text(process.cpuUsage, format: .percent.precision(.fractionLength(1)))
+                                .monospacedDigit()
                         }
                         .contentShape(Rectangle())
                     }
@@ -134,9 +170,11 @@ struct RankedProcessList: View {
                     systemUsage: model.snapshot.gpuUsage
                 )
                 Button {
-                    model.expandedGPUGroupID = model.expandedGPUGroupID == group.id
-                        ? nil
-                        : group.id
+                    withAnimation(.easeInOut(duration: 0.16)) {
+                        model.expandedGPUGroupID = model.expandedGPUGroupID == group.id
+                            ? nil
+                            : group.id
+                    }
                 } label: {
                     HStack(spacing: 8) {
                         Image(systemName: "square.stack.3d.up.fill")
@@ -166,10 +204,19 @@ struct RankedProcessList: View {
                             )
                             .frame(width: 10)
                     }
+                    .frame(maxWidth: .infinity, minHeight: 38, alignment: .leading)
+                    .padding(.horizontal, 6)
+                    .padding(.vertical, 3)
+                    .contentShape(Rectangle())
+                    .background(
+                        model.expandedGPUGroupID == group.id
+                            ? Color.accentColor.opacity(0.10)
+                            : Color.primary.opacity(0.035),
+                        in: RoundedRectangle(cornerRadius: 7)
+                    )
                 }
                 .buttonStyle(.plain)
-                .contentShape(Rectangle())
-                .accessibilityIdentifier("gpu-group-disclosure-\(group.id)")
+                .accessibilityIdentifier("gpu-group-card-\(group.id)")
                 .accessibilityLabel(gpuAccessibilityLabel(
                     for: group,
                     estimatedUsage: estimatedUsage
@@ -214,23 +261,6 @@ struct RankedProcessList: View {
                 }
             }
         }
-    }
-
-    private func processIcon(_ process: ProcessMetric) -> some View {
-        Group {
-            if let icon = NSRunningApplication(
-                processIdentifier: process.identity.pid
-            )?.icon {
-                Image(nsImage: icon)
-                    .resizable()
-            } else {
-                Image(systemName: "app.dashed")
-                    .resizable()
-                    .foregroundStyle(.secondary)
-            }
-        }
-        .scaledToFit()
-        .frame(width: 24, height: 24)
     }
 
     private func emptyState(_ key: LocalizedStringKey) -> some View {
@@ -309,6 +339,29 @@ struct RankedProcessList: View {
             locale: .current,
             errorCode
         )
+        }
+    }
+}
+
+struct ProcessIcon: View {
+    let identity: ProcessIdentity
+    @State private var icon: NSImage?
+
+    var body: some View {
+        Group {
+            if let icon {
+                Image(nsImage: icon)
+                    .resizable()
+            } else {
+                Image(systemName: "app.dashed")
+                    .resizable()
+                    .foregroundStyle(.secondary)
+            }
+        }
+        .scaledToFit()
+        .frame(width: 24, height: 24)
+        .task(id: identity) { @MainActor in
+            icon = NSRunningApplication(processIdentifier: identity.pid)?.icon
         }
     }
 }

@@ -20,12 +20,19 @@ private actor FakeGPU: GPUCollecting {
     func sampleGroups() async throws -> [GPUGroupMetric] { [] }
 }
 
+private actor FakeMemory: SystemMemoryCollecting {
+    func sampleSystemMemory() async throws -> MemoryMetric? {
+        MemoryMetric(totalBytes: 1_000, usedBytes: 910, compressedBytes: 120)
+    }
+}
+
 struct SamplingEngineTests {
     @Test func cyclePublishesIndependentPressureLevels() async {
         let engine = SamplingEngine(
             systemCPU: FakeSystemCPU(),
             processes: FakeProcesses(),
             gpu: FakeGPU(),
+            memory: FakeMemory(),
             thresholds: .defaults
         )
         let snapshot = await engine.collectOnce(
@@ -35,7 +42,9 @@ struct SamplingEngineTests {
         )
         #expect(snapshot.cpuUsage == 0.72)
         #expect(snapshot.gpuUsage == 0.18)
+        #expect(snapshot.memory?.usedBytes == 910)
         #expect(snapshot.cpuLevel == .yellow)
         #expect(snapshot.gpuLevel == .green)
+        #expect(snapshot.memoryLevel == .orange)
     }
 }

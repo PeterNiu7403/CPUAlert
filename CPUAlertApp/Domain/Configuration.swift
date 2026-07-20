@@ -43,7 +43,24 @@ struct SamplingContext: Equatable, Sendable {
     let lowBattery: Bool
     let cpuLevel: PressureLevel
     let gpuLevel: PressureLevel
+    let memoryLevel: PressureLevel
     let expandedProcess: ProcessIdentity?
+
+    init(
+        panelIsOpen: Bool,
+        lowBattery: Bool,
+        cpuLevel: PressureLevel,
+        gpuLevel: PressureLevel,
+        memoryLevel: PressureLevel = .green,
+        expandedProcess: ProcessIdentity?
+    ) {
+        self.panelIsOpen = panelIsOpen
+        self.lowBattery = lowBattery
+        self.cpuLevel = cpuLevel
+        self.gpuLevel = gpuLevel
+        self.memoryLevel = memoryLevel
+        self.expandedProcess = expandedProcess
+    }
 
     static let closedGreen = SamplingContext(
         panelIsOpen: false, lowBattery: false,
@@ -72,7 +89,7 @@ struct SamplingCadence: Equatable, Sendable {
         system: .seconds(2), ranking: .seconds(6), thread: nil
     )
     static let interactive = SamplingCadence(
-        system: .seconds(1), ranking: .seconds(1), thread: nil
+        system: .seconds(1), ranking: .seconds(2), thread: nil
     )
     static let lowBattery = SamplingCadence(
         system: .seconds(4), ranking: .seconds(12), thread: nil

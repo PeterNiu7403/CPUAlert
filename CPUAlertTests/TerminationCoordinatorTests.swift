@@ -119,6 +119,66 @@ struct TerminationCoordinatorTests {
         #expect(sender.signals.isEmpty)
     }
 
+    @Test func memoryCleanupCandidatesAreSafeSortedAndUnique() {
+        let eligible = Self.metric(
+            pid: 42_424,
+            name: "BigApp",
+            ownerUID: getuid(),
+            footprint: 900,
+            isApplication: true
+        )
+        let smaller = Self.metric(
+            pid: 42_425,
+            name: "SmallApp",
+            ownerUID: getuid(),
+            footprint: 400,
+            isApplication: true
+        )
+        let protected = Self.metric(
+            pid: 42_426,
+            name: "CPUAlert Worker",
+            ownerUID: getuid(),
+            footprint: 1_000,
+            isApplication: true
+        )
+        let otherUser = Self.metric(
+            pid: 42_427,
+            name: "OtherUserApp",
+            ownerUID: getuid() &+ 1,
+            footprint: 2_000,
+            isApplication: true
+        )
+        let background = Self.metric(
+            pid: 42_428,
+            name: "daemon",
+            ownerUID: getuid(),
+            footprint: 3_000,
+            isApplication: false
+        )
+
+        let candidates = MemoryCleanupPolicy.candidates(
+            from: [smaller, protected, eligible, eligible, otherUser, background]
+        )
+        #expect(candidates.map(\.name) == ["BigApp", "SmallApp"])
+        #expect(MemoryCleanupPolicy.estimatedFootprint(of: candidates) == 1_300)
+    }
+
+    @Test func bulkMemoryCleanupNeverEscalatesToForce() async {
+        let selected = Self.metric(startTime: 10)
+        let reader = FakeIdentityReader(record: Self.record(startTime: 10))
+        let sender = FakeSignalSender()
+        let coordinator = TerminationCoordinator(
+            identityReader: reader,
+            signalSender: sender,
+            privilegedTerminator: RejectingPrivilegedTerminator(),
+            gracePeriod: .zero
+        )
+
+        let outcomes = await coordinator.requestGraceful([selected])
+        #expect(outcomes.map(\.result) == [.forceAvailable])
+        #expect(sender.signals == [SIGTERM])
+    }
+
     private static func metric(startTime: UInt64) -> ProcessMetric {
         ProcessMetric(
             identity: ProcessIdentity(pid: 42_424, startTimeNanoseconds: startTime),
@@ -127,6 +187,27 @@ struct TerminationCoordinatorTests {
             ownerUID: getuid(),
             cpuUsage: 0.8,
             isApplication: false
+        )
+    }
+
+    private static func metric(
+        pid: Int32,
+        name: String,
+        ownerUID: UInt32,
+        footprint: UInt64,
+        isApplication: Bool
+    ) -> ProcessMetric {
+        ProcessMetric(
+            identity: ProcessIdentity(
+                pid: pid,
+                startTimeNanoseconds: UInt64(pid)
+            ),
+            name: name,
+            bundleIdentifier: isApplication ? "com.example.\(pid)" : nil,
+            ownerUID: ownerUID,
+            cpuUsage: 0,
+            physicalFootprintBytes: footprint,
+            isApplication: isApplication
         )
     }
 
