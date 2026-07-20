@@ -40,6 +40,59 @@ actor SystemCPUCollector: SystemCPUCollecting {
     }
 }
 
+struct SystemMemoryStatistics: Equatable, Sendable {
+    let pageSize: UInt64
+    let activePages: UInt64
+    let wiredPages: UInt64
+    let compressedPages: UInt64
+}
+
+actor SystemMemoryCollector: SystemMemoryCollecting {
+    static func metric(
+        totalBytes: UInt64,
+        statistics: SystemMemoryStatistics
+    ) -> MemoryMetric? {
+        guard totalBytes > 0, statistics.pageSize > 0 else { return nil }
+
+        func bytes(for pages: UInt64) -> UInt64 {
+            let result = pages.multipliedReportingOverflow(by: statistics.pageSize)
+            return result.overflow ? .max : result.partialValue
+        }
+
+        func saturatedAdd(_ lhs: UInt64, _ rhs: UInt64) -> UInt64 {
+            let result = lhs.addingReportingOverflow(rhs)
+            return result.overflow ? .max : result.partialValue
+        }
+
+        let activeBytes = bytes(for: statistics.activePages)
+        let wiredBytes = bytes(for: statistics.wiredPages)
+        let compressedBytes = bytes(for: statistics.compressedPages)
+        let pressureBytes = saturatedAdd(
+            saturatedAdd(activeBytes, wiredBytes),
+            compressedBytes
+        )
+        return MemoryMetric(
+            totalBytes: totalBytes,
+            usedBytes: min(pressureBytes, totalBytes),
+            compressedBytes: min(compressedBytes, totalBytes)
+        )
+    }
+
+    func sampleSystemMemory() async throws -> MemoryMetric? {
+        var raw = CPUASystemMemoryStatistics()
+        guard CPUACopySystemMemoryStatistics(&raw) else { return nil }
+        return Self.metric(
+            totalBytes: ProcessInfo.processInfo.physicalMemory,
+            statistics: SystemMemoryStatistics(
+                pageSize: raw.page_size,
+                activePages: raw.active_pages,
+                wiredPages: raw.wired_pages,
+                compressedPages: raw.compressed_pages
+            )
+        )
+    }
+}
+
 actor ProcessCPUCollector: ProcessCPUCollecting {
     private struct Baseline: Sendable {
         let cpuNanoseconds: UInt64
@@ -50,7 +103,8 @@ actor ProcessCPUCollector: ProcessCPUCollecting {
         let identity: ProcessIdentity
         let name: String
         let ownerUID: UInt32
-        let cpuUsage: Double
+        let cpuUsage: Double?
+        let physicalFootprintBytes: UInt64
     }
 
     private var processBaselines: [ProcessIdentity: Baseline] = [:]
@@ -75,6 +129,10 @@ actor ProcessCPUCollector: ProcessCPUCollecting {
     }
 
     func sampleProcesses() async throws -> [ProcessMetric] {
+        try await sampleProcessRankings().cpu
+    }
+
+    func sampleProcessRankings() async throws -> ProcessRankingSnapshot {
         let observed = DispatchTime.now().uptimeNanoseconds
         let counters = copyProcessCounters()
         var nextBaselines: [ProcessIdentity: Baseline] = [:]
@@ -91,45 +149,61 @@ actor ProcessCPUCollector: ProcessCPUCollecting {
                 observedNanoseconds: observed
             )
             nextBaselines[identity] = current
-            guard let baseline = processBaselines[identity],
-                  observed >= baseline.observedNanoseconds else { continue }
-            let elapsed = observed - baseline.observedNanoseconds
-            guard elapsed <= maximumElapsedNanoseconds,
-                  let usage = Self.normalizedUsage(
+            let usage: Double?
+            if let baseline = processBaselines[identity],
+               observed >= baseline.observedNanoseconds {
+                let elapsed = observed - baseline.observedNanoseconds
+                usage = elapsed <= maximumElapsedNanoseconds
+                    ? Self.normalizedUsage(
                     previousNanoseconds: baseline.cpuNanoseconds,
                     currentNanoseconds: current.cpuNanoseconds,
                     elapsedNanoseconds: elapsed,
                     logicalCPUCount: logicalCPUCount
-                  ) else { continue }
+                ) : nil
+            } else {
+                usage = nil
+            }
             numeric.append(NumericProcess(
                 identity: identity,
                 name: counter.name,
                 ownerUID: counter.ownerUID,
-                cpuUsage: usage
+                cpuUsage: usage,
+                physicalFootprintBytes: counter.physicalFootprintBytes
             ))
         }
         processBaselines = nextBaselines
 
-        let decorated = await MainActor.run {
-            numeric.map { row in
-                let application = NSRunningApplication(processIdentifier: row.identity.pid)
-                return ProcessMetric(
-                    identity: row.identity,
-                    name: row.name,
-                    bundleIdentifier: application?.bundleIdentifier,
-                    ownerUID: row.ownerUID,
-                    cpuUsage: row.cpuUsage,
-                    isApplication: application != nil
-                )
-            }
-        }
-        let sorted = decorated.sorted {
+        let cpuRanked = numeric.compactMap { row -> NumericProcess? in
+            row.cpuUsage == nil ? nil : row
+        }.sorted {
             $0.cpuUsage == $1.cpuUsage
                 ? $0.identity.pid < $1.identity.pid
-                : $0.cpuUsage > $1.cpuUsage
+                : ($0.cpuUsage ?? 0) > ($1.cpuUsage ?? 0)
         }
-        cachedProcesses = Array(sorted.prefix(20))
-        return Array(cachedProcesses.prefix(10))
+        let applications = await RunningApplicationCatalog.shared.snapshot()
+        func decorate(_ row: NumericProcess) -> ProcessMetric {
+            let application = applications[row.identity.pid]
+            return ProcessMetric(
+                identity: row.identity,
+                name: row.name,
+                bundleIdentifier: application?.bundleIdentifier,
+                ownerUID: row.ownerUID,
+                cpuUsage: row.cpuUsage ?? 0,
+                physicalFootprintBytes: row.physicalFootprintBytes,
+                isApplication: application?.isRegularApplication == true
+            )
+        }
+
+        cachedProcesses = cpuRanked.prefix(20).map(decorate)
+        let memoryRanked = numeric.sorted {
+            $0.physicalFootprintBytes == $1.physicalFootprintBytes
+                ? $0.identity.pid < $1.identity.pid
+                : $0.physicalFootprintBytes > $1.physicalFootprintBytes
+        }.prefix(20).map(decorate)
+        return ProcessRankingSnapshot(
+            cpu: cachedProcesses,
+            memory: Array(memoryRanked)
+        )
     }
 
     func sampleThreads(for process: ProcessIdentity) async throws -> [ThreadMetric] {
@@ -211,6 +285,7 @@ actor ProcessCPUCollector: ProcessCPUCollecting {
                 pid: raw.pid,
                 startTimeNanoseconds: raw.start_time_ns,
                 cpuNanoseconds: raw.cpu_time_ns,
+                physicalFootprintBytes: raw.physical_footprint_bytes,
                 ownerUID: raw.uid,
                 name: string(from: &raw.name)
             ))
@@ -251,10 +326,72 @@ actor ProcessCPUCollector: ProcessCPUCollecting {
     }
 }
 
+struct RunningApplicationMetadata: Sendable {
+    let localizedName: String?
+    let bundleIdentifier: String?
+    let isRegularApplication: Bool
+}
+
+@MainActor
+final class RunningApplicationCatalog: NSObject {
+    static let shared = RunningApplicationCatalog()
+
+    private var applications: [pid_t: RunningApplicationMetadata] = [:]
+
+    private override init() {
+        super.init()
+        for application in NSWorkspace.shared.runningApplications {
+            record(application)
+        }
+        let center = NSWorkspace.shared.notificationCenter
+        center.addObserver(
+            self,
+            selector: #selector(applicationDidLaunch(_:)),
+            name: NSWorkspace.didLaunchApplicationNotification,
+            object: nil
+        )
+        center.addObserver(
+            self,
+            selector: #selector(applicationDidTerminate(_:)),
+            name: NSWorkspace.didTerminateApplicationNotification,
+            object: nil
+        )
+    }
+
+    func snapshot() -> [pid_t: RunningApplicationMetadata] {
+        applications
+    }
+
+    @objc
+    private func applicationDidLaunch(_ notification: Notification) {
+        guard let application = notification.userInfo?[NSWorkspace.applicationUserInfoKey]
+            as? NSRunningApplication else { return }
+        record(application)
+    }
+
+    @objc
+    private func applicationDidTerminate(_ notification: Notification) {
+        guard let application = notification.userInfo?[NSWorkspace.applicationUserInfoKey]
+            as? NSRunningApplication else { return }
+        applications.removeValue(forKey: application.processIdentifier)
+    }
+
+    private func record(_ application: NSRunningApplication) {
+        let pid = application.processIdentifier
+        guard pid > 0 else { return }
+        applications[pid] = RunningApplicationMetadata(
+            localizedName: application.localizedName,
+            bundleIdentifier: application.bundleIdentifier,
+            isRegularApplication: application.activationPolicy == .regular
+        )
+    }
+}
+
 private struct ProcessCounter {
     let pid: pid_t
     let startTimeNanoseconds: UInt64
     let cpuNanoseconds: UInt64
+    let physicalFootprintBytes: UInt64
     let ownerUID: UInt32
     let name: String
 }

@@ -17,23 +17,10 @@ struct CPUAlertApp: App {
     }
 }
 
-enum PopoverDismissalPolicy {
-    static func shouldDismissLocalEvent(
-        eventWindowNumber: Int?,
-        statusItemWindowNumber: Int?,
-        popoverWindowNumber: Int?
-    ) -> Bool {
-        guard let eventWindowNumber else { return true }
-        return eventWindowNumber != statusItemWindowNumber
-            && eventWindowNumber != popoverWindowNumber
-    }
-}
-
 @MainActor
 final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
     private var statusItem: NSStatusItem?
     private let popover = NSPopover()
-    private var localMouseMonitor: Any?
     private var globalMouseMonitor: Any?
     private let powerState: PowerStateMonitor
     let model: MonitorModel
@@ -41,6 +28,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
     let loginItemService: LoginItemService
     let helperClient: HelperClient
     private let shouldOpenAcceptanceWindow: Bool
+    private let shouldOpenTestPopover: Bool
     private let acceptanceAppearance: NSAppearance.Name?
     private var acceptancePanelWindow: NSWindow?
     private var settingsWindow: NSWindow?
@@ -53,6 +41,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
             systemCPU: SystemCPUCollector(),
             processes: ProcessCPUCollector(),
             gpu: SystemGPUCollector(),
+            memory: SystemMemoryCollector(),
             thresholds: .defaults
         )
         let powerState = PowerStateMonitor()
@@ -95,10 +84,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
         }
         model.panelIsOpen = benchmarkMode?.opensPanel ?? false
         #if DEBUG
-        shouldOpenAcceptanceWindow = uiTestState.isEnabled
+        shouldOpenTestPopover = arguments.contains("--ui-testing-popover")
+        shouldOpenAcceptanceWindow = (uiTestState.isEnabled
+            && !shouldOpenTestPopover)
             || benchmarkMode?.opensPanel == true
             || arguments.contains("--open-panel")
         #else
+        shouldOpenTestPopover = false
         shouldOpenAcceptanceWindow = benchmarkMode?.opensPanel == true
         #endif
         if arguments.contains("--appearance-high-contrast-dark") {
@@ -115,7 +107,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
         if let acceptanceAppearance {
             NSApplication.shared.appearance = NSAppearance(named: acceptanceAppearance)
         }
-        let statusItem = NSStatusBar.system.statusItem(withLength: 56)
+        _ = RunningApplicationCatalog.shared.snapshot()
+        let statusItem = NSStatusBar.system.statusItem(withLength: 82)
         guard let button = statusItem.button else { return }
 
         let label = MenuBarLabel(model: model)
@@ -126,7 +119,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
             hostingView.leadingAnchor.constraint(equalTo: button.leadingAnchor, constant: 2),
             hostingView.trailingAnchor.constraint(equalTo: button.trailingAnchor, constant: -2),
             hostingView.centerYAnchor.constraint(equalTo: button.centerYAnchor),
-            hostingView.heightAnchor.constraint(equalToConstant: 18),
+            hostingView.heightAnchor.constraint(equalToConstant: 20),
         ])
 
         button.target = self
@@ -147,6 +140,14 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
         )
 
         self.statusItem = statusItem
+
+        if shouldOpenTestPopover {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak self, weak button] in
+                guard let self, let button else { return }
+                NSApplication.shared.deactivate()
+                self.presentPopover(relativeTo: button)
+            }
+        }
 
         if shouldOpenAcceptanceWindow {
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak self] in
@@ -176,7 +177,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
 
     private func presentPopover(relativeTo button: NSStatusBarButton) {
         popover.show(relativeTo: button.bounds, of: button, preferredEdge: .minY)
-        startPopoverDismissalMonitoring(statusButton: button)
+        startPopoverDismissalMonitoring()
     }
 
     private func closePopover() {
@@ -188,26 +189,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
         popover.performClose(nil)
     }
 
-    private func startPopoverDismissalMonitoring(statusButton: NSStatusBarButton) {
+    private func startPopoverDismissalMonitoring() {
         stopPopoverDismissalMonitoring()
         let eventMask: NSEvent.EventTypeMask = [
             .leftMouseDown,
             .rightMouseDown,
             .otherMouseDown,
         ]
-        localMouseMonitor = NSEvent.addLocalMonitorForEvents(
-            matching: eventMask
-        ) { [weak self, weak statusButton] event in
-            guard let self else { return event }
-            if PopoverDismissalPolicy.shouldDismissLocalEvent(
-                eventWindowNumber: event.windowNumber,
-                statusItemWindowNumber: statusButton?.window?.windowNumber,
-                popoverWindowNumber: self.popover.contentViewController?.view.window?.windowNumber
-            ) {
-                self.closePopover()
-            }
-            return event
-        }
         globalMouseMonitor = NSEvent.addGlobalMonitorForEvents(
             matching: eventMask
         ) { [weak self] _ in
@@ -218,10 +206,6 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
     }
 
     private func stopPopoverDismissalMonitoring() {
-        if let localMouseMonitor {
-            NSEvent.removeMonitor(localMouseMonitor)
-            self.localMouseMonitor = nil
-        }
         if let globalMouseMonitor {
             NSEvent.removeMonitor(globalMouseMonitor)
             self.globalMouseMonitor = nil

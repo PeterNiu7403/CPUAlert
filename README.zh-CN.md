@@ -5,7 +5,7 @@
 </p>
 
 <p align="center">
-  注重隐私的 macOS 菜单栏 CPU / GPU 实时压力监控工具。
+  注重隐私的 macOS 菜单栏 CPU / GPU / 内存实时压力监控工具。
 </p>
 
 <p align="center">
@@ -19,12 +19,15 @@
   <a href="README.md">English</a> · 简体中文
 </p>
 
-CPUAlert 是一款面向 Apple 芯片、macOS 15 及更高版本的本地菜单栏应用。它展示整机 CPU 压力、尽力而为的 GPU 使用率、进程或应用组排名，并在 GPU 数据不可用时保持 CPU 监控正常工作。
+CPUAlert 是一款面向 Apple 芯片、macOS 15 及更高版本的本地菜单栏应用。它展示整机 CPU、尽力而为的 GPU 与内存压力、进程或应用组排名，并在 GPU 数据不可用时保持 CPU 和内存监控正常工作。
+
+当前版本为 **0.2.1（Build 6）**。完整更新内容与验证记录见[更新日志](CHANGELOG.md)。
 
 ## 主要功能
 
-- 在菜单栏实时显示整机 CPU 和 GPU 压力。
-- 查看 CPU 进程排名、按需展开线程，以及展开 GPU 应用组成员。
+- 通过固定宽度的 C / G / M 三联仪表实时显示整机 CPU、GPU 和内存压力。
+- 查看 CPU 与进程物理内存排名、按需展开线程，以及展开 GPU 应用组成员。
+- 显式选择当前用户应用并确认后请求它们正常退出以释放内存；不会调用 `purge`，也不会批量静默强制结束。
 - 自定义持续高负载提醒阈值、持续时间和冷却时间。
 - 安全终止进程：包含确认步骤、PID 重用校验、系统进程保护和特权操作即时认证。
 - 支持登录时启动、首次使用引导、权限管理、诊断，以及中英文界面。
@@ -69,7 +72,7 @@ xcodebuild test \
   -derivedDataPath build/DerivedData
 ```
 
-CPUAlert 是 `LSUIElement` 应用，不会显示普通 Dock 图标。请启动构建出的 `.app`，然后使用菜单栏中的 CPU / GPU 状态项。
+CPUAlert 是 `LSUIElement` 应用，不会显示普通 Dock 图标。请启动构建出的 `.app`，然后使用菜单栏中的 CPU / GPU / 内存状态项。
 
 如果 Xcode 提示缺少 Metal 工具链，可执行：
 
@@ -84,6 +87,7 @@ DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer \
 - 登录项只会在用户主动切换设置后注册或移除。
 - 启动应用不会自动安装特权 Helper。
 - 同一用户的 `SIGTERM` 在应用进程内完成；`SIGKILL` 是单独确认的操作。
+- 内存释放弹窗默认不选择任何项目，只列出当前用户的普通应用，批量流程不会自动升级为 `SIGKILL`。
 - Root 终止操作每次都要求本机用户重新认证，并在发送信号前复核 PID 与进程启动时间。
 - Helper 只接受固定的安全编码操作，不能接收任意 Shell 命令、路径、环境变量或可执行文件。
 - 受保护的系统进程不能通过 CPUAlert 终止。
@@ -101,7 +105,11 @@ CPUAlert 没有联网、遥测或上传路径，也不保存进程历史。采�
 - `CPUAlertTests/`、`CPUAlertUITests/`：单元测试和确定性 UI 验收测试。
 - `TestFixtures/`：需要主动运行的 CPU / GPU 压力夹具。
 - `Scripts/`：基准测试与进程采样工具。
+- `CHANGELOG.md`：按版本记录的用户可见更新与发布验证。
 - `docs/cpualert-implementation/`：需求、设计与实施记录。
+- `docs/memory-monitoring-and-cleanup/`：内存监控、释放与三指标菜单栏规格。
+
+内存的压力相关占用采用 `active + wired + compressed` 口径，并以物理内存为上限；进程排行使用 `ri_phys_footprint`。释放内存显示的是物理占用估算，不保证实际回收相同字节数。
 
 更多指标语义、基准测试结果、Helper 移除方式和已知限制请参阅[英文主文档](README.md)。
 

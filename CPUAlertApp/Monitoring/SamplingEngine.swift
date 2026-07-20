@@ -6,11 +6,14 @@ actor SamplingEngine {
     private let systemCPU: any SystemCPUCollecting
     private let processes: any ProcessCPUCollecting
     private let gpu: any GPUCollecting
+    private let memory: any SystemMemoryCollecting
 
     private var thresholds: AlertThresholds
     private var previousCPULevel: PressureLevel = .green
     private var previousGPULevel: PressureLevel = .unavailable
+    private var previousMemoryLevel: PressureLevel = .unavailable
     private var lastProcesses: [ProcessMetric] = []
+    private var lastMemoryProcesses: [ProcessMetric] = []
     private var lastGPUGroups: [GPUGroupMetric] = []
     private var samplingTask: Task<Void, Never>?
     private var continuation: AsyncStream<MetricsSnapshot>.Continuation?
@@ -19,11 +22,13 @@ actor SamplingEngine {
         systemCPU: any SystemCPUCollecting,
         processes: any ProcessCPUCollecting,
         gpu: any GPUCollecting,
+        memory: any SystemMemoryCollecting,
         thresholds: AlertThresholds
     ) {
         self.systemCPU = systemCPU
         self.processes = processes
         self.gpu = gpu
+        self.memory = memory
         self.thresholds = thresholds
     }
 
@@ -35,17 +40,19 @@ actor SamplingEngine {
         let clock = ContinuousClock()
         async let sampledCPU = collectSystemCPUTimed()
         async let sampledGPU = collectSystemGPUTimed()
+        async let sampledMemory = collectSystemMemoryTimed()
 
         var expandedThreads: [ThreadMetric] = []
         var rankingDuration: Duration?
         if includeRankings {
             let rankingStarted = clock.now
-            async let sampledProcesses = collectProcesses()
+            async let sampledProcesses = collectProcessRankings()
             async let sampledGroups = collectGPUGroups()
             async let sampledThreads = collectThreads(for: context.expandedProcess)
 
             if let value = await sampledProcesses {
-                lastProcesses = value
+                lastProcesses = value.cpu
+                lastMemoryProcesses = value.memory
             }
             if let value = await sampledGroups {
                 lastGPUGroups = value
@@ -56,26 +63,37 @@ actor SamplingEngine {
 
         let cpuSample = await sampledCPU
         let gpuTimedSample = await sampledGPU
+        let memoryTimedSample = await sampledMemory
         let cpuUsage = cpuSample.value
         let gpuSample = gpuTimedSample.value
+        let memorySample = memoryTimedSample.value
         let cpuLevel = thresholds.level(for: cpuUsage, previous: previousCPULevel)
         let gpuLevel = thresholds.level(for: gpuSample.usage, previous: previousGPULevel)
+        let memoryLevel = thresholds.level(
+            for: memorySample?.usage,
+            previous: previousMemoryLevel
+        )
         previousCPULevel = cpuLevel
         previousGPULevel = gpuLevel
+        previousMemoryLevel = memoryLevel
 
         return MetricsSnapshot(
             cpuUsage: cpuUsage ?? 0,
             gpuUsage: gpuSample.usage,
+            memory: memorySample,
             processes: lastProcesses,
+            memoryProcesses: lastMemoryProcesses,
             gpuGroups: lastGPUGroups,
             expandedThreads: expandedThreads,
             cpuLevel: cpuLevel,
             gpuLevel: gpuLevel,
+            memoryLevel: memoryLevel,
             gpuSource: gpuSample.source,
             sampledAt: now,
             collectorDurations: CollectorDurations(
                 cpu: cpuSample.duration,
                 gpu: gpuTimedSample.duration,
+                memory: memoryTimedSample.duration,
                 rankings: rankingDuration
             )
         )
@@ -181,12 +199,30 @@ actor SamplingEngine {
         return (value, started.duration(to: clock.now))
     }
 
-    private func collectProcesses() async -> [ProcessMetric]? {
+    private func collectProcessRankings() async -> ProcessRankingSnapshot? {
         do {
-            return try await processes.sampleProcesses()
+            return try await processes.sampleProcessRankings()
         } catch {
             return nil
         }
+    }
+
+    private func collectSystemMemory() async -> MemoryMetric? {
+        do {
+            return try await memory.sampleSystemMemory()
+        } catch {
+            return nil
+        }
+    }
+
+    private func collectSystemMemoryTimed() async -> (
+        value: MemoryMetric?,
+        duration: Duration
+    ) {
+        let clock = ContinuousClock()
+        let started = clock.now
+        let value = await collectSystemMemory()
+        return (value, started.duration(to: clock.now))
     }
 
     private func collectGPUGroups() async -> [GPUGroupMetric]? {

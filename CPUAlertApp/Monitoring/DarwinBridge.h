@@ -16,9 +16,17 @@ typedef struct {
     pid_t pid;
     uint64_t start_time_ns;
     uint64_t cpu_time_ns;
+    uint64_t physical_footprint_bytes;
     uint32_t uid;
     char name[256];
 } CPUAProcessCounter;
+
+typedef struct {
+    uint64_t page_size;
+    uint64_t active_pages;
+    uint64_t wired_pages;
+    uint64_t compressed_pages;
+} CPUASystemMemoryStatistics;
 
 typedef struct {
     uint64_t thread_id;
@@ -27,6 +35,7 @@ typedef struct {
 } CPUAThreadCounter;
 
 bool CPUACopySystemTicks(CPUASystemTicks *output);
+bool CPUACopySystemMemoryStatistics(CPUASystemMemoryStatistics *output);
 int CPUACopyAllPIDs(pid_t *buffer, int buffer_bytes);
 bool CPUACopyProcessCounter(pid_t pid, CPUAProcessCounter *output);
 int CPUACopyThreadIDs(pid_t pid, uint64_t *buffer, int buffer_bytes);
