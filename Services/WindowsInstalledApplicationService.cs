@@ -1,11 +1,12 @@
 using System.Diagnostics;
 using Microsoft.Win32;
-using MoleWindows.Models;
+using WinMoe.Models;
 
-namespace MoleWindows.Services;
+namespace WinMoe.Services;
 
 public sealed class WindowsInstalledApplicationService : IInstalledApplicationService
 {
+    private const string UninstallSubKeyPath = @"SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall";
     private static readonly char[] DirectorySeparators = [Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar];
 
     private readonly ISafeDeletionService _safeDeletionService;
@@ -36,14 +37,34 @@ public sealed class WindowsInstalledApplicationService : IInstalledApplicationSe
         ".NET Desktop Runtime"
     ];
 
+    internal readonly record struct RegistryLocation(
+        RegistryHive Hive,
+        RegistryView View,
+        string SubKeyPath,
+        string Source);
+
+    internal static IReadOnlyList<RegistryLocation> GetRegistryLocations()
+    {
+        return
+        [
+            new(RegistryHive.LocalMachine, RegistryView.Registry64, UninstallSubKeyPath, "Registry64"),
+            new(RegistryHive.LocalMachine, RegistryView.Registry32, UninstallSubKeyPath, "Registry32"),
+            new(RegistryHive.CurrentUser, RegistryView.Registry64, UninstallSubKeyPath, "UserRegistry64"),
+            new(RegistryHive.CurrentUser, RegistryView.Registry32, UninstallSubKeyPath, "UserRegistry32")
+        ];
+    }
+
     public Task<IReadOnlyList<InstalledApplication>> GetInstalledApplicationsAsync(CancellationToken cancellationToken = default)
     {
         return Task.Run<IReadOnlyList<InstalledApplication>>(() =>
         {
             var apps = new List<InstalledApplication>();
-            ReadRegistryHive(Registry.LocalMachine, @"SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall", "Registry", apps, cancellationToken);
-            ReadRegistryHive(Registry.LocalMachine, @"SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall", "Registry32", apps, cancellationToken);
-            ReadRegistryHive(Registry.CurrentUser, @"SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall", "UserRegistry", apps, cancellationToken);
+            foreach (var location in GetRegistryLocations())
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                using var baseKey = RegistryKey.OpenBaseKey(location.Hive, location.View);
+                ReadRegistryHive(baseKey, location.SubKeyPath, location.Source, apps, cancellationToken);
+            }
 
             return apps
                 .GroupBy(app => app.Id, StringComparer.OrdinalIgnoreCase)
@@ -163,7 +184,7 @@ public sealed class WindowsInstalledApplicationService : IInstalledApplicationSe
         var publisher = ReadString(values, "Publisher");
         var version = ReadString(values, "DisplayVersion");
         var estimatedSizeKb = ReadLong(values, "EstimatedSize");
-        var sizeBytes = estimatedSizeKb > 0 ? estimatedSizeKb * 1024 : TryMeasureDirectory(installLocation);
+        var sizeBytes = estimatedSizeKb > 0 ? estimatedSizeKb * 1024 : 0;
         var id = string.Join("|", [name, publisher, version, installLocation, keyName]).ToLowerInvariant();
 
         return new InstalledApplication(
@@ -288,29 +309,17 @@ public sealed class WindowsInstalledApplicationService : IInstalledApplicationSe
         return long.TryParse(ReadString(values, key), out var value) ? value : 0;
     }
 
-    private static long TryMeasureDirectory(string? path)
-    {
-        if (string.IsNullOrWhiteSpace(path) || !Directory.Exists(path))
-        {
-            return 0;
-        }
-
-        try
-        {
-            return MeasureDirectory(path, CancellationToken.None);
-        }
-        catch
-        {
-            return 0;
-        }
-    }
-
     private static long MeasureDirectory(string path, CancellationToken cancellationToken)
     {
         long total = 0;
 
         try
         {
+            if ((File.GetAttributes(path) & FileAttributes.ReparsePoint) != 0)
+            {
+                return 0;
+            }
+
             foreach (var file in Directory.EnumerateFiles(path))
             {
                 cancellationToken.ThrowIfCancellationRequested();
@@ -327,6 +336,19 @@ public sealed class WindowsInstalledApplicationService : IInstalledApplicationSe
             foreach (var directory in Directory.EnumerateDirectories(path))
             {
                 cancellationToken.ThrowIfCancellationRequested();
+
+                try
+                {
+                    if ((File.GetAttributes(directory) & FileAttributes.ReparsePoint) != 0)
+                    {
+                        continue;
+                    }
+                }
+                catch
+                {
+                    continue;
+                }
+
                 total += MeasureDirectory(directory, cancellationToken);
             }
         }

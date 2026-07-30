@@ -1,0 +1,78 @@
+using WinMoe.Models;
+using WinMoe.Services;
+using Xunit;
+
+namespace WinMoe.Tests;
+
+public sealed class HttpServerSettingsPlannerTests
+{
+    [Fact]
+    public void Plan_ReturnsNone_WhenEnabledPortIsUnchanged()
+    {
+        var settings = new WinMoeSettings
+        {
+            HttpServerEnabled = true,
+            HttpServerPort = 9277
+        };
+
+        var action = HttpServerSettingsPlanner.Plan(true, 9277, settings);
+
+        Assert.Equal(HttpServerSettingsAction.None, action);
+    }
+
+    [Fact]
+    public void Plan_ReturnsStart_WhenInactiveSettingsEnableHttp()
+    {
+        var settings = new WinMoeSettings
+        {
+            HttpServerEnabled = true,
+            HttpServerPort = 9277
+        };
+
+        var action = HttpServerSettingsPlanner.Plan(false, 9277, settings);
+
+        Assert.Equal(HttpServerSettingsAction.Start, action);
+    }
+
+    [Fact]
+    public void Plan_KeepsListener_WhenSettingsDisableHttpRest()
+    {
+        var settings = new WinMoeSettings
+        {
+            HttpServerEnabled = false,
+            HttpServerPort = 9277
+        };
+
+        var action = HttpServerSettingsPlanner.Plan(true, 9277, settings);
+
+        Assert.Equal(HttpServerSettingsAction.None, action);
+    }
+
+    [Fact]
+    public void Plan_ReturnsRestart_WhenEnabledPortChanges()
+    {
+        var settings = new WinMoeSettings
+        {
+            HttpServerEnabled = true,
+            HttpServerPort = 9444
+        };
+
+        var action = HttpServerSettingsPlanner.Plan(true, 9277, settings);
+
+        Assert.Equal(HttpServerSettingsAction.Restart, action);
+    }
+
+    [Fact]
+    public void Plan_ReturnsStart_WhenInactiveSettingsDisableHttpRest()
+    {
+        var settings = new WinMoeSettings
+        {
+            HttpServerEnabled = false,
+            HttpServerPort = 9444
+        };
+
+        var action = HttpServerSettingsPlanner.Plan(false, 9277, settings);
+
+        Assert.Equal(HttpServerSettingsAction.Start, action);
+    }
+}

@@ -1,6 +1,6 @@
 using System.Reflection;
 
-namespace MoleWindows.Services;
+namespace WinMoe.Services;
 
 /// Build/run-time configuration for the Windows telemetry pipeline.
 ///
@@ -10,26 +10,29 @@ namespace MoleWindows.Services;
 /// pipeline is untouched.
 ///
 /// Keys are **baked into the assembly at build time** via MSBuild
-/// `AssemblyMetadata` (see MoleWindows.csproj), sourced from the
-/// `MOLEWINDOWS_*` environment variables a release build sets — exactly the way
+/// `AssemblyMetadata` (see WinMoe.csproj), sourced from the
+/// `WINMOE_*` environment variables a release build sets — exactly the way
 /// the macOS build bakes `SENTRY_DSN`/`POSTHOG_API_KEY` into Info.plist. A
 /// runtime environment variable is honored as a fallback so a developer can
 /// point a local build at real keys without rebaking; it is NOT how shipped
-/// builds get their keys (end users have no such variables set).
+/// builds get their keys (end users have no such variables set). Legacy
+/// `MOLEWINDOWS_*` variables remain a final fallback during the rename.
 ///
 /// When a value is absent — every local/dev build — the corresponding SDK is
 /// never started, so telemetry is completely inert outside signed releases.
 public static class TelemetryConfig
 {
-    public static string SentryDsn => Resolve("MoleWindowsSentryDsn", "MOLEWINDOWS_SENTRY_DSN");
+    public static string SentryDsn =>
+        Resolve("WinMoeSentryDsn", "WINMOE_SENTRY_DSN", "MOLEWINDOWS_SENTRY_DSN");
 
-    public static string PostHogApiKey => Resolve("MoleWindowsPostHogApiKey", "MOLEWINDOWS_POSTHOG_API_KEY");
+    public static string PostHogApiKey =>
+        Resolve("WinMoePostHogApiKey", "WINMOE_POSTHOG_API_KEY", "MOLEWINDOWS_POSTHOG_API_KEY");
 
     public static string PostHogHost
     {
         get
         {
-            var value = Resolve("MoleWindowsPostHogHost", "MOLEWINDOWS_POSTHOG_HOST");
+            var value = Resolve("WinMoePostHogHost", "WINMOE_POSTHOG_HOST", "MOLEWINDOWS_POSTHOG_HOST");
             return string.IsNullOrWhiteSpace(value) ? "https://us.i.posthog.com" : value;
         }
     }
@@ -41,7 +44,10 @@ public static class TelemetryConfig
     /// Prefer the value baked into the assembly at build time (how releases get
     /// their keys); fall back to an environment variable so a local dev build
     /// can use real keys without rebaking.
-    private static string Resolve(string metadataKey, string environmentVariable)
+    private static string Resolve(
+        string metadataKey,
+        string environmentVariable,
+        string legacyEnvironmentVariable)
     {
         var baked = Metadata(metadataKey);
         if (!string.IsNullOrWhiteSpace(baked))
@@ -49,7 +55,9 @@ public static class TelemetryConfig
             return baked;
         }
 
-        return Environment.GetEnvironmentVariable(environmentVariable) ?? string.Empty;
+        return Environment.GetEnvironmentVariable(environmentVariable)
+               ?? Environment.GetEnvironmentVariable(legacyEnvironmentVariable)
+               ?? string.Empty;
     }
 
     private static readonly Dictionary<string, string> BakedMetadata = LoadBakedMetadata();

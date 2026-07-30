@@ -1,6 +1,6 @@
 using Microsoft.UI.Xaml.Controls;
 
-namespace MoleWindows.Services;
+namespace WinMoe.Services;
 
 public interface INavigationService
 {

@@ -1,10 +1,10 @@
 using System.Runtime.InteropServices;
 using Microsoft.UI.Xaml;
 using WinRT.Interop;
-using MoleWindows.ViewModels;
-using MoleWindows.Views;
+using WinMoe.ViewModels;
+using WinMoe.Views;
 
-namespace MoleWindows.Services;
+namespace WinMoe.Services;
 
 public sealed class WindowsTrayIconService : ITrayIconService
 {
@@ -229,14 +229,14 @@ public sealed class WindowsTrayIconService : ITrayIconService
     private void BuildTrayMenu(IntPtr menuHandle)
     {
         var snapshot = _telemetrySamplerService.LatestSnapshot;
-        AppendMenu(menuHandle, MfString | MfDisabled | MfGrayed, UIntPtr.Zero, "Mole Windows");
+        AppendMenu(menuHandle, MfString | MfDisabled | MfGrayed, UIntPtr.Zero, "WinMoe");
         AppendMenu(menuHandle, MfString | MfDisabled | MfGrayed, UIntPtr.Zero, TrayIconTextFormatter.BuildHealthLine(snapshot));
         AppendMenu(menuHandle, MfString | MfDisabled | MfGrayed, UIntPtr.Zero, TrayIconTextFormatter.BuildResourceLine(snapshot));
         AppendMenu(menuHandle, MfString | MfDisabled | MfGrayed, UIntPtr.Zero, TrayIconTextFormatter.BuildNetworkLine(snapshot));
         AppendMenu(menuHandle, MfString | MfDisabled | MfGrayed, UIntPtr.Zero, TrayIconTextFormatter.BuildSampleLine(snapshot));
         AppendMenu(menuHandle, MfSeparator, UIntPtr.Zero, null);
         AppendMenu(menuHandle, MfString, new UIntPtr(MenuHud), "显示状态面板");
-        AppendMenu(menuHandle, MfString, new UIntPtr(MenuOpen), "打开 Mole Windows");
+        AppendMenu(menuHandle, MfString, new UIntPtr(MenuOpen), "打开 WinMoe");
         AppendMenu(menuHandle, MfString, new UIntPtr(MenuStatus), "状态");
         AppendMenu(menuHandle, MfString, new UIntPtr(MenuHistory), "历史");
         AppendMenu(menuHandle, MfString, new UIntPtr(MenuActivity), "活动");
@@ -245,7 +245,7 @@ public sealed class WindowsTrayIconService : ITrayIconService
         AppendMenu(menuHandle, MfString, new UIntPtr(MenuOptimize), "优化");
         AppendMenu(menuHandle, MfString, new UIntPtr(MenuSettings), "设置");
         AppendMenu(menuHandle, MfSeparator, UIntPtr.Zero, null);
-        AppendMenu(menuHandle, MfString, new UIntPtr(MenuExit), "退出 Mole Windows");
+        AppendMenu(menuHandle, MfString, new UIntPtr(MenuExit), "退出 WinMoe");
     }
 
     private void ExecuteMenuCommand(int command)
@@ -501,12 +501,11 @@ public sealed class WindowsTrayIconService : ITrayIconService
     {
         try
         {
-            var directory = Path.Combine(
-                Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-                "MoleWindows");
+            var path = ApplicationDataPaths.CurrentFile("tray-hud-diagnostic.log");
+            var directory = Path.GetDirectoryName(path)!;
             Directory.CreateDirectory(directory);
             File.AppendAllText(
-                Path.Combine(directory, "tray-hud-diagnostic.log"),
+                path,
                 $"{DateTimeOffset.Now:O} {message}{Environment.NewLine}");
         }
         catch

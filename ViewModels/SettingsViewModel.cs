@@ -1,10 +1,10 @@
 using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using MoleWindows.Models;
-using MoleWindows.Services;
+using WinMoe.Models;
+using WinMoe.Services;
 
-namespace MoleWindows.ViewModels;
+namespace WinMoe.ViewModels;
 
 public partial class SettingsViewModel : ViewModelBase
 {
@@ -41,10 +41,10 @@ public partial class SettingsViewModel : ViewModelBase
     private string mcpEndpoint = string.Empty;
 
     [ObservableProperty]
-    private string mcpStdioCommand = "Assets\\Mcp\\molewindows-mcp-stdio.exe";
+    private string mcpStdioCommand = "Assets\\Mcp\\winmoe-mcp-stdio.exe";
 
     [ObservableProperty]
-    private string engineInstallHint = "MoleWindows ships Assets\\Mole\\mo.exe. You can also override with Assets\\mo.exe, Assets\\Mole\\mole.ps1, Assets\\Mole\\mo.cmd, or a PATH `mo` install.";
+    private string engineInstallHint = "WinMoe ships Assets\\Mole\\mo.exe. You can also override with Assets\\mo.exe, Assets\\Mole\\mole.ps1, Assets\\Mole\\mo.cmd, or a PATH `mo` install.";
 
     [ObservableProperty]
     private string settingsPath = string.Empty;
@@ -100,7 +100,7 @@ public partial class SettingsViewModel : ViewModelBase
     public async Task SaveSettingsAsync()
     {
         var current = _settingsService.Current;
-        var settings = MoleWindowsSettings.Normalize(new MoleWindowsSettings
+        var settings = WinMoeSettings.Normalize(new WinMoeSettings
         {
             SamplingIntervalSeconds = ParseInt(SamplingIntervalSeconds, current.SamplingIntervalSeconds),
             HistoryRetentionDays = ParseInt(HistoryRetentionDays, current.HistoryRetentionDays),
@@ -135,7 +135,7 @@ public partial class SettingsViewModel : ViewModelBase
         });
     }
 
-    private void ApplySettings(MoleWindowsSettings settings)
+    private void ApplySettings(WinMoeSettings settings)
     {
         SamplingIntervalSeconds = settings.SamplingIntervalSeconds.ToString();
         HistoryRetentionDays = settings.HistoryRetentionDays.ToString();

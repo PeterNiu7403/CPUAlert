@@ -1,6 +1,6 @@
-using MoleWindows.Models;
+using WinMoe.Models;
 
-namespace MoleWindows.Services;
+namespace WinMoe.Services;
 
 public sealed class InstallerCleanupService : IInstallerCleanupService
 {
@@ -48,7 +48,8 @@ public sealed class InstallerCleanupService : IInstallerCleanupService
 
     private static string ResolveDefaultDownloadsPath()
     {
-        var diagnosticRoot = Environment.GetEnvironmentVariable("MOLEWINDOWS_INSTALLER_ROOT");
+        var diagnosticRoot = Environment.GetEnvironmentVariable("WINMOE_INSTALLER_ROOT")
+                             ?? Environment.GetEnvironmentVariable("MOLEWINDOWS_INSTALLER_ROOT");
         if (!string.IsNullOrWhiteSpace(diagnosticRoot))
         {
             return diagnosticRoot;
@@ -157,6 +158,21 @@ public sealed class InstallerCleanupService : IInstallerCleanupService
 
         try
         {
+            var attributes = File.GetAttributes(candidatePath);
+            if ((attributes & FileAttributes.ReparsePoint) != 0)
+            {
+                return new LeftoverRemovalResult(candidate.Path, false, "Refusing to remove a reparse point.", candidate.SizeBytes);
+            }
+
+            var info = new FileInfo(candidatePath);
+            info.Refresh();
+            if (!info.Exists ||
+                info.Length != candidate.SizeBytes ||
+                info.LastWriteTimeUtc != candidate.LastWriteTime.UtcDateTime)
+            {
+                return new LeftoverRemovalResult(candidate.Path, false, "File changed since the installer preview.", candidate.SizeBytes);
+            }
+
             return _safeDeletionService.DeleteFileOrDirectory(candidatePath, candidate.SizeBytes);
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)

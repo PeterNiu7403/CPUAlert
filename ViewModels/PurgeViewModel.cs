@@ -3,10 +3,10 @@ using System.ComponentModel;
 using System.Diagnostics;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using MoleWindows.Models;
-using MoleWindows.Services;
+using WinMoe.Models;
+using WinMoe.Services;
 
-namespace MoleWindows.ViewModels;
+namespace WinMoe.ViewModels;
 
 public partial class PurgeViewModel : ViewModelBase
 {
@@ -41,7 +41,7 @@ public partial class PurgeViewModel : ViewModelBase
     private string selectedSummary = "0 projects";
 
     [ObservableProperty]
-    private string engineSummary = "Mole Windows purge is interactive; MoleWindows previews project artifacts using the same Windows rules.";
+    private string engineSummary = "WinMoe purge is interactive; WinMoe previews project artifacts using the same Windows rules.";
 
     public string OutputText => string.Join(Environment.NewLine, OutputLines);
 
@@ -189,7 +189,7 @@ public partial class PurgeViewModel : ViewModelBase
             RunOnUiThread(() =>
             {
                 EngineSummary = result.Succeeded
-                    ? "Mole purge is present; its Windows command is interactive, so MoleWindows uses a safe preview list before deleting artifacts."
+                    ? "Mole purge is present; its Windows command is interactive, so WinMoe uses a safe preview list before deleting artifacts."
                     : $"Mole purge help failed with exit code {result.ExitCode}; local preview remains available.";
             });
         }
@@ -256,7 +256,7 @@ public partial class PurgeViewModel : ViewModelBase
     {
         var entry = new OperationHistoryEntry(
             DateTimeOffset.UtcNow,
-            "molewindows",
+            "winmoe",
             operation,
             arguments,
             succeeded ? 0 : 1,

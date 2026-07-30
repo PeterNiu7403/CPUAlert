@@ -1,28 +1,28 @@
-# MoleWindows v0.1.0-preview.1
+# WinMoe v0.1.0-preview.1
 
-This is the first Windows branch preview package for MoleWindows.
+This is the first Windows branch preview package for WinMoe.
 
 ## Install
 
 Recommended install after the WinGet manifest is published:
 
 ```powershell
-winget install --id PeterNiu.MoleWindows -e
+winget install --id PeterNiu.WinMoe -e
 ```
 
 Direct download fallback:
 
-- `MoleWindows-v0.1.0-preview.1-win-x64-setup.exe`
-- `MoleWindows-v0.1.0-preview.1-win-x64.zip`
+- `WinMoe-v0.1.0-preview.1-win-x64-setup.exe`
+- `WinMoe-v0.1.0-preview.1-win-x64.zip`
 - `SHA256SUMS.txt`
 
 This preview is unsigned. Verify SHA256 before running direct downloads and expect Windows SmartScreen reputation prompts. Stricter Application Control policies can block the unsigned setup executable until a signed release is available.
 
 ## Included
 
-- Native WinUI MoleWindows-style shell.
+- Native WinUI WinMoe shell.
 - Mole-backed clean and optimize preview flows.
-- Windows fallbacks for current Mole Windows interactive gaps.
+- Windows fallbacks for current WinMoe interactive gaps.
 - Local operation history and telemetry history.
 - Loopback HTTP and stdio MCP agent surfaces.
 - Tray HUD and status menu.

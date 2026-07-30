@@ -1,7 +1,7 @@
 using Microsoft.UI.Xaml.Controls;
-using MoleWindows.ViewModels;
+using WinMoe.ViewModels;
 
-namespace MoleWindows.Pages;
+namespace WinMoe.Pages;
 
 public sealed partial class SettingsPage : Page
 {

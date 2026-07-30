@@ -1,9 +1,9 @@
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using MoleWindows.Ui;
-using MoleWindows.ViewModels;
+using WinMoe.Ui;
+using WinMoe.ViewModels;
 
-namespace MoleWindows.Pages;
+namespace WinMoe.Pages;
 
 public sealed partial class HistoryPage : Page
 {
@@ -20,7 +20,7 @@ public sealed partial class HistoryPage : Page
     {
         await ViewModel.RefreshAsync();
         UpdateRangeButtons();
-        MoleWindowsButtonVisualState.FreezeTree(this);
+        WinMoeButtonVisualState.FreezeTree(this);
     }
 
     private async void RangeButton_Click(object sender, RoutedEventArgs e)
@@ -38,8 +38,8 @@ public sealed partial class HistoryPage : Page
         {
             var buttonRange = button.Tag as string;
             var isSelected = string.Equals(buttonRange, ViewModel.SelectedRangeKey, StringComparison.OrdinalIgnoreCase);
-            button.Style = (Style)Application.Current.Resources[isSelected ? "MoleWindowsTopNavButtonSelectedStyle" : "MoleWindowsTopNavButtonStyle"];
-            MoleWindowsButtonVisualState.ApplyNavigationState(button, isSelected);
+            button.Style = (Style)Application.Current.Resources[isSelected ? "WinMoeTopNavButtonSelectedStyle" : "WinMoeTopNavButtonStyle"];
+            WinMoeButtonVisualState.ApplyNavigationState(button, isSelected);
         }
     }
 

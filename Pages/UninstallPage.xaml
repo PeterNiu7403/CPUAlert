@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <Page
-    x:Class="MoleWindows.Pages.UninstallPage"
+    x:Class="WinMoe.Pages.UninstallPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-    xmlns:models="using:MoleWindows.Models"
+    xmlns:models="using:WinMoe.Models"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:viewModels="using:MoleWindows.ViewModels"
+    xmlns:viewModels="using:WinMoe.ViewModels"
     x:Name="AppsRoot"
-    Background="{StaticResource MoleWindowsBackgroundSoftwareBrush}"
+    Background="{StaticResource WinMoeBackgroundSoftwareBrush}"
     mc:Ignorable="d"
     Loaded="UninstallPage_Loaded">
 
@@ -27,9 +27,9 @@
             <Setter Property="Padding" Value="18,8" />
             <Setter Property="CornerRadius" Value="22" />
             <Setter Property="Background" Value="#14100E" />
-            <Setter Property="Foreground" Value="{StaticResource MoleWindowsTextBrush}" />
-            <Setter Property="BorderBrush" Value="{StaticResource MoleWindowsStrokeBrush}" />
-            <Setter Property="FontFamily" Value="{StaticResource MoleWindowsMonoFont}" />
+            <Setter Property="Foreground" Value="{StaticResource WinMoeTextBrush}" />
+            <Setter Property="BorderBrush" Value="{StaticResource WinMoeStrokeBrush}" />
+            <Setter Property="FontFamily" Value="{StaticResource WinMoeMonoFont}" />
             <Setter Property="FontSize" Value="15" />
         </Style>
 
@@ -64,7 +64,7 @@
                 VerticalAlignment="Center"
                 Padding="4"
                 Background="#1A120F"
-                BorderBrush="{StaticResource MoleWindowsStrokeBrush}"
+                BorderBrush="{StaticResource WinMoeStrokeBrush}"
                 BorderThickness="1"
                 CornerRadius="30">
                 <StackPanel Orientation="Horizontal" Spacing="4">
@@ -72,19 +72,19 @@
                         x:Name="UninstallTabButton"
                         Click="AppsTabButton_Click"
                         Content="卸载"
-                        Style="{StaticResource MoleWindowsTopNavButtonSelectedStyle}"
+                        Style="{StaticResource WinMoeTopNavButtonSelectedStyle}"
                         Tag="uninstall" />
                     <Button
                         x:Name="UpdatesTabButton"
                         Click="AppsTabButton_Click"
                         Content="更新"
-                        Style="{StaticResource MoleWindowsTopNavButtonStyle}"
+                        Style="{StaticResource WinMoeTopNavButtonStyle}"
                         Tag="updates" />
                     <Button
                         x:Name="StartupTabButton"
                         Click="AppsTabButton_Click"
                         Content="启动项"
-                        Style="{StaticResource MoleWindowsTopNavButtonStyle}"
+                        Style="{StaticResource WinMoeTopNavButtonStyle}"
                         Tag="startup" />
                 </StackPanel>
             </Border>
@@ -109,7 +109,7 @@
                     Command="{Binding SortCommand}"
                     CommandParameter="name"
                     Content="名称"
-                    Style="{StaticResource MoleWindowsTopNavButtonStyle}" />
+                    Style="{StaticResource WinMoeTopNavButtonStyle}" />
                 <Button
                     x:Name="SizeSortButton"
                     Grid.Column="1"
@@ -118,7 +118,7 @@
                     Command="{Binding SortCommand}"
                     CommandParameter="size"
                     Content="大小"
-                    Style="{StaticResource MoleWindowsTopNavButtonSelectedStyle}" />
+                    Style="{StaticResource WinMoeTopNavButtonSelectedStyle}" />
                 <Button
                     x:Name="SourceSortButton"
                     Grid.Column="2"
@@ -127,13 +127,13 @@
                     Command="{Binding SortCommand}"
                     CommandParameter="source"
                     Content="来源"
-                    Style="{StaticResource MoleWindowsTopNavButtonStyle}" />
+                    Style="{StaticResource WinMoeTopNavButtonStyle}" />
                 <Button
                     Grid.Column="3"
                     Command="{Binding LoadCommand}"
                     Content="&#xE72C;"
                     FontFamily="Segoe MDL2 Assets"
-                    Style="{StaticResource MoleWindowsIconButtonStyle}" />
+                    Style="{StaticResource WinMoeIconButtonStyle}" />
             </Grid>
 
             <TextBox
@@ -144,7 +144,7 @@
                 Text="{Binding SearchQuery, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
         </Grid>
 
-        <Border Grid.Row="1" BorderBrush="{StaticResource MoleWindowsStrokeBrush}" BorderThickness="0,1,0,1">
+        <Border Grid.Row="1" BorderBrush="{StaticResource WinMoeStrokeBrush}" BorderThickness="0,1,0,1">
             <Grid>
                 <Grid x:Name="UninstallContent">
                     <ListView
@@ -173,10 +173,10 @@
                                         <TextBlock
                                             HorizontalAlignment="Center"
                                             VerticalAlignment="Center"
-                                            FontFamily="{StaticResource MoleWindowsMonoFont}"
+                                            FontFamily="{StaticResource WinMoeMonoFont}"
                                             FontSize="26"
                                             FontWeight="Bold"
-                                            Foreground="{StaticResource MoleWindowsDimBrush}"
+                                            Foreground="{StaticResource WinMoeDimBrush}"
                                             Text="{x:Bind ChevronText, Mode=OneWay}" />
 
                                         <Border
@@ -191,7 +191,7 @@
                                                 VerticalAlignment="Center"
                                                 FontSize="18"
                                                 FontWeight="Bold"
-                                                Foreground="{StaticResource MoleWindowsTextBrush}"
+                                                Foreground="{StaticResource WinMoeTextBrush}"
                                                 Text="{x:Bind Initials}" />
                                         </Border>
 
@@ -199,14 +199,14 @@
                                             <TextBlock
                                                 FontSize="22"
                                                 FontWeight="SemiBold"
-                                                Foreground="{StaticResource MoleWindowsTextBrush}"
+                                                Foreground="{StaticResource WinMoeTextBrush}"
                                                 Text="{x:Bind Name}"
                                                 TextTrimming="CharacterEllipsis" />
                                             <TextBlock
-                                                FontFamily="{StaticResource MoleWindowsMonoFont}"
+                                                FontFamily="{StaticResource WinMoeMonoFont}"
                                                 FontSize="16"
                                                 FontWeight="Bold"
-                                                Foreground="{StaticResource MoleWindowsDimBrush}"
+                                                Foreground="{StaticResource WinMoeDimBrush}"
                                                 Text="{x:Bind DetailLine}"
                                                 TextTrimming="CharacterEllipsis" />
                                         </StackPanel>
@@ -215,10 +215,10 @@
                                             Grid.Column="3"
                                             HorizontalAlignment="Right"
                                             VerticalAlignment="Center"
-                                            FontFamily="{StaticResource MoleWindowsMonoFont}"
+                                            FontFamily="{StaticResource WinMoeMonoFont}"
                                             FontSize="18"
                                             FontWeight="Bold"
-                                            Foreground="{StaticResource MoleWindowsMutedBrush}"
+                                            Foreground="{StaticResource WinMoeMutedBrush}"
                                             Text="{x:Bind RightSummary}" />
 
                                         <Ellipse
@@ -227,7 +227,7 @@
                                             Height="31"
                                             HorizontalAlignment="Center"
                                             VerticalAlignment="Center"
-                                            Stroke="{StaticResource MoleWindowsDimBrush}"
+                                            Stroke="{StaticResource WinMoeDimBrush}"
                                             StrokeThickness="2.5" />
                                     </Grid>
 
@@ -236,7 +236,7 @@
                                         Margin="54,0,20,20"
                                         Padding="22"
                                         Background="#151110"
-                                        BorderBrush="{StaticResource MoleWindowsStrokeBrush}"
+                                        BorderBrush="{StaticResource WinMoeStrokeBrush}"
                                         BorderThickness="1"
                                         CornerRadius="18"
                                         Visibility="{x:Bind DetailVisibility, Mode=OneWay}">
@@ -258,31 +258,31 @@
                                                     <TextBlock
                                                         FontSize="22"
                                                         FontWeight="SemiBold"
-                                                        Foreground="{StaticResource MoleWindowsTextBrush}"
+                                                        Foreground="{StaticResource WinMoeTextBrush}"
                                                         Text="{x:Bind Name}"
                                                         TextTrimming="CharacterEllipsis" />
                                                     <TextBlock
-                                                        FontFamily="{StaticResource MoleWindowsMonoFont}"
+                                                        FontFamily="{StaticResource WinMoeMonoFont}"
                                                         FontSize="16"
                                                         FontWeight="Bold"
-                                                        Foreground="{StaticResource MoleWindowsDimBrush}"
+                                                        Foreground="{StaticResource WinMoeDimBrush}"
                                                         Text="{x:Bind InstallLocation}"
                                                         TextTrimming="CharacterEllipsis" />
                                                 </StackPanel>
                                                 <TextBlock
                                                     Grid.Column="1"
                                                     VerticalAlignment="Center"
-                                                    FontFamily="{StaticResource MoleWindowsMonoFont}"
+                                                    FontFamily="{StaticResource WinMoeMonoFont}"
                                                     FontSize="17"
                                                     FontWeight="Bold"
-                                                    Foreground="{StaticResource MoleWindowsMutedBrush}"
+                                                    Foreground="{StaticResource WinMoeMutedBrush}"
                                                     Text="{Binding DataContext.LeftoverSelectionText, ElementName=AppsRoot}" />
                                                 <Button
                                                     Grid.Column="2"
                                                     Command="{Binding DataContext.SelectAllLeftoversCommand, ElementName=AppsRoot}"
                                                     Content="全选"
-                                                    Foreground="{StaticResource MoleWindowsOrangeBrush}"
-                                                    Style="{StaticResource MoleWindowsTopNavButtonStyle}" />
+                                                    Foreground="{StaticResource WinMoeOrangeBrush}"
+                                                    Style="{StaticResource WinMoeTopNavButtonStyle}" />
                                             </Grid>
 
                                             <StackPanel
@@ -292,21 +292,21 @@
                                                 <Button
                                                     Command="{Binding DataContext.PreviewLeftoversCommand, ElementName=AppsRoot}"
                                                     Content="预览残留"
-                                                    Style="{StaticResource MoleWindowsSecondaryPillButtonStyle}" />
+                                                    Style="{StaticResource WinMoeSecondaryPillButtonStyle}" />
                                                 <TextBlock
                                                     VerticalAlignment="Center"
-                                                    FontFamily="{StaticResource MoleWindowsMonoFont}"
+                                                    FontFamily="{StaticResource WinMoeMonoFont}"
                                                     FontWeight="Bold"
-                                                    Foreground="{StaticResource MoleWindowsDimBrush}"
+                                                    Foreground="{StaticResource WinMoeDimBrush}"
                                                     Text="{Binding DataContext.LeftoverSummary, ElementName=AppsRoot}" />
                                             </StackPanel>
 
                                             <TextBlock
                                                 Grid.Row="2"
-                                                FontFamily="{StaticResource MoleWindowsMonoFont}"
+                                                FontFamily="{StaticResource WinMoeMonoFont}"
                                                 FontSize="16"
                                                 FontWeight="Bold"
-                                                Foreground="{StaticResource MoleWindowsDimBrush}"
+                                                Foreground="{StaticResource WinMoeDimBrush}"
                                                 Text="默认不选择，确认后移入回收站" />
 
                                             <ListView
@@ -331,22 +331,22 @@
                                                                 VerticalAlignment="Center"
                                                                 FontSize="17"
                                                                 FontWeight="SemiBold"
-                                                                Foreground="{StaticResource MoleWindowsMutedBrush}"
+                                                                Foreground="{StaticResource WinMoeMutedBrush}"
                                                                 Text="{x:Bind Category}"
                                                                 TextTrimming="CharacterEllipsis" />
                                                             <TextBlock
                                                                 Grid.Column="2"
                                                                 VerticalAlignment="Center"
-                                                                FontFamily="{StaticResource MoleWindowsMonoFont}"
+                                                                FontFamily="{StaticResource WinMoeMonoFont}"
                                                                 FontWeight="Bold"
-                                                                Foreground="{StaticResource MoleWindowsDimBrush}"
+                                                                Foreground="{StaticResource WinMoeDimBrush}"
                                                                 Text="{x:Bind SizeText}" />
                                                             <TextBlock
                                                                 Grid.Column="3"
                                                                 VerticalAlignment="Center"
-                                                                FontFamily="{StaticResource MoleWindowsMonoFont}"
+                                                                FontFamily="{StaticResource WinMoeMonoFont}"
                                                                 FontWeight="Bold"
-                                                                Foreground="{StaticResource MoleWindowsDimBrush}"
+                                                                Foreground="{StaticResource WinMoeDimBrush}"
                                                                 Text="{x:Bind Path}"
                                                                 TextTrimming="CharacterEllipsis" />
                                                             <FontIcon
@@ -354,7 +354,7 @@
                                                                 HorizontalAlignment="Center"
                                                                 VerticalAlignment="Center"
                                                                 FontSize="16"
-                                                                Foreground="{StaticResource MoleWindowsDimBrush}"
+                                                                Foreground="{StaticResource WinMoeDimBrush}"
                                                                 Glyph="&#xE721;" />
                                                         </Grid>
                                                     </DataTemplate>
@@ -388,10 +388,10 @@
                         </Grid.ColumnDefinitions>
                         <TextBlock
                             VerticalAlignment="Center"
-                            FontFamily="{StaticResource MoleWindowsMonoFont}"
+                            FontFamily="{StaticResource WinMoeMonoFont}"
                             FontSize="22"
                             FontWeight="Bold"
-                            Foreground="{StaticResource MoleWindowsMutedBrush}"
+                            Foreground="{StaticResource WinMoeMutedBrush}"
                             Text="0 个可用更新" />
                         <StackPanel
                             Grid.Column="1"
@@ -404,31 +404,31 @@
                                 IsActive="{Binding IsBusy}" />
                             <TextBlock
                                 VerticalAlignment="Center"
-                                FontFamily="{StaticResource MoleWindowsMonoFont}"
+                                FontFamily="{StaticResource WinMoeMonoFont}"
                                 FontSize="16"
                                 FontWeight="Bold"
-                                Foreground="{StaticResource MoleWindowsDimBrush}"
+                                Foreground="{StaticResource WinMoeDimBrush}"
                                 Text="正在检查…" />
                         </StackPanel>
                         <Button
                             Grid.Column="2"
                             Click="UnsupportedAppsFeatureButton_Click"
                             Content="检查更新"
-                            Style="{StaticResource MoleWindowsPillButtonStyle}" />
+                            Style="{StaticResource WinMoePillButtonStyle}" />
                     </Grid>
 
                     <ScrollViewer Grid.Row="1">
                         <StackPanel Padding="36,28,36,36" Spacing="26">
                             <TextBlock
-                                FontFamily="{StaticResource MoleWindowsMonoFont}"
+                                FontFamily="{StaticResource WinMoeMonoFont}"
                                 FontSize="18"
                                 FontWeight="Bold"
-                                Foreground="{StaticResource MoleWindowsDimBrush}"
+                                Foreground="{StaticResource WinMoeDimBrush}"
                                 Text="支持安全更新源的软件 0" />
                             <Border
                                 Padding="24"
                                 Background="#14100E"
-                                BorderBrush="{StaticResource MoleWindowsStrokeBrush}"
+                                BorderBrush="{StaticResource WinMoeStrokeBrush}"
                                 BorderThickness="1"
                                 CornerRadius="18">
                                 <Grid ColumnSpacing="18">
@@ -440,26 +440,26 @@
                                     <FontIcon
                                         VerticalAlignment="Center"
                                         FontSize="28"
-                                        Foreground="{StaticResource MoleWindowsOrangeBrush}"
+                                        Foreground="{StaticResource WinMoeOrangeBrush}"
                                         Glyph="&#xE895;" />
                                     <StackPanel Grid.Column="1">
                                         <TextBlock
                                             FontSize="22"
                                             FontWeight="SemiBold"
-                                            Text="Mole Windows 软件更新" />
+                                            Text="WinMoe 软件更新" />
                                         <TextBlock
-                                            FontFamily="{StaticResource MoleWindowsMonoFont}"
+                                            FontFamily="{StaticResource WinMoeMonoFont}"
                                             FontSize="16"
                                             FontWeight="Bold"
-                                            Foreground="{StaticResource MoleWindowsDimBrush}"
+                                            Foreground="{StaticResource WinMoeDimBrush}"
                                             Text="{Binding UpdatesSummary}"
                                             TextWrapping="Wrap" />
                                     </StackPanel>
                                     <Border Grid.Column="2" Style="{StaticResource AppsSmallPillStyle}">
                                         <TextBlock
-                                            FontFamily="{StaticResource MoleWindowsMonoFont}"
+                                            FontFamily="{StaticResource WinMoeMonoFont}"
                                             FontWeight="Bold"
-                                            Foreground="{StaticResource MoleWindowsOrangeBrush}"
+                                            Foreground="{StaticResource WinMoeOrangeBrush}"
                                             Text="预览中" />
                                     </Border>
                                 </Grid>
@@ -477,25 +477,25 @@
                     <Grid Padding="24,0">
                         <TextBlock
                             VerticalAlignment="Center"
-                            FontFamily="{StaticResource MoleWindowsMonoFont}"
+                            FontFamily="{StaticResource WinMoeMonoFont}"
                             FontSize="22"
                             FontWeight="Bold"
-                            Foreground="{StaticResource MoleWindowsMutedBrush}"
+                            Foreground="{StaticResource WinMoeMutedBrush}"
                             Text="启动项清单" />
                     </Grid>
 
                     <ScrollViewer Grid.Row="1">
                         <StackPanel Padding="36,28,36,36" Spacing="26">
                             <TextBlock
-                                FontFamily="{StaticResource MoleWindowsMonoFont}"
+                                FontFamily="{StaticResource WinMoeMonoFont}"
                                 FontSize="18"
                                 FontWeight="Bold"
-                                Foreground="{StaticResource MoleWindowsDimBrush}"
+                                Foreground="{StaticResource WinMoeDimBrush}"
                                 Text="WINDOWS 启动项 0" />
                             <Border
                                 Padding="24"
                                 Background="#14100E"
-                                BorderBrush="{StaticResource MoleWindowsStrokeBrush}"
+                                BorderBrush="{StaticResource WinMoeStrokeBrush}"
                                 BorderThickness="1"
                                 CornerRadius="18">
                                 <Grid ColumnSpacing="18">
@@ -507,7 +507,7 @@
                                     <FontIcon
                                         VerticalAlignment="Center"
                                         FontSize="28"
-                                        Foreground="{StaticResource MoleWindowsGoldBrush}"
+                                        Foreground="{StaticResource WinMoeGoldBrush}"
                                         Glyph="&#xE7C1;" />
                                     <StackPanel Grid.Column="1">
                                         <TextBlock
@@ -515,18 +515,18 @@
                                             FontWeight="SemiBold"
                                             Text="启动项管理" />
                                         <TextBlock
-                                            FontFamily="{StaticResource MoleWindowsMonoFont}"
+                                            FontFamily="{StaticResource WinMoeMonoFont}"
                                             FontSize="16"
                                             FontWeight="Bold"
-                                            Foreground="{StaticResource MoleWindowsDimBrush}"
+                                            Foreground="{StaticResource WinMoeDimBrush}"
                                             Text="{Binding StartupSummary}"
                                             TextWrapping="Wrap" />
                                     </StackPanel>
                                     <Border Grid.Column="2" Style="{StaticResource AppsSmallPillStyle}">
                                         <TextBlock
-                                            FontFamily="{StaticResource MoleWindowsMonoFont}"
+                                            FontFamily="{StaticResource WinMoeMonoFont}"
                                             FontWeight="Bold"
-                                            Foreground="{StaticResource MoleWindowsGoldBrush}"
+                                            Foreground="{StaticResource WinMoeGoldBrush}"
                                             Text="待接入" />
                                     </Border>
                                 </Grid>
@@ -545,10 +545,10 @@
             </Grid.ColumnDefinitions>
             <TextBlock
                 VerticalAlignment="Center"
-                FontFamily="{StaticResource MoleWindowsMonoFont}"
+                FontFamily="{StaticResource WinMoeMonoFont}"
                 FontSize="20"
                 FontWeight="Bold"
-                Foreground="{StaticResource MoleWindowsMutedBrush}"
+                Foreground="{StaticResource WinMoeMutedBrush}"
                 Text="{Binding AppsCountText}" />
             <Button
                 Grid.Column="1"
@@ -556,13 +556,13 @@
                 Click="RemoveLeftoversButton_Click"
                 Content="移入回收站"
                 IsEnabled="{Binding CanRemoveSelectedLeftovers}"
-                Style="{StaticResource MoleWindowsSecondaryPillButtonStyle}" />
+                Style="{StaticResource WinMoeSecondaryPillButtonStyle}" />
             <Button
                 Grid.Column="2"
                 Click="UninstallButton_Click"
                 Content="启动卸载程序"
                 IsEnabled="{Binding CanLaunchUninstaller}"
-                Style="{StaticResource MoleWindowsPillButtonStyle}" />
+                Style="{StaticResource WinMoePillButtonStyle}" />
         </Grid>
     </Grid>
 </Page>

@@ -1,6 +1,6 @@
-using MoleWindows.Models;
+using WinMoe.Models;
 
-namespace MoleWindows.Services;
+namespace WinMoe.Services;
 
 public static class TrayHudStatusFormatter
 {
@@ -68,7 +68,7 @@ public static class TrayHudStatusFormatter
     {
         if (activity is null)
         {
-            return ("暂无活动", "Mole Windows 尚未记录操作。");
+            return ("暂无活动", "WinMoe 尚未记录操作。");
         }
 
         return (

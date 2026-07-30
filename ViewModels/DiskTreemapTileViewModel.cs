@@ -1,9 +1,9 @@
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Media;
-using MoleWindows.Models;
-using MoleWindows.Services;
+using WinMoe.Models;
+using WinMoe.Services;
 
-namespace MoleWindows.ViewModels;
+namespace WinMoe.ViewModels;
 
 public sealed class DiskTreemapTileViewModel
 {

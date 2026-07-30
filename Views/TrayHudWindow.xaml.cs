@@ -5,17 +5,17 @@ using Microsoft.UI.Xaml.Controls;
 using WinRT.Interop;
 using Windows.Graphics;
 using System.Runtime.InteropServices;
-using MoleWindows.Services;
-using MoleWindows.Ui;
-using MoleWindows.ViewModels;
+using WinMoe.Services;
+using WinMoe.Ui;
+using WinMoe.ViewModels;
 
-namespace MoleWindows.Views;
+namespace WinMoe.Views;
 
 public sealed partial class TrayHudWindow : Window
 {
-    private const int HudWidth = 430;
-    private const int HudHeight = 860;
+    private const uint DefaultDpi = 96;
     private static readonly IntPtr HwndTopMost = new(-1);
+    private const uint SwpNoSize = 0x0001;
     private const uint SwpShowWindow = 0x0040;
     private readonly Action<string?> _navigate;
     private readonly DispatcherTimer _refreshTimer;
@@ -29,7 +29,7 @@ public sealed partial class TrayHudWindow : Window
         ViewModel = new TrayHudViewModel(telemetrySamplerService, operationHistoryService);
         _navigate = navigate;
         HudRoot.DataContext = ViewModel;
-        MoleWindowsButtonVisualState.FreezeTree(HudRoot);
+        WinMoeButtonVisualState.FreezeTree(HudRoot);
 
         ExtendsContentIntoTitleBar = true;
         SetTitleBar(HudTitleBar);
@@ -50,12 +50,24 @@ public sealed partial class TrayHudWindow : Window
         var windowHandle = WindowNative.GetWindowHandle(this);
         var windowId = Win32Interop.GetWindowIdFromWindow(windowHandle);
         var appWindow = AppWindow.GetFromWindowId(windowId);
-        var left = Math.Max(8, x - HudWidth - 12);
-        var top = Math.Max(8, y - HudHeight - 12);
-        appWindow.MoveAndResize(new RectInt32(left, top, HudWidth, HudHeight));
+        var layout = ResizeForCurrentDpi(windowHandle, appWindow);
+        var outerSize = appWindow.Size;
+        var position = layout.PositionNear(x, y, outerSize.Width, outerSize.Height);
+        appWindow.MoveAndResize(new RectInt32(
+            position.Left,
+            position.Top,
+            outerSize.Width,
+            outerSize.Height));
 
         Activate();
-        SetWindowPos(windowHandle, HwndTopMost, left, top, HudWidth, HudHeight, SwpShowWindow);
+        SetWindowPos(
+            windowHandle,
+            HwndTopMost,
+            position.Left,
+            position.Top,
+            0,
+            0,
+            SwpNoSize | SwpShowWindow);
         SetForegroundWindow(windowHandle);
         _refreshTimer.Start();
         await ViewModel.RefreshAsync();
@@ -66,7 +78,7 @@ public sealed partial class TrayHudWindow : Window
         var windowHandle = WindowNative.GetWindowHandle(this);
         var windowId = Win32Interop.GetWindowIdFromWindow(windowHandle);
         var appWindow = AppWindow.GetFromWindowId(windowId);
-        appWindow.Resize(new SizeInt32(HudWidth, HudHeight));
+        ResizeForCurrentDpi(windowHandle, appWindow);
         appWindow.TitleBar.BackgroundColor = Windows.UI.Color.FromArgb(255, 38, 49, 45);
         appWindow.TitleBar.ButtonBackgroundColor = Windows.UI.Color.FromArgb(255, 38, 49, 45);
         appWindow.TitleBar.ButtonForegroundColor = Colors.White;
@@ -77,6 +89,18 @@ public sealed partial class TrayHudWindow : Window
             presenter.IsMinimizable = false;
             presenter.IsResizable = false;
         }
+    }
+
+    private static TrayHudLayoutMetrics ResizeForCurrentDpi(
+        IntPtr windowHandle,
+        AppWindow appWindow)
+    {
+        var dpi = GetDpiForWindow(windowHandle);
+        var layout = TrayHudLayout.ForDpi(dpi == 0 ? DefaultDpi : dpi);
+        appWindow.ResizeClient(new SizeInt32(
+            layout.ClientSize.Width,
+            layout.ClientSize.Height));
+        return layout;
     }
 
     private void NavigationButton_Click(object sender, RoutedEventArgs e)
@@ -99,4 +123,7 @@ public sealed partial class TrayHudWindow : Window
 
     [DllImport("user32.dll", SetLastError = true)]
     private static extern bool SetForegroundWindow(IntPtr windowHandle);
+
+    [DllImport("user32.dll")]
+    private static extern uint GetDpiForWindow(IntPtr windowHandle);
 }

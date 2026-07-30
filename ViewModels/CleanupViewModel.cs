@@ -1,9 +1,9 @@
 using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using MoleWindows.Models;
+using WinMoe.Models;
 
-namespace MoleWindows.ViewModels;
+namespace WinMoe.ViewModels;
 
 public partial class CleanupViewModel : ViewModelBase
 {
@@ -55,7 +55,7 @@ public partial class CleanupViewModel : ViewModelBase
         PreviewItems.Clear();
         OutputLines.Clear();
         OutputLines.Add(PendingFeatureMessage);
-        OutputLines.Add("当前 Mole Windows 引擎尚未提供稳定的 GUI 非交互清理计划，真实执行保持禁用。");
+        OutputLines.Add("当前 WinMoe 引擎尚未提供稳定的 GUI 非交互清理计划，真实执行保持禁用。");
         Summary = PendingFeatureMessage;
         OnPropertyChanged(nameof(OutputText));
         return Task.CompletedTask;

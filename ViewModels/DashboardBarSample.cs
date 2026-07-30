@@ -1,4 +1,4 @@
-namespace MoleWindows.ViewModels;
+namespace WinMoe.ViewModels;
 
 public sealed class DashboardBarSample
 {

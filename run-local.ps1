@@ -20,14 +20,14 @@ param(
 $ErrorActionPreference = "Stop"
 
 $root = Split-Path -Parent $MyInvocation.MyCommand.Path
-$project = Join-Path $root "MoleWindows.csproj"
-$exe = Join-Path $root "bin\x64\Debug\net8.0-windows10.0.26100.0\win-x64\MoleWindows.exe"
-$startupLog = Join-Path $env:LOCALAPPDATA "MoleWindows\startup.log"
+$project = Join-Path $root "WinMoe.csproj"
+$exe = Join-Path $root "bin\x64\Debug\net8.0-windows10.0.26100.0\win-x64\WinMoe.exe"
+$startupLog = Join-Path $env:LOCALAPPDATA "WinMoe\startup.log"
 
-function Stop-ExistingMoleWindows {
+function Stop-ExistingWinMoe {
     param([string]$ExpectedPath)
 
-    Get-Process -Name "MoleWindows" -ErrorAction SilentlyContinue | ForEach-Object {
+    Get-Process -Name "WinMoe" -ErrorAction SilentlyContinue | ForEach-Object {
         $path = $null
         try {
             $path = $_.Path
@@ -43,7 +43,7 @@ function Stop-ExistingMoleWindows {
 }
 
 function Ensure-SmokeWin32 {
-    if ("MoleWindowsSmokeWin32" -as [type]) {
+    if ("WinMoeSmokeWin32" -as [type]) {
         return
     }
 
@@ -52,7 +52,7 @@ using System;
 using System.Text;
 using System.Runtime.InteropServices;
 
-public class MoleWindowsSmokeWin32 {
+public class WinMoeSmokeWin32 {
     public delegate bool EnumWindowsProc(IntPtr hWnd, IntPtr lParam);
     [DllImport("user32.dll")] public static extern bool EnumWindows(EnumWindowsProc enumProc, IntPtr lParam);
     [DllImport("user32.dll")] public static extern bool IsWindowVisible(IntPtr hWnd);
@@ -74,28 +74,28 @@ public class MoleWindowsSmokeWin32 {
 "@
 }
 
-function Get-MoleWindowsdow {
+function Get-WinMoeWindow {
     param([int]$ProcessId)
 
     Ensure-SmokeWin32
     $windows = New-Object System.Collections.Generic.List[object]
-    [MoleWindowsSmokeWin32]::EnumWindows({
+    [WinMoeSmokeWin32]::EnumWindows({
         param($hWnd, $lParam)
 
-        if (-not [MoleWindowsSmokeWin32]::IsWindowVisible($hWnd)) {
+        if (-not [WinMoeSmokeWin32]::IsWindowVisible($hWnd)) {
             return $true
         }
 
         $windowProcessId = [uint32]0
-        [void][MoleWindowsSmokeWin32]::GetWindowThreadProcessId($hWnd, [ref]$windowProcessId)
+        [void][WinMoeSmokeWin32]::GetWindowThreadProcessId($hWnd, [ref]$windowProcessId)
         if ($windowProcessId -ne [uint32]$ProcessId) {
             return $true
         }
 
         $titleBuilder = New-Object System.Text.StringBuilder 256
-        [void][MoleWindowsSmokeWin32]::GetWindowText($hWnd, $titleBuilder, $titleBuilder.Capacity)
+        [void][WinMoeSmokeWin32]::GetWindowText($hWnd, $titleBuilder, $titleBuilder.Capacity)
         $title = $titleBuilder.ToString()
-        if ($title -eq "MoleWindows") {
+        if ($title -eq "WinMoe") {
             $windows.Add([pscustomobject]@{ Handle = $hWnd; Title = $title; ProcessId = $windowProcessId }) | Out-Null
         }
 
@@ -109,7 +109,7 @@ function Get-MoleWindowsdow {
     return $windows[0]
 }
 
-function Save-MoleWindowsdowScreenshot {
+function Save-WinMoeWindowScreenshot {
     param(
         [object]$Window,
         [string]$Path
@@ -133,15 +133,15 @@ function Save-MoleWindowsdowScreenshot {
         New-Item -ItemType Directory -Force -Path $outputDirectory | Out-Null
     }
 
-    $rect = New-Object "MoleWindowsSmokeWin32+RECT"
-    if (-not [MoleWindowsSmokeWin32]::GetWindowRect($Window.Handle, [ref]$rect)) {
-        throw "Could not read the MoleWindows window bounds for screenshot capture."
+    $rect = New-Object "WinMoeSmokeWin32+RECT"
+    if (-not [WinMoeSmokeWin32]::GetWindowRect($Window.Handle, [ref]$rect)) {
+        throw "Could not read the WinMoe window bounds for screenshot capture."
     }
 
     $width = $rect.Right - $rect.Left
     $height = $rect.Bottom - $rect.Top
     if ($width -le 0 -or $height -le 0) {
-        throw "MoleWindows window bounds were invalid for screenshot capture."
+        throw "WinMoe window bounds were invalid for screenshot capture."
     }
 
     $hwndTopMost = [IntPtr]::new(-1)
@@ -152,9 +152,9 @@ function Save-MoleWindowsdowScreenshot {
     $swpShowWindow = [uint32]0x0040
     $topMostFlags = [uint32]($swpNoSize -bor $swpNoMove -bor $swpShowWindow)
 
-    [void][MoleWindowsSmokeWin32]::ShowWindow($Window.Handle, $swRestore)
-    [void][MoleWindowsSmokeWin32]::SetWindowPos($Window.Handle, $hwndTopMost, 0, 0, 0, 0, $topMostFlags)
-    [void][MoleWindowsSmokeWin32]::SetForegroundWindow($Window.Handle)
+    [void][WinMoeSmokeWin32]::ShowWindow($Window.Handle, $swRestore)
+    [void][WinMoeSmokeWin32]::SetWindowPos($Window.Handle, $hwndTopMost, 0, 0, 0, 0, $topMostFlags)
+    [void][WinMoeSmokeWin32]::SetForegroundWindow($Window.Handle)
     Start-Sleep -Milliseconds 700
 
     $bitmap = [System.Drawing.Bitmap]::new($width, $height)
@@ -169,7 +169,7 @@ function Save-MoleWindowsdowScreenshot {
         $bitmap.Save($outputPath, [System.Drawing.Imaging.ImageFormat]::Png)
     } finally {
         $bitmap.Dispose()
-        [void][MoleWindowsSmokeWin32]::SetWindowPos($Window.Handle, $hwndNoTopMost, 0, 0, 0, 0, $topMostFlags)
+        [void][WinMoeSmokeWin32]::SetWindowPos($Window.Handle, $hwndNoTopMost, 0, 0, 0, 0, $topMostFlags)
     }
 
     Write-Host "Screenshot: $outputPath"
@@ -211,11 +211,11 @@ function Read-StartupLogSinceOffset {
     }
 }
 
-function Test-MoleWindowsAssemblyLaunchAllowed {
+function Test-WinMoeAssemblyLaunchAllowed {
     param([string]$AssemblyPath)
 
     if (-not (Test-Path -LiteralPath $AssemblyPath)) {
-        throw "MoleWindows.dll was not found next to the app executable. Run without -NoBuild first."
+        throw "WinMoe.dll was not found next to the app executable. Run without -NoBuild first."
     }
 
     try {
@@ -234,18 +234,18 @@ function Test-MoleWindowsAssemblyLaunchAllowed {
             }
 
             throw @"
-Windows Application Control blocked MoleWindows before app startup.
+Windows Application Control blocked WinMoe before app startup.
 
 Blocked assembly: $AssemblyPath
 HRESULT: $hresult
 Signature: $signatureStatus
 Reason: $message
 
-This is an OS policy block, not a MoleWindows UI hang. The current build must be allowed by WDAC/AppLocker/Smart App Control or signed with a certificate trusted by that policy.
+This is an OS policy block, not a WinMoe UI hang. The current build must be allowed by WDAC/AppLocker/Smart App Control or signed with a certificate trusted by that policy.
 "@
         }
 
-        throw "MoleWindows assembly preflight failed for '$AssemblyPath': $message"
+        throw "WinMoe assembly preflight failed for '$AssemblyPath': $message"
     }
 }
 
@@ -254,14 +254,14 @@ if (-not $NoBuild) {
 }
 
 if (-not (Test-Path -LiteralPath $exe)) {
-    throw "MoleWindows.exe was not found. Run without -NoBuild first."
+    throw "WinMoe.exe was not found. Run without -NoBuild first."
 }
 
 $assembly = [System.IO.Path]::ChangeExtension($exe, ".dll")
-Test-MoleWindowsAssemblyLaunchAllowed -AssemblyPath $assembly
+Test-WinMoeAssemblyLaunchAllowed -AssemblyPath $assembly
 
 if ($Restart) {
-    Stop-ExistingMoleWindows -ExpectedPath $exe
+    Stop-ExistingWinMoe -ExpectedPath $exe
 }
 
 $startInfo = [System.Diagnostics.ProcessStartInfo]::new()
@@ -270,39 +270,39 @@ $startInfo.WorkingDirectory = Split-Path -Parent $exe
 $startInfo.UseShellExecute = $false
 
 if ($ShowTrayHud) {
-    $startInfo.Environment["MOLEWINDOWS_SHOW_TRAY_HUD"] = "1"
+    $startInfo.Environment["WINMOE_SHOW_TRAY_HUD"] = "1"
 }
 
 if ($NoTray) {
-    $startInfo.Environment["MOLEWINDOWS_DISABLE_TRAY"] = "1"
+    $startInfo.Environment["WINMOE_DISABLE_TRAY"] = "1"
 }
 
 if (-not [string]::IsNullOrWhiteSpace($Route)) {
-    $startInfo.Environment["MOLEWINDOWS_START_ROUTE"] = $Route
+    $startInfo.Environment["WINMOE_START_ROUTE"] = $Route
 }
 
 if (-not [string]::IsNullOrWhiteSpace($AnalyzeRoot)) {
-    $startInfo.Environment["MOLEWINDOWS_ANALYZE_ROOT"] = $AnalyzeRoot
+    $startInfo.Environment["WINMOE_ANALYZE_ROOT"] = $AnalyzeRoot
 }
 
 if ($AnalyzeAutoScan) {
-    $startInfo.Environment["MOLEWINDOWS_ANALYZE_AUTOSCAN"] = "1"
+    $startInfo.Environment["WINMOE_ANALYZE_AUTOSCAN"] = "1"
 }
 
 if (-not [string]::IsNullOrWhiteSpace($InstallerRoot)) {
-    $startInfo.Environment["MOLEWINDOWS_INSTALLER_ROOT"] = $InstallerRoot
+    $startInfo.Environment["WINMOE_INSTALLER_ROOT"] = $InstallerRoot
 }
 
 if ($InstallerAutoScan) {
-    $startInfo.Environment["MOLEWINDOWS_INSTALLER_AUTOSCAN"] = "1"
+    $startInfo.Environment["WINMOE_INSTALLER_AUTOSCAN"] = "1"
 }
 
 if ($CleanAutoScan) {
-    $startInfo.Environment["MOLEWINDOWS_CLEAN_AUTOSCAN"] = "1"
+    $startInfo.Environment["WINMOE_CLEAN_AUTOSCAN"] = "1"
 }
 
 if ($OptimizeAutoScan) {
-    $startInfo.Environment["MOLEWINDOWS_OPTIMIZE_AUTOSCAN"] = "1"
+    $startInfo.Environment["WINMOE_OPTIMIZE_AUTOSCAN"] = "1"
 }
 
 $startupLogOffset = 0
@@ -311,7 +311,7 @@ if (Test-Path -LiteralPath $startupLog) {
 }
 
 $process = [System.Diagnostics.Process]::Start($startInfo)
-Write-Host "Started MoleWindows PID $($process.Id)"
+Write-Host "Started WinMoe PID $($process.Id)"
 Write-Host "Startup log: $startupLog"
 
 if (-not $SmokeTest) {
@@ -348,11 +348,11 @@ if ($AnalyzeAutoScan) {
 try {
     while ((Get-Date) -lt $deadline) {
         if ($process.HasExited) {
-            throw "MoleWindows exited early with code $($process.ExitCode)."
+            throw "WinMoe exited early with code $($process.ExitCode)."
         }
 
         if ($null -eq $window) {
-            $window = Get-MoleWindowsdow -ProcessId $process.Id
+            $window = Get-WinMoeWindow -ProcessId $process.Id
         }
 
         if ($null -eq $health) {
@@ -365,7 +365,7 @@ try {
 
         $startupLogNew = Read-StartupLogSinceOffset -Offset $startupLogOffset
         if ($startupLogNew -match "\[xaml_unhandled\]") {
-            throw "MoleWindows recorded a XAML unhandled exception during smoke startup."
+            throw "WinMoe recorded a XAML unhandled exception during smoke startup."
         }
 
         if (-not $routeOpened -and $startupLogNew.Contains("[navigation] Opening startup route: $Route")) {
@@ -384,19 +384,19 @@ try {
     }
 
     if ($null -eq $window) {
-        throw "MoleWindows main window was not found within $TimeoutSeconds seconds."
+        throw "WinMoe main window was not found within $TimeoutSeconds seconds."
     }
 
     if ($RequireHealth -and $null -eq $health) {
-        throw "MoleWindows HTTP health did not respond within $TimeoutSeconds seconds."
+        throw "WinMoe HTTP health did not respond within $TimeoutSeconds seconds."
     }
 
     if (-not $routeOpened) {
-        throw "MoleWindows startup route '$Route' was not opened within $TimeoutSeconds seconds."
+        throw "WinMoe startup route '$Route' was not opened within $TimeoutSeconds seconds."
     }
 
     if (-not $autoScanFinished) {
-        throw "MoleWindows autoscan did not finish within $TimeoutSeconds seconds."
+        throw "WinMoe autoscan did not finish within $TimeoutSeconds seconds."
     }
 
     Write-Host "GUI smoke passed: main window is visible."
@@ -406,7 +406,7 @@ try {
         Write-Host "Health: not available or disabled."
     }
 
-    Save-MoleWindowsdowScreenshot -Window $window -Path $ScreenshotPath
+    Save-WinMoeWindowScreenshot -Window $window -Path $ScreenshotPath
 } catch {
     Write-Host "Startup log tail:"
     Write-Host (Read-StartupLogTail)

@@ -1,4 +1,4 @@
-namespace MoleWindows.Models;
+namespace WinMoe.Models;
 
 public sealed record DiskAnalysisOptions(int MaxDepth = 2, int MaxChildrenPerNode = 12)
 {

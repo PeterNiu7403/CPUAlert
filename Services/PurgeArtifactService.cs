@@ -1,6 +1,6 @@
-using MoleWindows.Models;
+using WinMoe.Models;
 
-namespace MoleWindows.Services;
+namespace WinMoe.Services;
 
 public sealed class PurgeArtifactService : IPurgeArtifactService
 {
@@ -228,6 +228,11 @@ public sealed class PurgeArtifactService : IPurgeArtifactService
         CancellationToken cancellationToken)
     {
         var rootFullPath = Path.GetFullPath(root);
+        if (IsReparsePoint(rootFullPath))
+        {
+            yield break;
+        }
+
         yield return rootFullPath;
 
         var pending = new Queue<(string Path, int Depth)>();
@@ -256,7 +261,7 @@ public sealed class PurgeArtifactService : IPurgeArtifactService
             {
                 cancellationToken.ThrowIfCancellationRequested();
                 var name = Path.GetFileName(child);
-                if (ShouldSkipDirectory(name))
+                if (IsReparsePoint(child) || ShouldSkipDirectory(name))
                 {
                     continue;
                 }
@@ -264,6 +269,18 @@ public sealed class PurgeArtifactService : IPurgeArtifactService
                 yield return child;
                 pending.Enqueue((child, current.Depth + 1));
             }
+        }
+    }
+
+    private static bool IsReparsePoint(string path)
+    {
+        try
+        {
+            return (File.GetAttributes(path) & FileAttributes.ReparsePoint) != 0;
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        {
+            return true;
         }
     }
 
@@ -327,6 +344,11 @@ public sealed class PurgeArtifactService : IPurgeArtifactService
             {
                 cancellationToken.ThrowIfCancellationRequested();
                 var fullPath = Path.GetFullPath(match);
+                if (pattern.Kind == ArtifactKind.Directory && IsReparsePoint(fullPath))
+                {
+                    continue;
+                }
+
                 var sizeBytes = pattern.Kind == ArtifactKind.Directory
                     ? GetDirectorySize(fullPath, cancellationToken)
                     : GetFileSize(fullPath);
@@ -351,7 +373,12 @@ public sealed class PurgeArtifactService : IPurgeArtifactService
         long total = 0;
         try
         {
-            foreach (var file in Directory.EnumerateFiles(directory, "*", SearchOption.AllDirectories))
+            var options = new EnumerationOptions
+            {
+                RecurseSubdirectories = true,
+                AttributesToSkip = FileAttributes.ReparsePoint
+            };
+            foreach (var file in Directory.EnumerateFiles(directory, "*", options))
             {
                 cancellationToken.ThrowIfCancellationRequested();
                 total += GetFileSize(file);

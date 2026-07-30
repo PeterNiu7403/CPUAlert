@@ -1,7 +1,7 @@
 using System.Collections.ObjectModel;
-using MoleWindows.Services;
+using WinMoe.Services;
 
-namespace MoleWindows.Models;
+namespace WinMoe.Models;
 
 public sealed class DiskUsageNode
 {

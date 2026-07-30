@@ -1,7 +1,7 @@
 using Microsoft.UI.Xaml.Controls;
-using MoleWindows.Pages;
+using WinMoe.Pages;
 
-namespace MoleWindows.Services;
+namespace WinMoe.Services;
 
 public sealed class NavigationService : INavigationService
 {

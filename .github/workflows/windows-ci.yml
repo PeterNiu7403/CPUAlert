@@ -31,21 +31,21 @@ jobs:
         run: .\scripts\validate-source.ps1
 
       - name: Restore
-        run: dotnet restore .\MoleWindows.sln
+        run: dotnet restore .\WinMoe.sln
 
       - name: Build app
-        run: dotnet build .\MoleWindows.csproj -c Release -p:Platform=x64 -nr:false -v:minimal
+        run: dotnet build .\WinMoe.csproj -c Release -p:Platform=x64 -nr:false -v:minimal
 
       - name: Test
-        run: dotnet test .\Tests\MoleWindows.Tests\MoleWindows.Tests.csproj -c Release -nr:false -v:minimal --logger "trx;LogFileName=mole-windows-tests.trx" --results-directory .\artifacts\test-results
+        run: dotnet test .\Tests\WinMoe.Tests\WinMoe.Tests.csproj -c Release -nr:false -v:minimal --logger "trx;LogFileName=winmoe-tests.trx" --results-directory .\artifacts\test-results
 
       - name: Publish dry run
-        run: dotnet publish .\MoleWindows.csproj -c Release -p:Platform=x64 -r win-x64 --self-contained false -o .\artifacts\ci-publish -nr:false -v:minimal
+        run: dotnet publish .\WinMoe.csproj -c Release -p:Platform=x64 -r win-x64 --self-contained false -o .\artifacts\ci-publish -nr:false -v:minimal
 
       - name: Upload test results
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: mole-windows-test-results
+          name: winmoe-test-results
           path: artifacts/test-results
           if-no-files-found: ignore

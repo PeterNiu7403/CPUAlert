@@ -1,6 +1,6 @@
 using Microsoft.UI.Xaml.Media;
 
-namespace MoleWindows.ViewModels;
+namespace WinMoe.ViewModels;
 
 public sealed class HistoryChartSeries
 {

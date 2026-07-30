@@ -4,10 +4,10 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.UI.Xaml.Media;
 using Windows.Foundation;
-using MoleWindows.Models;
-using MoleWindows.Services;
+using WinMoe.Models;
+using WinMoe.Services;
 
-namespace MoleWindows.ViewModels;
+namespace WinMoe.ViewModels;
 
 public partial class DashboardViewModel : ViewModelBase
 {
@@ -196,7 +196,7 @@ public partial class DashboardViewModel : ViewModelBase
     [ObservableProperty]
     private HistoryChartSeries gpuStatusChart = HistoryChartSeries.Empty("0%", "avg 0%");
 
-    public string McpSurfaceSummary => $"HTTP 127.0.0.1:{LocalMcpServerService.DefaultPort} | STDIO Assets\\Mcp\\molewindows-mcp-stdio.exe";
+    public string McpSurfaceSummary => $"HTTP 127.0.0.1:{LocalMcpServerService.DefaultPort} | STDIO Assets\\Mcp\\winmoe-mcp-stdio.exe";
 
     public string CpuUsageText => SystemTelemetryFormatter.Percent(CpuUsagePercent);
 
@@ -241,7 +241,7 @@ public partial class DashboardViewModel : ViewModelBase
             var version = await _moleEngineService.ExecuteCommandAsync("--version", AppendOutput);
             if (version.Succeeded)
             {
-                StatusContract = "Mole engine is available; Dashboard uses native polling until Mole Windows exposes non-interactive status data";
+                StatusContract = "Mole engine is available; Dashboard uses native polling until WinMoe exposes non-interactive status data";
             }
             else
             {

@@ -1,6 +1,6 @@
-using MoleWindows.Models;
+using WinMoe.Models;
 
-namespace MoleWindows.ViewModels;
+namespace WinMoe.ViewModels;
 
 public sealed class AnalyzeSidebarItemViewModel
 {

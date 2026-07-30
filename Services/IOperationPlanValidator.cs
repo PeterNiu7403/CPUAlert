@@ -1,6 +1,6 @@
-using MoleWindows.Models;
+using WinMoe.Models;
 
-namespace MoleWindows.Services;
+namespace WinMoe.Services;
 
 public interface IOperationPlanValidator
 {

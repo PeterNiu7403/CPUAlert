@@ -1,7 +1,7 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using Microsoft.UI.Dispatching;
 
-namespace MoleWindows.ViewModels;
+namespace WinMoe.ViewModels;
 
 public abstract class ViewModelBase : ObservableObject
 {

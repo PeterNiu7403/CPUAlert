@@ -1,7 +1,7 @@
-using MoleWindows.Models;
+using WinMoe.Models;
 using Microsoft.Extensions.Hosting;
 
-namespace MoleWindows.Services;
+namespace WinMoe.Services;
 
 public sealed class SystemTelemetrySamplerService : BackgroundService, ISystemTelemetrySamplerService
 {
@@ -93,7 +93,7 @@ public sealed class SystemTelemetrySamplerService : BackgroundService, ISystemTe
             }
             catch
             {
-                // Keep MoleWindows's background sampler alive even if one telemetry read fails.
+                // Keep WinMoe's background sampler alive even if one telemetry read fails.
             }
 
             try

@@ -1,9 +1,9 @@
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using MoleWindows.Services;
-using MoleWindows.ViewModels;
+using WinMoe.Services;
+using WinMoe.ViewModels;
 
-namespace MoleWindows.Pages;
+namespace WinMoe.Pages;
 
 public sealed partial class InstallerPage : Page
 {
@@ -27,7 +27,8 @@ public sealed partial class InstallerPage : Page
             return;
         }
 
-        var autoScan = Environment.GetEnvironmentVariable("MOLEWINDOWS_INSTALLER_AUTOSCAN");
+        var autoScan = Environment.GetEnvironmentVariable("WINMOE_INSTALLER_AUTOSCAN")
+                       ?? Environment.GetEnvironmentVariable("MOLEWINDOWS_INSTALLER_AUTOSCAN");
         if (!string.Equals(autoScan, "1", StringComparison.OrdinalIgnoreCase) &&
             !string.Equals(autoScan, "true", StringComparison.OrdinalIgnoreCase))
         {
@@ -45,7 +46,7 @@ public sealed partial class InstallerPage : Page
         var dialog = new ContentDialog
         {
             Title = "Remove old installers?",
-            Content = "MoleWindows will remove the selected files from the installer preview list.",
+            Content = "WinMoe will remove the selected files from the installer preview list.",
             PrimaryButtonText = "Remove",
             CloseButtonText = "Cancel",
             XamlRoot = XamlRoot

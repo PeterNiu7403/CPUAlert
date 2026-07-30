@@ -1,6 +1,6 @@
 using Microsoft.UI.Xaml;
 
-namespace MoleWindows.Services;
+namespace WinMoe.Services;
 
 public interface ITrayIconService : IDisposable
 {

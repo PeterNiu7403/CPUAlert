@@ -1,6 +1,6 @@
 using System.Diagnostics;
 
-namespace MoleWindows.Services;
+namespace WinMoe.Services;
 
 public sealed class SystemMoleEngineProbe : IMoleEngineProbe
 {

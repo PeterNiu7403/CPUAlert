@@ -1,7 +1,7 @@
 using System.Text.Json;
-using MoleWindows.Models;
+using WinMoe.Models;
 
-namespace MoleWindows.Services;
+namespace WinMoe.Services;
 
 public sealed class JsonOperationHistoryService : IOperationHistoryService
 {
@@ -13,10 +13,7 @@ public sealed class JsonOperationHistoryService : IOperationHistoryService
     private readonly SemaphoreSlim _fileLock = new(1, 1);
 
     public JsonOperationHistoryService()
-        : this(Path.Combine(
-            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-            "MoleWindows",
-            "history.jsonl"))
+        : this(ApplicationDataPaths.ResolveFile("history.jsonl"))
     {
     }
 

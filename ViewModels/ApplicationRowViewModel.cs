@@ -1,8 +1,8 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using Microsoft.UI.Xaml;
-using MoleWindows.Models;
+using WinMoe.Models;
 
-namespace MoleWindows.ViewModels;
+namespace WinMoe.ViewModels;
 
 public partial class ApplicationRowViewModel : ObservableObject
 {

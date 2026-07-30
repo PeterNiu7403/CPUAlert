@@ -1,6 +1,6 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 
-namespace MoleWindows.Models;
+namespace WinMoe.Models;
 
 public partial class CleanupPreviewItem : ObservableObject
 {

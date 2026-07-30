@@ -1,9 +1,9 @@
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using MoleWindows.Ui;
-using MoleWindows.ViewModels;
+using WinMoe.Ui;
+using WinMoe.ViewModels;
 
-namespace MoleWindows.Pages;
+namespace WinMoe.Pages;
 
 public sealed partial class DashboardPage : Page
 {
@@ -23,7 +23,7 @@ public sealed partial class DashboardPage : Page
     private async void DashboardPage_Loaded(object sender, RoutedEventArgs e)
     {
         ApplySecondaryNavSelection("status");
-        MoleWindowsButtonVisualState.FreezeTree(this);
+        WinMoeButtonVisualState.FreezeTree(this);
 
         if (!ViewModel.IsBusy)
         {
@@ -57,8 +57,8 @@ public sealed partial class DashboardPage : Page
 
     private void ApplySecondaryNavSelection(string route)
     {
-        MoleWindowsButtonVisualState.ApplyNavigationState(StatusOverviewButton, string.Equals(route, "status", StringComparison.OrdinalIgnoreCase));
-        MoleWindowsButtonVisualState.ApplyNavigationState(StatusHistoryButton, string.Equals(route, "history", StringComparison.OrdinalIgnoreCase));
-        MoleWindowsButtonVisualState.ApplyNavigationState(StatusActivityButton, string.Equals(route, "activity", StringComparison.OrdinalIgnoreCase));
+        WinMoeButtonVisualState.ApplyNavigationState(StatusOverviewButton, string.Equals(route, "status", StringComparison.OrdinalIgnoreCase));
+        WinMoeButtonVisualState.ApplyNavigationState(StatusHistoryButton, string.Equals(route, "history", StringComparison.OrdinalIgnoreCase));
+        WinMoeButtonVisualState.ApplyNavigationState(StatusActivityButton, string.Equals(route, "activity", StringComparison.OrdinalIgnoreCase));
     }
 }

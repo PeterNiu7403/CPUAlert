@@ -1,10 +1,10 @@
 using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using MoleWindows.Models;
-using MoleWindows.Services;
+using WinMoe.Models;
+using WinMoe.Services;
 
-namespace MoleWindows.ViewModels;
+namespace WinMoe.ViewModels;
 
 public partial class UninstallViewModel : ViewModelBase
 {

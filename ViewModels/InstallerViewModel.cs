@@ -3,10 +3,10 @@ using System.ComponentModel;
 using System.Diagnostics;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using MoleWindows.Models;
-using MoleWindows.Services;
+using WinMoe.Models;
+using WinMoe.Services;
 
-namespace MoleWindows.ViewModels;
+namespace WinMoe.ViewModels;
 
 public partial class InstallerViewModel : ViewModelBase
 {
@@ -41,7 +41,7 @@ public partial class InstallerViewModel : ViewModelBase
     private string selectedSummary = "0 files";
 
     [ObservableProperty]
-    private string engineSummary = "Mole Windows has no dedicated installer command yet; this view mirrors Mole's old Downloads installer/archive rules.";
+    private string engineSummary = "WinMoe has no dedicated installer command yet; this view mirrors Mole's old Downloads installer/archive rules.";
 
     public string OutputText => string.Join(Environment.NewLine, OutputLines);
 
@@ -226,7 +226,7 @@ public partial class InstallerViewModel : ViewModelBase
     {
         var entry = new OperationHistoryEntry(
             DateTimeOffset.UtcNow,
-            "molewindows",
+            "winmoe",
             operation,
             arguments,
             succeeded ? 0 : 1,

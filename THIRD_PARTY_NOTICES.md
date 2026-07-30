@@ -32,11 +32,12 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
-## Mole Windows engine
+## Mole engine
 
-The bundled command engine under `Assets/Mole/` was adapted from the
-`windows` branch of [tw93/Mole](https://github.com/tw93/Mole) at commit
-`5e3f2c5fc7345b840770a7876469097add4749e8`.
+The bundled command engine under `Assets/Mole/` is derived from the `windows`
+branch of [tw93/Mole](https://github.com/tw93/Mole), with additional
+WinMoe-local modifications and wrapper files. The vendored tree is not
+byte-identical to a single upstream commit.
 
 MIT License
 

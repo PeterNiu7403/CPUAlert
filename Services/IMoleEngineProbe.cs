@@ -1,4 +1,4 @@
-namespace MoleWindows.Services;
+namespace WinMoe.Services;
 
 public interface IMoleEngineProbe
 {

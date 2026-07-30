@@ -1,7 +1,7 @@
 using CommunityToolkit.Mvvm.ComponentModel;
-using MoleWindows.Services;
+using WinMoe.Services;
 
-namespace MoleWindows.Models;
+namespace WinMoe.Models;
 
 public partial class InstalledApplication : ObservableObject
 {

@@ -2,9 +2,9 @@ using System.Diagnostics;
 using System.Net.Sockets;
 using System.Net.NetworkInformation;
 using System.Runtime.InteropServices;
-using MoleWindows.Models;
+using WinMoe.Models;
 
-namespace MoleWindows.Services;
+namespace WinMoe.Services;
 
 public sealed class WindowsSystemTelemetryService : ISystemTelemetryService
 {

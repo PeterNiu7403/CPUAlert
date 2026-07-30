@@ -1,6 +1,6 @@
-using MoleWindows.Models;
+using WinMoe.Models;
 
-namespace MoleWindows.Services;
+namespace WinMoe.Services;
 
 public static class TrayIconTextFormatter
 {
@@ -10,10 +10,10 @@ public static class TrayIconTextFormatter
     {
         if (snapshot is null)
         {
-            return "Mole Windows - 准备中";
+            return "WinMoe - 准备中";
         }
 
-        var text = $"Mole Windows CPU {snapshot.CpuUsagePercent:0}% 内存 {snapshot.MemoryUsagePercent:0}%";
+        var text = $"WinMoe CPU {snapshot.CpuUsagePercent:0}% 内存 {snapshot.MemoryUsagePercent:0}%";
         return text.Length <= NotifyIconTextLimit ? text : text[..NotifyIconTextLimit];
     }
 

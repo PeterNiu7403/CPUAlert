@@ -1,6 +1,6 @@
-using MoleWindows.Models;
+using WinMoe.Models;
 
-namespace MoleWindows.Services;
+namespace WinMoe.Services;
 
 public enum HttpServerSettingsAction
 {
@@ -14,9 +14,9 @@ public static class HttpServerSettingsPlanner
     public static HttpServerSettingsAction Plan(
         bool activeHttpEnabled,
         int activePort,
-        MoleWindowsSettings settings)
+        WinMoeSettings settings)
     {
-        var normalized = MoleWindowsSettings.Normalize(settings);
+        var normalized = WinMoeSettings.Normalize(settings);
         if (!activeHttpEnabled)
         {
             return HttpServerSettingsAction.Start;

@@ -28,7 +28,7 @@ $requiredAssets = @(
     "Assets\Square44x44Logo.scale-200.png",
     "Assets\Square44x44Logo.targetsize-24_altform-unplated.png",
     "Assets\Square44x44Logo.targetsize-48_altform-lightunplated.png",
-    "Assets\Brand\mole-mark.svg",
+    "Assets\Brand\winmoe-mark.svg",
     "Assets\Hero\clean.png",
     "Assets\Hero\software.png",
     "Assets\Hero\optimize.png",
@@ -61,9 +61,9 @@ foreach ($relativePath in $legacyPaths) {
     }
 }
 
-$project = Get-Content -LiteralPath (Join-Path $root "MoleWindows.csproj") -Raw
+$project = Get-Content -LiteralPath (Join-Path $root "WinMoe.csproj") -Raw
 if ($project -notmatch 'Assets\\Hero\\\*\.png') {
-    throw "MoleWindows.csproj does not package the page hero assets."
+    throw "WinMoe.csproj does not package the page hero assets."
 }
 
 $cleanupPage = Get-Content -LiteralPath (Join-Path $root "Pages\CleanupPage.xaml") -Raw

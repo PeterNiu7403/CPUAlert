@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <Page
-    x:Class="MoleWindows.Pages.AnalyzePage"
+    x:Class="WinMoe.Pages.AnalyzePage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-    xmlns:viewModels="using:MoleWindows.ViewModels"
+    xmlns:viewModels="using:WinMoe.ViewModels"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    Background="{StaticResource MoleWindowsBackgroundBlueBrush}"
+    Background="{StaticResource WinMoeBackgroundBlueBrush}"
     mc:Ignorable="d"
     Loaded="AnalyzePage_Loaded"
     SizeChanged="AnalyzePage_SizeChanged">
@@ -32,16 +32,16 @@
                 </Border>
                 <TextBlock
                     HorizontalAlignment="Center"
-                    FontFamily="{StaticResource MoleWindowsSerifFont}"
+                    FontFamily="{StaticResource WinMoeSerifFont}"
                     FontSize="28"
                     FontWeight="SemiBold"
                     Text="磁盘空间" />
                 <TextBlock
                     HorizontalAlignment="Center"
-                    FontFamily="{StaticResource MoleWindowsMonoFont}"
+                    FontFamily="{StaticResource WinMoeMonoFont}"
                     FontSize="21"
                     FontWeight="Bold"
-                    Foreground="{StaticResource MoleWindowsMutedBrush}"
+                    Foreground="{StaticResource WinMoeMutedBrush}"
                     Text="{Binding AnalyzeOverviewText}" />
             </StackPanel>
 
@@ -75,23 +75,23 @@
                                 <TextBlock
                                     FontSize="22"
                                     FontWeight="SemiBold"
-                                    Foreground="{StaticResource MoleWindowsTextBrush}"
+                                    Foreground="{StaticResource WinMoeTextBrush}"
                                     Text="{x:Bind Name}"
                                     TextTrimming="CharacterEllipsis" />
                                 <TextBlock
-                                    FontFamily="{StaticResource MoleWindowsMonoFont}"
+                                    FontFamily="{StaticResource WinMoeMonoFont}"
                                     FontSize="18"
                                     FontWeight="Bold"
-                                    Foreground="{StaticResource MoleWindowsDimBrush}"
+                                    Foreground="{StaticResource WinMoeDimBrush}"
                                     Text="{x:Bind SizeText}" />
                             </StackPanel>
                             <TextBlock
                                 Grid.Column="2"
                                 VerticalAlignment="Center"
-                                FontFamily="{StaticResource MoleWindowsMonoFont}"
+                                FontFamily="{StaticResource WinMoeMonoFont}"
                                 FontSize="25"
                                 FontWeight="Bold"
-                                Foreground="{StaticResource MoleWindowsDimBrush}"
+                                Foreground="{StaticResource WinMoeDimBrush}"
                                 Text="›" />
                         </Grid>
                     </DataTemplate>
@@ -120,30 +120,31 @@
                     <TextBlock
                         VerticalAlignment="Center"
                         FontSize="24"
-                        Foreground="{StaticResource MoleWindowsMutedBrush}"
+                        Foreground="{StaticResource WinMoeMutedBrush}"
                         Text="&#x2191;" />
                     <TextBlock
                         MaxWidth="760"
                         VerticalAlignment="Center"
                         FontSize="24"
                         FontWeight="SemiBold"
-                        Foreground="{StaticResource MoleWindowsTextBrush}"
+                        Foreground="{StaticResource WinMoeTextBrush}"
                         Text="{Binding BreadcrumbText}"
                         TextTrimming="CharacterEllipsis" />
                 </StackPanel>
                 <TextBlock
                     Grid.Column="1"
                     VerticalAlignment="Center"
-                    FontFamily="{StaticResource MoleWindowsMonoFont}"
+                    FontFamily="{StaticResource WinMoeMonoFont}"
                     FontSize="18"
                     FontWeight="Bold"
-                    Foreground="{StaticResource MoleWindowsDimBrush}"
+                    Foreground="{StaticResource WinMoeDimBrush}"
                     Text="{Binding ScanStatusText}" />
                 <Button
                     Grid.Column="2"
                     VerticalAlignment="Center"
+                    AutomationProperties.Name="扫描磁盘空间"
                     Command="{Binding ScanCommand}"
-                    Style="{StaticResource MoleWindowsIconButtonStyle}">
+                    Style="{StaticResource WinMoeIconButtonStyle}">
                     <FontIcon Glyph="&#xE72C;" />
                 </Button>
 
@@ -193,7 +194,7 @@
                                     Spacing="7">
                                     <FontIcon
                                         FontSize="25"
-                                        Foreground="{StaticResource MoleWindowsTextBrush}"
+                                        Foreground="{StaticResource WinMoeTextBrush}"
                                         Glyph="&#xE8B7;"
                                         Visibility="{x:Bind IconVisibility}" />
                                     <TextBlock
@@ -201,17 +202,17 @@
                                         HorizontalAlignment="Center"
                                         FontSize="{x:Bind FontSize}"
                                         FontWeight="Bold"
-                                        Foreground="{StaticResource MoleWindowsTextBrush}"
+                                        Foreground="{StaticResource WinMoeTextBrush}"
                                         Text="{x:Bind Name}"
                                         TextAlignment="Center"
                                         TextTrimming="CharacterEllipsis"
                                         TextWrapping="WrapWholeWords" />
                                     <TextBlock
                                         HorizontalAlignment="Center"
-                                        FontFamily="{StaticResource MoleWindowsMonoFont}"
+                                        FontFamily="{StaticResource WinMoeMonoFont}"
                                         FontSize="15"
                                         FontWeight="Bold"
-                                        Foreground="{StaticResource MoleWindowsTextBrush}"
+                                        Foreground="{StaticResource WinMoeTextBrush}"
                                         Text="{x:Bind SizeText}" />
                                 </StackPanel>
                             </Border>

@@ -1,4 +1,4 @@
-namespace MoleWindows.Models;
+namespace WinMoe.Models;
 
 public enum MoleEngineKind
 {

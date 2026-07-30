@@ -1,16 +1,16 @@
-using MoleWindows.Models;
+using WinMoe.Models;
 
-namespace MoleWindows.Services;
+namespace WinMoe.Services;
 
 public interface IApplicationSettingsService
 {
     string SettingsFilePath { get; }
 
-    MoleWindowsSettings Current { get; }
+    WinMoeSettings Current { get; }
 
-    event EventHandler<MoleWindowsSettings>? SettingsChanged;
+    event EventHandler<WinMoeSettings>? SettingsChanged;
 
-    Task<MoleWindowsSettings> SaveAsync(MoleWindowsSettings settings, CancellationToken cancellationToken = default);
+    Task<WinMoeSettings> SaveAsync(WinMoeSettings settings, CancellationToken cancellationToken = default);
 
-    MoleWindowsSettings Reload();
+    WinMoeSettings Reload();
 }

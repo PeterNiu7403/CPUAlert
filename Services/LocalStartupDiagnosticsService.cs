@@ -1,12 +1,9 @@
-namespace MoleWindows.Services;
+namespace WinMoe.Services;
 
 public sealed class LocalStartupDiagnosticsService : IStartupDiagnosticsService
 {
     public LocalStartupDiagnosticsService()
-        : this(Path.Combine(
-            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-            "MoleWindows",
-            "startup.log"))
+        : this(ApplicationDataPaths.CurrentFile("startup.log"))
     {
     }
 

@@ -1,83 +1,85 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <Page
-    x:Class="MoleWindows.Pages.OptimizePage"
+    x:Class="WinMoe.Pages.OptimizePage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    Background="{StaticResource MoleWindowsBackgroundPurpleBrush}"
+    Background="{StaticResource WinMoeBackgroundPurpleBrush}"
     Loaded="OptimizePage_Loaded"
     mc:Ignorable="d">
 
-    <Grid Padding="24,28,24,24" RowSpacing="24">
-        <Grid.RowDefinitions>
-            <RowDefinition Height="*" />
-            <RowDefinition Height="220" />
-        </Grid.RowDefinitions>
+    <ScrollViewer>
+        <Grid MinHeight="760" Padding="24,28,24,24" RowSpacing="24">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="480" />
+                <RowDefinition Height="220" />
+            </Grid.RowDefinitions>
 
-        <StackPanel
-            HorizontalAlignment="Center"
-            VerticalAlignment="Center"
-            Spacing="24">
-            <Border Width="360" Height="225" CornerRadius="28">
-                <Image
-                    Source="ms-appx:///Assets/Hero/optimize.png"
-                    Stretch="UniformToFill" />
-            </Border>
-
-            <StackPanel HorizontalAlignment="Center" Spacing="10">
-                <TextBlock
-                    HorizontalAlignment="Center"
-                    FontFamily="{StaticResource MoleWindowsSerifFont}"
-                    FontSize="42"
-                    FontWeight="SemiBold"
-                    Text="优化" />
-                <TextBlock
-                    HorizontalAlignment="Center"
-                    FontFamily="{StaticResource MoleWindowsSerifFont}"
-                    FontSize="20"
-                    FontStyle="Italic"
-                    Foreground="{StaticResource MoleWindowsMutedBrush}"
-                    Text="轻轻转动，让系统更顺滑" />
-                <TextBlock
-                    HorizontalAlignment="Center"
-                    FontFamily="{StaticResource MoleWindowsMonoFont}"
-                    FontSize="16"
-                    FontWeight="Bold"
-                    Foreground="{StaticResource MoleWindowsGoldBrush}"
-                    Text="{Binding PendingMessage}" />
-            </StackPanel>
-
-            <StackPanel HorizontalAlignment="Center" Orientation="Horizontal" Spacing="16">
-                <Button
-                    Click="OptimizeButton_Click"
-                    Content="执行优化（安全合约完成后开放）"
-                    IsEnabled="False"
-                    Style="{StaticResource MoleWindowsPillButtonStyle}" />
-                <Button
-                    Command="{Binding PreviewCommand}"
-                    Content="生成优化计划"
-                    IsEnabled="{Binding CanPreview}"
-                    Style="{StaticResource MoleWindowsSecondaryPillButtonStyle}" />
-                <ProgressRing
-                    Width="28"
-                    Height="28"
-                    IsActive="{Binding IsBusy}" />
-            </StackPanel>
-
-            <TextBlock
+            <StackPanel
                 HorizontalAlignment="Center"
-                FontFamily="{StaticResource MoleWindowsMonoFont}"
-                Foreground="{StaticResource MoleWindowsDimBrush}"
-                Text="{Binding Summary}" />
-        </StackPanel>
+                VerticalAlignment="Center"
+                Spacing="24">
+                <Border Width="360" Height="225" CornerRadius="28">
+                    <Image
+                        Source="ms-appx:///Assets/Hero/optimize.png"
+                        Stretch="UniformToFill" />
+                </Border>
 
-        <TextBox
-            Grid.Row="1"
-            AcceptsReturn="True"
-            FontFamily="{StaticResource MoleWindowsMonoFont}"
-            IsReadOnly="True"
-            Text="{Binding OutputText, Mode=OneWay}"
-            TextWrapping="Wrap" />
-    </Grid>
+                <StackPanel HorizontalAlignment="Center" Spacing="10">
+                    <TextBlock
+                        HorizontalAlignment="Center"
+                        FontFamily="{StaticResource WinMoeSerifFont}"
+                        FontSize="42"
+                        FontWeight="SemiBold"
+                        Text="优化" />
+                    <TextBlock
+                        HorizontalAlignment="Center"
+                        FontFamily="{StaticResource WinMoeSerifFont}"
+                        FontSize="20"
+                        FontStyle="Italic"
+                        Foreground="{StaticResource WinMoeMutedBrush}"
+                        Text="轻轻转动，让系统更顺滑" />
+                    <TextBlock
+                        HorizontalAlignment="Center"
+                        FontFamily="{StaticResource WinMoeMonoFont}"
+                        FontSize="16"
+                        FontWeight="Bold"
+                        Foreground="{StaticResource WinMoeGoldBrush}"
+                        Text="{Binding PendingMessage}" />
+                </StackPanel>
+
+                <StackPanel HorizontalAlignment="Center" Orientation="Horizontal" Spacing="16">
+                    <Button
+                        Click="OptimizeButton_Click"
+                        Content="执行优化（安全合约完成后开放）"
+                        IsEnabled="False"
+                        Style="{StaticResource WinMoePillButtonStyle}" />
+                    <Button
+                        Command="{Binding PreviewCommand}"
+                        Content="生成优化计划"
+                        IsEnabled="{Binding CanPreview}"
+                        Style="{StaticResource WinMoeSecondaryPillButtonStyle}" />
+                    <ProgressRing
+                        Width="28"
+                        Height="28"
+                        IsActive="{Binding IsBusy}" />
+                </StackPanel>
+
+                <TextBlock
+                    HorizontalAlignment="Center"
+                    FontFamily="{StaticResource WinMoeMonoFont}"
+                    Foreground="{StaticResource WinMoeDimBrush}"
+                    Text="{Binding Summary}" />
+            </StackPanel>
+
+            <TextBox
+                Grid.Row="1"
+                AcceptsReturn="True"
+                FontFamily="{StaticResource WinMoeMonoFont}"
+                IsReadOnly="True"
+                Text="{Binding OutputText, Mode=OneWay}"
+                TextWrapping="Wrap" />
+        </Grid>
+    </ScrollViewer>
 </Page>

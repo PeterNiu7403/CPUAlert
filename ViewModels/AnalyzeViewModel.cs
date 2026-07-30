@@ -1,10 +1,10 @@
 using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using MoleWindows.Models;
-using MoleWindows.Services;
+using WinMoe.Models;
+using WinMoe.Services;
 
-namespace MoleWindows.ViewModels;
+namespace WinMoe.ViewModels;
 
 public partial class AnalyzeViewModel : ViewModelBase
 {
@@ -21,7 +21,8 @@ public partial class AnalyzeViewModel : ViewModelBase
     {
         _moleEngineService = moleEngineService;
         _diskAnalyzerService = diskAnalyzerService;
-        var startupRoot = Environment.GetEnvironmentVariable("MOLEWINDOWS_ANALYZE_ROOT");
+        var startupRoot = Environment.GetEnvironmentVariable("WINMOE_ANALYZE_ROOT")
+                          ?? Environment.GetEnvironmentVariable("MOLEWINDOWS_ANALYZE_ROOT");
         RootPath = string.IsNullOrWhiteSpace(startupRoot)
             ? Environment.GetFolderPath(Environment.SpecialFolder.UserProfile)
             : startupRoot;

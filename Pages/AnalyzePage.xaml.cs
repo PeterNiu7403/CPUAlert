@@ -1,9 +1,9 @@
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml;
-using MoleWindows.Services;
-using MoleWindows.ViewModels;
+using WinMoe.Services;
+using WinMoe.ViewModels;
 
-namespace MoleWindows.Pages;
+namespace WinMoe.Pages;
 
 public sealed partial class AnalyzePage : Page
 {
@@ -31,7 +31,8 @@ public sealed partial class AnalyzePage : Page
             return;
         }
 
-        var autoScan = Environment.GetEnvironmentVariable("MOLEWINDOWS_ANALYZE_AUTOSCAN");
+        var autoScan = Environment.GetEnvironmentVariable("WINMOE_ANALYZE_AUTOSCAN")
+                       ?? Environment.GetEnvironmentVariable("MOLEWINDOWS_ANALYZE_AUTOSCAN");
         if (!string.Equals(autoScan, "1", StringComparison.OrdinalIgnoreCase) &&
             !string.Equals(autoScan, "true", StringComparison.OrdinalIgnoreCase))
         {

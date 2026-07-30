@@ -3,10 +3,10 @@ using System.Diagnostics;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
-using MoleWindows.Models;
+using WinMoe.Models;
 using Microsoft.Extensions.Hosting;
 
-namespace MoleWindows.Services;
+namespace WinMoe.Services;
 
 public sealed class LocalMcpServerService : BackgroundService
 {
@@ -75,7 +75,7 @@ public sealed class LocalMcpServerService : BackgroundService
         await base.StopAsync(cancellationToken).ConfigureAwait(false);
     }
 
-    private void OnSettingsChanged(object? sender, MoleWindowsSettings settings)
+    private void OnSettingsChanged(object? sender, WinMoeSettings settings)
     {
         _ = Task.Run(async () =>
         {
@@ -89,9 +89,9 @@ public sealed class LocalMcpServerService : BackgroundService
         });
     }
 
-    private async Task ApplyHttpSettingsAsync(MoleWindowsSettings settings, CancellationToken cancellationToken)
+    private async Task ApplyHttpSettingsAsync(WinMoeSettings settings, CancellationToken cancellationToken)
     {
-        var normalized = MoleWindowsSettings.Normalize(settings);
+        var normalized = WinMoeSettings.Normalize(settings);
         await _listenerGate.WaitAsync(cancellationToken).ConfigureAwait(false);
         try
         {
@@ -214,7 +214,7 @@ public sealed class LocalMcpServerService : BackgroundService
         var response = ShouldBlockRestEndpoint(_settingsService.Current.HttpServerEnabled, path, context.Request.HttpMethod)
             ? new JsonObject
             {
-                ["error"] = "HTTP REST endpoints are disabled in MoleWindows Settings. Local stdio MCP remains available through /mcp."
+                ["error"] = "HTTP REST endpoints are disabled in WinMoe Settings. Local stdio MCP remains available through /mcp."
             }
             : path switch
         {
@@ -237,7 +237,7 @@ public sealed class LocalMcpServerService : BackgroundService
         return new JsonObject
         {
             ["ok"] = true,
-            ["app"] = "MoleWindows",
+            ["app"] = "WinMoe",
             ["port"] = _activePort,
             ["http_enabled"] = _settingsService.Current.HttpServerEnabled,
             ["engine_available"] = availability.IsAvailable,
@@ -253,7 +253,7 @@ public sealed class LocalMcpServerService : BackgroundService
         var recent = await _systemTelemetryHistoryService.ReadRecentAsync(1, cancellationToken).ConfigureAwait(false);
         return new JsonObject
         {
-            ["app"] = "MoleWindows",
+            ["app"] = "WinMoe",
             ["settings_path"] = _settingsService.SettingsFilePath,
             ["http_enabled"] = _settingsService.Current.HttpServerEnabled,
             ["http_port"] = _settingsService.Current.HttpServerPort,
@@ -265,7 +265,7 @@ public sealed class LocalMcpServerService : BackgroundService
             ["mcp_destructive_actions_enabled"] = _settingsService.Current.McpDestructiveActionsEnabled,
             ["latest_sample_at"] = _telemetrySamplerService.LatestSnapshot?.CapturedAt.ToString("O")
                 ?? recent.FirstOrDefault()?.CapturedAt.ToString("O"),
-            ["mcp_stdio_command"] = "Assets\\Mcp\\molewindows-mcp-stdio.exe"
+            ["mcp_stdio_command"] = "Assets\\Mcp\\winmoe-mcp-stdio.exe"
         };
     }
 
@@ -275,19 +275,19 @@ public sealed class LocalMcpServerService : BackgroundService
         {
             ["tools"] = new JsonArray
             {
-                Tool("molewindows_clean", "Preview or run Mole cleanup. Defaults to dry-run unless confirm is true."),
-                Tool("molewindows_optimize", "Preview or run Mole optimize. Defaults to dry-run unless confirm is true."),
-                Tool("molewindows_snapshot", "Return current Windows telemetry used by the Dashboard fallback."),
-                Tool("molewindows_history", "Return recent Windows telemetry snapshots recorded by MoleWindows."),
-                Tool("molewindows_top_processes", "Return process CPU or memory leaders from recent telemetry history."),
-                Tool("molewindows_process_usage", "Rank process usage over recent telemetry history by CPU or memory."),
-                Tool("molewindows_info", "Return what MoleWindows is recording and where local MCP/HTTP state is stored."),
-                Tool("molewindows_engine", "Return Mole engine availability for MoleWindows."),
-                Tool("molewindows_analyze", "Analyze a directory and return a size-ranked tree. Uses native Windows fallback until Mole Windows exposes analyze JSON."),
-                Tool("molewindows_list_apps", "Return installed Windows applications. Read-only."),
-                Tool("molewindows_purge", "Preview Windows project artifact purge candidates. Real removal must be run from the MoleWindows GUI."),
-                Tool("molewindows_installer", "Preview old installer/archive cleanup candidates. Real removal must be run from the MoleWindows GUI."),
-                Tool("molewindows_uninstall", "Windows compatibility tool: list apps, preview leftovers, or launch a confirmed vendor uninstaller.")
+                Tool("winmoe_clean", "Preview Mole cleanup. MCP maintenance is preview-only until operation-plan validation is connected."),
+                Tool("winmoe_optimize", "Preview Mole optimization. MCP maintenance is preview-only until operation-plan validation is connected."),
+                Tool("winmoe_snapshot", "Return current Windows telemetry used by the Dashboard fallback."),
+                Tool("winmoe_history", "Return recent Windows telemetry snapshots recorded by WinMoe."),
+                Tool("winmoe_top_processes", "Return process CPU or memory leaders from recent telemetry history."),
+                Tool("winmoe_process_usage", "Rank process usage over recent telemetry history by CPU or memory."),
+                Tool("winmoe_info", "Return what WinMoe is recording and where local MCP/HTTP state is stored."),
+                Tool("winmoe_engine", "Return Mole engine availability for WinMoe."),
+                Tool("winmoe_analyze", "Analyze a directory and return a size-ranked tree. Uses native Windows fallback until WinMoe exposes analyze JSON."),
+                Tool("winmoe_list_apps", "Return installed Windows applications. Read-only."),
+                Tool("winmoe_purge", "Preview Windows project artifact purge candidates. Real removal must be run from the WinMoe GUI."),
+                Tool("winmoe_installer", "Preview old installer/archive cleanup candidates. Real removal must be run from the WinMoe GUI."),
+                Tool("winmoe_uninstall", "Windows compatibility tool: list apps, preview leftovers, or launch a confirmed vendor uninstaller.")
             }
         };
     }
@@ -419,23 +419,33 @@ public sealed class LocalMcpServerService : BackgroundService
         JsonObject arguments,
         CancellationToken cancellationToken)
     {
-        return name switch
+        var canonicalName = CanonicalToolName(name);
+
+        return canonicalName switch
         {
-            "molewindows_clean" => await RunActionToolAsync("clean", arguments, cancellationToken),
-            "molewindows_optimize" => await RunActionToolAsync("optimize", arguments, cancellationToken),
-            "molewindows_snapshot" => await CaptureSnapshotAsync(cancellationToken),
-            "molewindows_history" => await CaptureHistoryAsync(arguments, cancellationToken),
-            "molewindows_top_processes" => await CaptureTopProcessesAsync(arguments, cancellationToken),
-            "molewindows_process_usage" => await CaptureProcessUsageAsync(arguments, cancellationToken),
-            "molewindows_info" => await BuildInfoAsync(cancellationToken),
-            "molewindows_engine" => BuildHealth(),
-            "molewindows_analyze" => await AnalyzeAsync(arguments, cancellationToken),
-            "molewindows_list_apps" => await ListAppsAsync(arguments, cancellationToken),
-            "molewindows_purge" => await PreviewPurgeAsync(arguments, cancellationToken),
-            "molewindows_installer" => await PreviewInstallerAsync(arguments, cancellationToken),
-            "molewindows_uninstall" => await UninstallAsync(arguments, cancellationToken),
+            "winmoe_clean" => await RunActionToolAsync("clean", arguments, cancellationToken),
+            "winmoe_optimize" => await RunActionToolAsync("optimize", arguments, cancellationToken),
+            "winmoe_snapshot" => await CaptureSnapshotAsync(cancellationToken),
+            "winmoe_history" => await CaptureHistoryAsync(arguments, cancellationToken),
+            "winmoe_top_processes" => await CaptureTopProcessesAsync(arguments, cancellationToken),
+            "winmoe_process_usage" => await CaptureProcessUsageAsync(arguments, cancellationToken),
+            "winmoe_info" => await BuildInfoAsync(cancellationToken),
+            "winmoe_engine" => BuildHealth(),
+            "winmoe_analyze" => await AnalyzeAsync(arguments, cancellationToken),
+            "winmoe_list_apps" => await ListAppsAsync(arguments, cancellationToken),
+            "winmoe_purge" => await PreviewPurgeAsync(arguments, cancellationToken),
+            "winmoe_installer" => await PreviewInstallerAsync(arguments, cancellationToken),
+            "winmoe_uninstall" => await UninstallAsync(arguments, cancellationToken),
             _ => new JsonObject { ["error"] = $"unknown tool: {name}" }
         };
+    }
+
+    private static string CanonicalToolName(string name)
+    {
+        const string legacyPrefix = "molewindows_";
+        return name.StartsWith(legacyPrefix, StringComparison.Ordinal)
+            ? $"winmoe_{name[legacyPrefix.Length..]}"
+            : name;
     }
 
     private async Task<JsonObject> RunActionToolAsync(string command, JsonObject arguments, CancellationToken cancellationToken)
@@ -445,45 +455,43 @@ public sealed class LocalMcpServerService : BackgroundService
             return ToolError(confirmError);
         }
 
-        if (confirm && !_settingsService.Current.McpDestructiveActionsEnabled)
+        if (confirm)
         {
             return new JsonObject
             {
                 ["command"] = command,
                 ["supported"] = false,
-                ["reason"] = "Enable MCP destructive actions in MoleWindows Settings before running confirmed maintenance through MCP."
+                ["reason"] = "Confirmed MCP maintenance is unavailable until operation-plan validation is connected. Use confirm=false for a dry-run preview."
             };
         }
 
-        var effectiveCommand = confirm ? command : $"{command} --dry-run";
+        var effectiveCommand = $"{command} --dry-run";
 
-        // Prefer the bundled conductor: `molewindows <command> [--apply] --json` runs the bundled
-        // engine with the stable envelope + classified errors. molewindows defaults to dry-run, so a
-        // confirmed (live) run adds --apply via MoleWindowsConductorService.ActionArguments (the
-        // mo→molewindows inversion). Any conductor miss falls through to the direct engine below.
-        var conductor = new MoleWindowsConductorService();
+        // Prefer the bundled conductor for its stable envelope and classified errors. Confirmed
+        // requests return above, so MCP always invokes the conductor's dry-run preview.
+        var conductor = new WinMoeConductorService();
         if (conductor.IsAvailable)
         {
             try
             {
                 var envelope = await conductor.CaptureAsync(
-                    command, MoleWindowsConductorService.ActionArguments(confirm), cancellationToken);
+                    command, WinMoeConductorService.ActionArguments(confirm: false), cancellationToken);
                 return new JsonObject
                 {
                     ["command"] = effectiveCommand,
-                    ["dry_run"] = !confirm,
+                    ["dry_run"] = true,
                     ["exit_code"] = 0,
                     ["succeeded"] = true,
                     ["stdout"] = ExtractEngineText(envelope.Data),
                     ["stderr"] = string.Empty
                 };
             }
-            catch (MoleWindowsConductorException ex)
+            catch (WinMoeConductorException ex)
             {
                 return new JsonObject
                 {
                     ["command"] = effectiveCommand,
-                    ["dry_run"] = !confirm,
+                    ["dry_run"] = true,
                     ["exit_code"] = 1,
                     ["succeeded"] = false,
                     ["stdout"] = string.Empty,
@@ -501,7 +509,7 @@ public sealed class LocalMcpServerService : BackgroundService
         return new JsonObject
         {
             ["command"] = effectiveCommand,
-            ["dry_run"] = !confirm,
+            ["dry_run"] = true,
             ["exit_code"] = result.ExitCode,
             ["succeeded"] = result.Succeeded,
             ["stdout"] = result.StandardOutput,
@@ -534,7 +542,7 @@ public sealed class LocalMcpServerService : BackgroundService
         var snapshots = await _systemTelemetryHistoryService.ReadRecentAsync(limit, cancellationToken).ConfigureAwait(false);
         return new JsonObject
         {
-            ["source"] = "molewindows_local_history",
+            ["source"] = "winmoe_local_history",
             ["history_path"] = _systemTelemetryHistoryService.HistoryFilePath,
             ["count"] = snapshots.Count,
             ["snapshots"] = new JsonArray(snapshots.Select(snapshot => SnapshotToJson(snapshot, "history")).ToArray<JsonNode?>())
@@ -552,7 +560,7 @@ public sealed class LocalMcpServerService : BackgroundService
         var snapshots = await _systemTelemetryHistoryService.ReadRecentAsync(limit, cancellationToken).ConfigureAwait(false);
         return new JsonObject
         {
-            ["source"] = "molewindows_local_history",
+            ["source"] = "winmoe_local_history",
             ["history_path"] = _systemTelemetryHistoryService.HistoryFilePath,
             ["count"] = snapshots.Count,
             ["snapshots"] = new JsonArray(snapshots.Select(snapshot => SnapshotToJson(snapshot, "history")).ToArray<JsonNode?>())
@@ -585,7 +593,7 @@ public sealed class LocalMcpServerService : BackgroundService
 
         return new JsonObject
         {
-            ["source"] = "molewindows_local_history",
+            ["source"] = "winmoe_local_history",
             ["metric"] = metric,
             ["history_samples"] = snapshots.Count,
             ["count"] = processes.Count,
@@ -618,7 +626,7 @@ public sealed class LocalMcpServerService : BackgroundService
 
         return new JsonObject
         {
-            ["source"] = "molewindows_local_history",
+            ["source"] = "winmoe_local_history",
             ["metric_requested"] = requestedMetric,
             ["metric_used"] = metric,
             ["history_samples"] = snapshots.Count,
@@ -856,7 +864,7 @@ public sealed class LocalMcpServerService : BackgroundService
         {
             ["command"] = command,
             ["supported"] = false,
-            ["reason"] = $"Mole Windows `{command}` is interactive in the current upstream branch and is not safe to run from the background API yet."
+            ["reason"] = $"WinMoe `{command}` is interactive in the current upstream branch and is not safe to run from the background API yet."
         };
     }
 
@@ -880,7 +888,7 @@ public sealed class LocalMcpServerService : BackgroundService
             },
             ["serverInfo"] = new JsonObject
             {
-                ["name"] = "MoleWindows",
+                ["name"] = "WinMoe",
                 ["version"] = "0.1.0"
             }
         };
@@ -890,53 +898,53 @@ public sealed class LocalMcpServerService : BackgroundService
     {
         return new JsonArray
         {
-            McpTool("molewindows_clean", "Preview or run Mole cleanup. Defaults to dry-run unless confirm is true.", new JsonObject
+            McpTool("winmoe_clean", "Preview Mole cleanup. MCP maintenance is preview-only until operation-plan validation is connected.", new JsonObject
             {
-                ["confirm"] = JsonSchemaBoolean("Run the cleanup instead of dry-run preview.")
+                ["confirm"] = JsonSchemaBoolean("Optional compatibility flag. Must be false; confirmed cleanup is unavailable until operation-plan validation is connected.")
             }),
-            McpTool("molewindows_optimize", "Preview or run Mole optimize. Defaults to dry-run unless confirm is true.", new JsonObject
+            McpTool("winmoe_optimize", "Preview Mole optimization. MCP maintenance is preview-only until operation-plan validation is connected.", new JsonObject
             {
-                ["confirm"] = JsonSchemaBoolean("Run the optimization instead of dry-run preview.")
+                ["confirm"] = JsonSchemaBoolean("Optional compatibility flag. Must be false; confirmed optimization is unavailable until operation-plan validation is connected.")
             }),
-            McpTool("molewindows_snapshot", "Return current Windows telemetry used by the Dashboard fallback.", new JsonObject()),
-            McpTool("molewindows_history", "Return recent Windows telemetry snapshots recorded by MoleWindows.", new JsonObject
+            McpTool("winmoe_snapshot", "Return current Windows telemetry used by the Dashboard fallback.", new JsonObject()),
+            McpTool("winmoe_history", "Return recent Windows telemetry snapshots recorded by WinMoe.", new JsonObject
             {
                 ["limit"] = JsonSchemaInteger("Maximum snapshots to return.")
             }),
-            McpTool("molewindows_top_processes", "Return process CPU or memory leaders from recent telemetry history.", new JsonObject
+            McpTool("winmoe_top_processes", "Return process CPU or memory leaders from recent telemetry history.", new JsonObject
             {
                 ["metric"] = JsonSchemaString("Metric used for ranking: peak_cpu, avg_cpu, cpu_time, peak_mem, or avg_mem."),
                 ["limit"] = JsonSchemaInteger("Maximum processes to return."),
                 ["history_limit"] = JsonSchemaInteger("Maximum telemetry snapshots to scan.")
             }),
-            McpTool("molewindows_process_usage", "Rank process usage over recent telemetry history by CPU or memory.", new JsonObject
+            McpTool("winmoe_process_usage", "Rank process usage over recent telemetry history by CPU or memory.", new JsonObject
             {
                 ["metric"] = JsonSchemaString("Requested metric, such as peak_mem, avg_mem, peak_cpu, avg_cpu, or cpu_time."),
                 ["limit"] = JsonSchemaInteger("Maximum processes to return."),
                 ["history_limit"] = JsonSchemaInteger("Maximum telemetry snapshots to scan.")
             }),
-            McpTool("molewindows_info", "Return what MoleWindows is recording and where local MCP/HTTP state is stored.", new JsonObject()),
-            McpTool("molewindows_engine", "Return Mole engine availability for MoleWindows.", new JsonObject()),
-            McpTool("molewindows_analyze", "Analyze a directory and return a size-ranked tree.", new JsonObject
+            McpTool("winmoe_info", "Return what WinMoe is recording and where local MCP/HTTP state is stored.", new JsonObject()),
+            McpTool("winmoe_engine", "Return Mole engine availability for WinMoe.", new JsonObject()),
+            McpTool("winmoe_analyze", "Analyze a directory and return a size-ranked tree.", new JsonObject
             {
                 ["path"] = JsonSchemaString("Directory path to analyze."),
                 ["max_depth"] = JsonSchemaInteger("Maximum recursive depth."),
                 ["max_children"] = JsonSchemaInteger("Maximum children per directory.")
             }),
-            McpTool("molewindows_list_apps", "Installed Windows applications and the IDs `molewindows_uninstall` accepts. Read-only.", new JsonObject
+            McpTool("winmoe_list_apps", "Installed Windows applications and the IDs `winmoe_uninstall` accepts. Read-only.", new JsonObject
             {
                 ["search"] = JsonSchemaString("Optional search text."),
                 ["limit"] = JsonSchemaInteger("Maximum applications to return.")
             }),
-            McpTool("molewindows_purge", "Find project build artifacts using the Windows fallback preview. PREVIEW over MCP: real removal must be run from the MoleWindows GUI.", new JsonObject
+            McpTool("winmoe_purge", "Find project build artifacts using the Windows fallback preview. PREVIEW over MCP: real removal must be run from the WinMoe GUI.", new JsonObject
             {
                 ["confirm"] = JsonSchemaBoolean("Reserved. Real purge removal is GUI-only over Windows MCP; any value still returns the preview.")
             }),
-            McpTool("molewindows_installer", "Find leftover installer/archive files using the Windows fallback preview. PREVIEW over MCP: real removal must be run from the MoleWindows GUI.", new JsonObject
+            McpTool("winmoe_installer", "Find leftover installer/archive files using the Windows fallback preview. PREVIEW over MCP: real removal must be run from the WinMoe GUI.", new JsonObject
             {
                 ["confirm"] = JsonSchemaBoolean("Reserved. Real installer cleanup is GUI-only over Windows MCP; any value still returns the preview.")
             }),
-            McpTool("molewindows_uninstall", "Windows compatibility tool: list apps, preview leftovers, or launch a confirmed vendor uninstaller.", new JsonObject
+            McpTool("winmoe_uninstall", "Windows compatibility tool: list apps, preview leftovers, or launch a confirmed vendor uninstaller.", new JsonObject
             {
                 ["action"] = JsonSchemaString("One of list, preview_leftovers, or launch_uninstaller."),
                 ["app_id"] = JsonSchemaString("Installed application ID returned by the list action."),
@@ -1011,7 +1019,7 @@ public sealed class LocalMcpServerService : BackgroundService
     {
         var apps = await _installedApplicationService.GetInstalledApplicationsAsync(cancellationToken).ConfigureAwait(false);
         var response = BuildUninstallList(apps, arguments);
-        response["tool"] = "molewindows_list_apps";
+        response["tool"] = "winmoe_list_apps";
         return response;
     }
 
@@ -1025,12 +1033,12 @@ public sealed class LocalMcpServerService : BackgroundService
         var projects = await _purgeArtifactService.PreviewAsync(cancellationToken: cancellationToken).ConfigureAwait(false);
         return new JsonObject
         {
-            ["tool"] = "molewindows_purge",
+            ["tool"] = "winmoe_purge",
             ["action"] = "preview",
             ["source"] = "windows_native_fallback",
             ["confirm_requested"] = confirm,
             ["mcp_removal_supported"] = false,
-            ["note"] = "Windows MCP returns purge previews only. Run removal from the MoleWindows GUI so the user can review and confirm selections.",
+            ["note"] = "Windows MCP returns purge previews only. Run removal from the WinMoe GUI so the user can review and confirm selections.",
             ["count"] = projects.Count,
             ["total_bytes"] = projects.Sum(project => project.TotalSizeBytes),
             ["projects"] = new JsonArray(projects.Select(PurgeProjectToJson).ToArray<JsonNode?>())
@@ -1047,12 +1055,12 @@ public sealed class LocalMcpServerService : BackgroundService
         var candidates = await _installerCleanupService.PreviewAsync(cancellationToken).ConfigureAwait(false);
         return new JsonObject
         {
-            ["tool"] = "molewindows_installer",
+            ["tool"] = "winmoe_installer",
             ["action"] = "preview",
             ["source"] = "windows_native_fallback",
             ["confirm_requested"] = confirm,
             ["mcp_removal_supported"] = false,
-            ["note"] = "Windows MCP returns installer cleanup previews only. Run removal from the MoleWindows GUI so the user can review and confirm selections.",
+            ["note"] = "Windows MCP returns installer cleanup previews only. Run removal from the WinMoe GUI so the user can review and confirm selections.",
             ["count"] = candidates.Count,
             ["total_bytes"] = candidates.Sum(candidate => candidate.SizeBytes),
             ["candidates"] = new JsonArray(candidates.Select(InstallerCandidateToJson).ToArray<JsonNode?>())
@@ -1161,7 +1169,7 @@ public sealed class LocalMcpServerService : BackgroundService
             {
                 ["action"] = "launch_uninstaller",
                 ["supported"] = false,
-                ["reason"] = "Enable MCP destructive actions in MoleWindows Settings before launching uninstallers through MCP."
+                ["reason"] = "Enable MCP destructive actions in WinMoe Settings before launching uninstallers through MCP."
             };
         }
 

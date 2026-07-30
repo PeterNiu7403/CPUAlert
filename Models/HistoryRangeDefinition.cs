@@ -1,4 +1,4 @@
-namespace MoleWindows.Models;
+namespace WinMoe.Models;
 
 public sealed record HistoryRangeDefinition(
     string Key,

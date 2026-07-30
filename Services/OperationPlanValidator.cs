@@ -1,6 +1,6 @@
-using MoleWindows.Models;
+using WinMoe.Models;
 
-namespace MoleWindows.Services;
+namespace WinMoe.Services;
 
 public sealed class OperationPlanValidator : IOperationPlanValidator
 {
@@ -65,7 +65,18 @@ public sealed class OperationPlanValidator : IOperationPlanValidator
 
         try
         {
-            var fullPath = Path.GetFullPath(Environment.ExpandEnvironmentVariables(path.Trim()));
+            var expandedPath = Environment.ExpandEnvironmentVariables(path.Trim());
+            if (expandedPath.StartsWith(@"\\", StringComparison.Ordinal))
+            {
+                return true;
+            }
+
+            if (!Path.IsPathFullyQualified(expandedPath))
+            {
+                return true;
+            }
+
+            var fullPath = Path.GetFullPath(expandedPath);
             var root = Path.GetPathRoot(fullPath);
             if (string.IsNullOrWhiteSpace(root))
             {

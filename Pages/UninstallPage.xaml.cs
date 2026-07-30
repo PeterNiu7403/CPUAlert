@@ -1,10 +1,10 @@
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml;
-using MoleWindows.Ui;
-using MoleWindows.ViewModels;
+using WinMoe.Ui;
+using WinMoe.ViewModels;
 using System.ComponentModel;
 
-namespace MoleWindows.Pages;
+namespace WinMoe.Pages;
 
 public sealed partial class UninstallPage : Page
 {
@@ -30,7 +30,7 @@ public sealed partial class UninstallPage : Page
         _loadStarted = true;
         await ViewModel.LoadAsync();
         UpdateAppsSurface();
-        MoleWindowsButtonVisualState.FreezeTree(this);
+        WinMoeButtonVisualState.FreezeTree(this);
     }
 
     private void ViewModel_PropertyChanged(object? sender, PropertyChangedEventArgs e)
@@ -139,7 +139,7 @@ public sealed partial class UninstallPage : Page
     private static void SetSegmentButton(Button button, bool isSelected)
     {
         button.Style = (Style)Application.Current.Resources[
-            isSelected ? "MoleWindowsTopNavButtonSelectedStyle" : "MoleWindowsTopNavButtonStyle"];
-        MoleWindowsButtonVisualState.ApplyNavigationState(button, isSelected);
+            isSelected ? "WinMoeTopNavButtonSelectedStyle" : "WinMoeTopNavButtonStyle"];
+        WinMoeButtonVisualState.ApplyNavigationState(button, isSelected);
     }
 }

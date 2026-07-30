@@ -1,7 +1,7 @@
-using MoleWindows.Models;
+using WinMoe.Models;
 using System.Globalization;
 
-namespace MoleWindows.Services;
+namespace WinMoe.Services;
 
 public static class CleanPreviewParser
 {

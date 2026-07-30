@@ -1,12 +1,12 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.UI.Xaml;
-using MoleWindows.Models;
-using MoleWindows.Services;
-using MoleWindows.ViewModels;
-using MoleWindows.Views;
+using WinMoe.Models;
+using WinMoe.Services;
+using WinMoe.ViewModels;
+using WinMoe.Views;
 
-namespace MoleWindows;
+namespace WinMoe;
 
 public partial class App : Application
 {
@@ -81,7 +81,7 @@ public partial class App : Application
         RegisterExceptionLogging(diagnostics);
         diagnostics.Record("launch", "Launch requested.");
 
-        var startupOptions = MoleWindowsStartupOptions.FromLaunchArguments(args.Arguments);
+        var startupOptions = WinMoeStartupOptions.FromLaunchArguments(args.Arguments);
         diagnostics.Record(
             "launch",
             $"Options showTrayHud={startupOptions.ShowTrayHudDiagnostic}; disableTray={startupOptions.DisableTray}; route={startupOptions.InitialRoute ?? "<default>"}.");
@@ -229,7 +229,7 @@ public partial class App : Application
         });
     }
 
-    private static bool ShouldInitializeTray(MoleWindowsSettings settings, MoleWindowsStartupOptions startupOptions)
+    private static bool ShouldInitializeTray(WinMoeSettings settings, WinMoeStartupOptions startupOptions)
     {
         return (settings.TrayIconEnabled && !startupOptions.DisableTray) || startupOptions.ShowTrayHudDiagnostic;
     }

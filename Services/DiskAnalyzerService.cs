@@ -1,6 +1,6 @@
-using MoleWindows.Models;
+using WinMoe.Models;
 
-namespace MoleWindows.Services;
+namespace WinMoe.Services;
 
 public sealed class DiskAnalyzerService : IDiskAnalyzerService
 {
@@ -26,6 +26,11 @@ public sealed class DiskAnalyzerService : IDiskAnalyzerService
         if (!Directory.Exists(fullPath))
         {
             throw new DirectoryNotFoundException($"Analysis root was not found: {fullPath}");
+        }
+
+        if ((File.GetAttributes(fullPath) & FileAttributes.ReparsePoint) != 0)
+        {
+            throw new IOException($"Analysis root cannot be a reparse point: {fullPath}");
         }
 
         return fullPath;
@@ -114,7 +119,10 @@ public sealed class DiskAnalyzerService : IDiskAnalyzerService
     {
         try
         {
-            return new DirectoryInfo(path).EnumerateFiles();
+            return new DirectoryInfo(path)
+                .EnumerateFiles()
+                .Where(file => ShouldIncludeFile(file.Attributes))
+                .ToArray();
         }
         catch
         {
@@ -122,11 +130,19 @@ public sealed class DiskAnalyzerService : IDiskAnalyzerService
         }
     }
 
+    internal static bool ShouldIncludeFile(FileAttributes attributes)
+    {
+        return (attributes & FileAttributes.ReparsePoint) == 0;
+    }
+
     private static IEnumerable<DirectoryInfo> SafeEnumerateDirectories(string path)
     {
         try
         {
-            return new DirectoryInfo(path).EnumerateDirectories();
+            return new DirectoryInfo(path)
+                .EnumerateDirectories()
+                .Where(directory => (directory.Attributes & FileAttributes.ReparsePoint) == 0)
+                .ToArray();
         }
         catch
         {

@@ -1,25 +1,30 @@
 # Windows Packaging
 
-MoleWindows Windows follows the upstream MoleWindows install rhythm: package manager first, direct download as a fallback.
+WinMoe uses a package-manager-first release flow, with direct download as a fallback.
 
 ## Artifacts
 
 Release tooling writes:
 
-- installer: `artifacts\release\MoleWindows-v0.1.0-preview.1-win-x64-setup.exe`
-- portable ZIP fallback: `artifacts\release\MoleWindows-v0.1.0-preview.1-win-x64.zip`
+- installer: `artifacts\release\WinMoe-v0.1.0-preview.1-win-x64-setup.exe`
+- portable ZIP fallback: `artifacts\release\WinMoe-v0.1.0-preview.1-win-x64.zip`
 - checksum file: `artifacts\release\SHA256SUMS.txt`
 - release notes: `artifacts\release\RELEASE_NOTES.md`
-- WinGet manifests: `artifacts\release\winget\PeterNiu\MoleWindows\0.1.0-preview.1\`
+- WinGet manifests: `artifacts\release\winget\PeterNiu\WinMoe\0.1.0-preview.1\`
 
-The installer is built from `MoleWindows.iss` with Inno Setup. It installs per-user to `%LOCALAPPDATA%\Programs\MoleWindows`, creates a Start Menu shortcut named `MoleWindows`, and points that shortcut at the internal `MoleWindows.exe`.
+The installer is built from `WinMoe.iss` with Inno Setup. It installs per-user to `%LOCALAPPDATA%\Programs\WinMoe`, creates a Start Menu shortcut named `WinMoe`, and points that shortcut at the internal `WinMoe.exe`.
+
+`scripts\build-release.ps1` requires the final HTTPS repository URL. It
+deliberately blocks public release while that URL still points to `CPUAlert`;
+after the GitHub repository is renamed, pass the canonical URL with
+`-RepositoryUrl`.
 
 ## WinGet
 
 The generated manifest targets:
 
-- PackageIdentifier: `PeterNiu.MoleWindows`
-- PackageName: `MoleWindows`
+- PackageIdentifier: `PeterNiu.WinMoe`
+- PackageName: `WinMoe`
 - InstallerType: `inno`
 - Scope: `user`
 - Architecture: `x64`
@@ -27,7 +32,7 @@ The generated manifest targets:
 Validate locally with:
 
 ```powershell
-winget validate .\artifacts\release\winget\PeterNiu\MoleWindows\0.1.0-preview.1
+winget validate .\artifacts\release\winget\PeterNiu\WinMoe\0.1.0-preview.1
 ```
 
 ## Signing

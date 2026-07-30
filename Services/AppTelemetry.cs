@@ -5,7 +5,7 @@ using System.Text;
 using System.Text.Json;
 using Sentry;
 
-namespace MoleWindows.Services;
+namespace WinMoe.Services;
 
 /// Static telemetry facade for the Windows app — crash reporting (Sentry) plus
 /// minimal, anonymous product analytics (PostHog over plain HTTP). It mirrors
@@ -14,7 +14,7 @@ namespace MoleWindows.Services;
 /// macOS side changes and no platform discriminator flag is required.
 ///
 /// Two independent gates guard every call:
-///   1. the user's opt-out preference (`MoleWindowsSettings.TelemetryEnabled`), and
+///   1. the user's opt-out preference (`WinMoeSettings.TelemetryEnabled`), and
 ///   2. whether a DSN / API key is actually configured (see TelemetryConfig).
 /// Local/dev builds configure neither, so this is wholly inert there.
 ///
@@ -144,7 +144,7 @@ public static class AppTelemetry
         {
             options.Dsn = TelemetryConfig.SentryDsn;
             options.Environment = "production";
-            options.Release = $"molewindows-win@{AppInfo.Version}";
+            options.Release = $"winmoe-win@{AppInfo.Version}";
             // Crash/error events only — no performance tracing, no PII, no
             // per-launch session beacon, no auto breadcrumbs.
             options.TracesSampleRate = 0.0;
@@ -188,7 +188,7 @@ public static class AppTelemetry
             // stored and GeoIP is skipped (belt-and-suspenders with the project's
             // "Discard client IP data").
             ["$ip"] = "0",
-            ["$lib"] = "molewindows-win",
+            ["$lib"] = "winmoe-win",
             // Explicit discriminator: the Windows app shares the macOS PostHog
             // project (free-plan 1-project limit), so dashboards filter on this.
             ["platform"] = "windows",
@@ -260,10 +260,8 @@ public static class AppTelemetry
     {
         try
         {
-            var dir = Path.Combine(
-                Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-                "MoleWindows");
-            var path = Path.Combine(dir, "telemetry-id");
+            var path = ApplicationDataPaths.ResolveFile("telemetry-id");
+            var dir = Path.GetDirectoryName(path)!;
 
             if (File.Exists(path))
             {
@@ -291,7 +289,8 @@ public static class AppTelemetry
 internal static class AppInfo
 {
     public static string Version =>
-        Environment.GetEnvironmentVariable("MOLEWINDOWS_VERSION")
+        Environment.GetEnvironmentVariable("WINMOE_VERSION")
+        ?? Environment.GetEnvironmentVariable("MOLEWINDOWS_VERSION")
         ?? Assembly.GetExecutingAssembly().GetName().Version?.ToString()
         ?? "0.0.0";
 

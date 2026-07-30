@@ -1,9 +1,9 @@
 {
   "profiles": {
-    "MoleWindows (Package)": {
+    "WinMoe (Package)": {
       "commandName": "MsixPackage"
     },
-    "MoleWindows (Unpackaged)": {
+    "WinMoe (Unpackaged)": {
       "commandName": "Project"
     }
   }

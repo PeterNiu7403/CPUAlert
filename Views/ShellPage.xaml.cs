@@ -1,11 +1,11 @@
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Navigation;
-using MoleWindows.Services;
-using MoleWindows.Ui;
-using MoleWindows.ViewModels;
+using WinMoe.Services;
+using WinMoe.Ui;
+using WinMoe.ViewModels;
 
-namespace MoleWindows.Views;
+namespace WinMoe.Views;
 
 public sealed partial class ShellPage : Page
 {
@@ -36,7 +36,7 @@ public sealed partial class ShellPage : Page
             UpdateSelectedRoute("status");
         }
 
-        MoleWindowsButtonVisualState.FreezeTree(this);
+        WinMoeButtonVisualState.FreezeTree(this);
     }
 
     private void TopNav_Click(object sender, RoutedEventArgs e)
@@ -55,28 +55,28 @@ public sealed partial class ShellPage : Page
         UpdateSelectedRoute(ViewModel.SelectedRoute);
         if (e.Content is DependencyObject content)
         {
-            MoleWindowsButtonVisualState.FreezeTree(content);
+            WinMoeButtonVisualState.FreezeTree(content);
         }
     }
 
     private void UpdateSelectedRoute(string route)
     {
-        MoleWindowsButtonVisualState.Freeze(BrandButton);
+        WinMoeButtonVisualState.Freeze(BrandButton);
 
         foreach (var button in GetRouteButtons())
         {
             var buttonRoute = button.Tag as string;
             var isSelected = string.Equals(buttonRoute, route, StringComparison.OrdinalIgnoreCase);
-            button.Style = (Style)Application.Current.Resources[isSelected ? "MoleWindowsTopNavButtonSelectedStyle" : "MoleWindowsTopNavButtonStyle"];
-            MoleWindowsButtonVisualState.ApplyNavigationState(button, isSelected);
+            button.Style = (Style)Application.Current.Resources[isSelected ? "WinMoeTopNavButtonSelectedStyle" : "WinMoeTopNavButtonStyle"];
+            WinMoeButtonVisualState.ApplyNavigationState(button, isSelected);
         }
 
         foreach (var button in GetUtilityButtons())
         {
             var buttonRoute = button.Tag as string;
             var isSelected = string.Equals(buttonRoute, route, StringComparison.OrdinalIgnoreCase);
-            button.Style = (Style)Application.Current.Resources[isSelected ? "MoleWindowsIconButtonSelectedStyle" : "MoleWindowsIconButtonStyle"];
-            MoleWindowsButtonVisualState.ApplyNavigationState(button, isSelected);
+            button.Style = (Style)Application.Current.Resources[isSelected ? "WinMoeIconButtonSelectedStyle" : "WinMoeIconButtonStyle"];
+            WinMoeButtonVisualState.ApplyNavigationState(button, isSelected);
         }
     }
 

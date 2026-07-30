@@ -1,6 +1,7 @@
 .vs/
 .idea/
 .vscode/
+.dotnet-sdk/
 **/bin/
 **/obj/
 artifacts/

@@ -1,7 +1,7 @@
 using System.Text.Json;
-using MoleWindows.Models;
+using WinMoe.Models;
 
-namespace MoleWindows.Services;
+namespace WinMoe.Services;
 
 public sealed class JsonSystemTelemetryHistoryService : ISystemTelemetryHistoryService
 {
@@ -14,25 +14,19 @@ public sealed class JsonSystemTelemetryHistoryService : ISystemTelemetryHistoryS
     private readonly Func<int> _historyRetentionDaysProvider;
 
     public JsonSystemTelemetryHistoryService()
-        : this(Path.Combine(
-            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-            "MoleWindows",
-            "telemetry-history.jsonl"))
+        : this(ApplicationDataPaths.ResolveFile("telemetry-history.jsonl"))
     {
     }
 
     public JsonSystemTelemetryHistoryService(IApplicationSettingsService settingsService)
         : this(
-            Path.Combine(
-                Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-                "MoleWindows",
-                "telemetry-history.jsonl"),
+            ApplicationDataPaths.ResolveFile("telemetry-history.jsonl"),
             () => settingsService.Current.HistoryRetentionDays)
     {
     }
 
     public JsonSystemTelemetryHistoryService(string historyFilePath)
-        : this(historyFilePath, () => MoleWindowsSettings.DefaultHistoryRetentionDays)
+        : this(historyFilePath, () => WinMoeSettings.DefaultHistoryRetentionDays)
     {
     }
 

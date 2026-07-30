@@ -1,6 +1,6 @@
-# Mole Windows
+# WinMoe
 
-Mole Windows 是一个原生 WinUI 3 系统工具，提供清理、软件管理、优化、
+WinMoe 是一个原生 WinUI 3 系统工具，提供清理、软件管理、优化、
 磁盘分析和实时状态五个工作区。项目采用深色行星视觉语言，同时遵循
 Windows 的窗口、托盘、DPI、键盘和权限语义。
 
@@ -13,7 +13,7 @@ Windows 的窗口、托盘、DPI、键盘和权限语义。
 - Windows CPU、内存、磁盘、网络、进程和电池遥测；
 - 系统托盘图标、状态 HUD、历史记录和操作日志；
 - Windows 已安装软件枚举、启动项基础能力和磁盘树图；
-- 内置 Mole Windows 引擎探测与结构化进程调用；
+- 内置 Mole 引擎探测与结构化进程调用；
 - 回收站优先的安全删除服务；
 - x86、x64、ARM64 工程配置与 Windows CI。
 
@@ -26,15 +26,18 @@ Windows 的窗口、托盘、DPI、键盘和权限语义。
 - .NET 8 SDK。
 
 ```powershell
-dotnet restore .\MoleWindows.sln
-dotnet build .\MoleWindows.csproj -c Debug -p:Platform=x64
-dotnet test .\Tests\MoleWindows.Tests\MoleWindows.Tests.csproj -c Debug
+dotnet restore .\WinMoe.sln
+dotnet build .\WinMoe.csproj -c Debug -p:Platform=x64
+dotnet test .\Tests\WinMoe.Tests\WinMoe.Tests.csproj -c Debug
 .\run-local.ps1
 ```
 
 规格与实时进度位于
-[`docs/windows-mole/`](docs/windows-mole/)。第三方来源与许可证见
+[`docs/winmoe/`](docs/winmoe/)。第三方来源与许可证见
 [`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md)。
+
+下一阶段的开发顺序、ReleaseReadiness 设计和 Go/No-Go 标准见
+[`docs/winmoe/roadmap.md`](docs/winmoe/roadmap.md)。
 
 ## 品牌说明
 

@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <Page
-    x:Class="MoleWindows.Pages.HistoryPage"
+    x:Class="WinMoe.Pages.HistoryPage"
     x:Name="HistoryRoot"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-    xmlns:models="using:MoleWindows.Models"
+    xmlns:models="using:WinMoe.Models"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    Background="{StaticResource MoleWindowsBackgroundBrush}"
+    Background="{StaticResource WinMoeBackgroundBrush}"
     Loaded="HistoryPage_Loaded"
     mc:Ignorable="d">
 
@@ -33,7 +33,7 @@
                 Padding="8"
                 VerticalAlignment="Center"
                 Background="#11110F"
-                BorderBrush="{StaticResource MoleWindowsStrokeBrush}"
+                BorderBrush="{StaticResource WinMoeStrokeBrush}"
                 BorderThickness="1"
                 CornerRadius="24">
                 <StackPanel Orientation="Horizontal" Spacing="6">
@@ -41,43 +41,43 @@
                         x:Name="Range5mButton"
                         Click="RangeButton_Click"
                         Content="5m"
-                        Style="{StaticResource MoleWindowsTopNavButtonStyle}"
+                        Style="{StaticResource WinMoeTopNavButtonStyle}"
                         Tag="5m" />
                     <Button
                         x:Name="Range1hButton"
                         Click="RangeButton_Click"
                         Content="1h"
-                        Style="{StaticResource MoleWindowsTopNavButtonSelectedStyle}"
+                        Style="{StaticResource WinMoeTopNavButtonSelectedStyle}"
                         Tag="1h" />
                     <Button
                         x:Name="Range6hButton"
                         Click="RangeButton_Click"
                         Content="6h"
-                        Style="{StaticResource MoleWindowsTopNavButtonStyle}"
+                        Style="{StaticResource WinMoeTopNavButtonStyle}"
                         Tag="6h" />
                     <Button
                         x:Name="Range24hButton"
                         Click="RangeButton_Click"
                         Content="24h"
-                        Style="{StaticResource MoleWindowsTopNavButtonStyle}"
+                        Style="{StaticResource WinMoeTopNavButtonStyle}"
                         Tag="24h" />
                     <Button
                         x:Name="Range7dButton"
                         Click="RangeButton_Click"
                         Content="7d"
-                        Style="{StaticResource MoleWindowsTopNavButtonStyle}"
+                        Style="{StaticResource WinMoeTopNavButtonStyle}"
                         Tag="7d" />
                     <Button
                         x:Name="Range30dButton"
                         Click="RangeButton_Click"
                         Content="30d"
-                        Style="{StaticResource MoleWindowsTopNavButtonStyle}"
+                        Style="{StaticResource WinMoeTopNavButtonStyle}"
                         Tag="30d" />
                     <Button
                         x:Name="Range90dButton"
                         Click="RangeButton_Click"
                         Content="90d"
-                        Style="{StaticResource MoleWindowsTopNavButtonStyle}"
+                        Style="{StaticResource WinMoeTopNavButtonStyle}"
                         Tag="90d" />
                 </StackPanel>
             </Border>
@@ -87,12 +87,12 @@
                 Orientation="Horizontal"
                 Spacing="12">
                 <TextBlock
-                    FontFamily="{StaticResource MoleWindowsMonoFont}"
+                    FontFamily="{StaticResource WinMoeMonoFont}"
                     FontSize="16"
                     FontWeight="Bold"
-                    Foreground="{StaticResource MoleWindowsDimBrush}"
+                    Foreground="{StaticResource WinMoeDimBrush}"
                     Text="{Binding Summary}" />
-                <Button Command="{Binding RefreshCommand}" Style="{StaticResource MoleWindowsIconButtonStyle}">
+                <Button Command="{Binding RefreshCommand}" Style="{StaticResource WinMoeIconButtonStyle}">
                     <FontIcon Glyph="&#xE72C;" />
                 </Button>
             </StackPanel>
@@ -110,7 +110,7 @@
                     <ColumnDefinition Width="*" />
                 </Grid.ColumnDefinitions>
 
-                <Border Style="{StaticResource MoleWindowsCardBorderStyle}">
+                <Border Style="{StaticResource WinMoeCardBorderStyle}">
                     <Grid RowSpacing="16">
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto" />
@@ -122,12 +122,12 @@
                                 <ColumnDefinition Width="*" />
                                 <ColumnDefinition Width="Auto" />
                             </Grid.ColumnDefinitions>
-                            <TextBlock Foreground="{StaticResource MoleWindowsGreenBrush}" Style="{StaticResource MoleWindowsLabelTextStyle}" Text="CPU 使用率" />
+                            <TextBlock Foreground="{StaticResource WinMoeGreenBrush}" Style="{StaticResource WinMoeLabelTextStyle}" Text="CPU 使用率" />
                             <TextBlock
                                 Grid.Column="1"
-                                FontFamily="{StaticResource MoleWindowsMonoFont}"
+                                FontFamily="{StaticResource WinMoeMonoFont}"
                                 FontSize="14"
-                                Foreground="{StaticResource MoleWindowsDimBrush}"
+                                Foreground="{StaticResource WinMoeDimBrush}"
                                 Text="{Binding CpuUsageChart.AverageText}" />
                         </Grid>
                         <Grid Grid.Row="1" MinHeight="180">
@@ -145,7 +145,7 @@
                                 <Canvas Width="100" Height="100">
                                     <Polyline
                                         Points="{Binding CpuUsageChart.Points}"
-                                        Stroke="{StaticResource MoleWindowsGreenBrush}"
+                                        Stroke="{StaticResource WinMoeGreenBrush}"
                                         StrokeEndLineCap="Round"
                                         StrokeLineJoin="Round"
                                         StrokeStartLineCap="Round"
@@ -153,11 +153,11 @@
                                 </Canvas>
                             </Viewbox>
                         </Grid>
-                        <TextBlock Grid.Row="2" Style="{StaticResource MoleWindowsMetricTextStyle}" Text="{Binding CpuUsageChart.LatestText}" />
+                        <TextBlock Grid.Row="2" Style="{StaticResource WinMoeMetricTextStyle}" Text="{Binding CpuUsageChart.LatestText}" />
                     </Grid>
                 </Border>
 
-                <Border Grid.Column="1" Style="{StaticResource MoleWindowsCardBorderStyle}">
+                <Border Grid.Column="1" Style="{StaticResource WinMoeCardBorderStyle}">
                     <Grid RowSpacing="16">
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto" />
@@ -169,12 +169,12 @@
                                 <ColumnDefinition Width="*" />
                                 <ColumnDefinition Width="Auto" />
                             </Grid.ColumnDefinitions>
-                            <TextBlock Foreground="{StaticResource MoleWindowsGoldBrush}" Style="{StaticResource MoleWindowsLabelTextStyle}" Text="内存使用率" />
+                            <TextBlock Foreground="{StaticResource WinMoeGoldBrush}" Style="{StaticResource WinMoeLabelTextStyle}" Text="内存使用率" />
                             <TextBlock
                                 Grid.Column="1"
-                                FontFamily="{StaticResource MoleWindowsMonoFont}"
+                                FontFamily="{StaticResource WinMoeMonoFont}"
                                 FontSize="14"
-                                Foreground="{StaticResource MoleWindowsDimBrush}"
+                                Foreground="{StaticResource WinMoeDimBrush}"
                                 Text="{Binding MemoryChart.AverageText}" />
                         </Grid>
                         <Grid Grid.Row="1" MinHeight="180">
@@ -192,7 +192,7 @@
                                 <Canvas Width="100" Height="100">
                                     <Polyline
                                         Points="{Binding MemoryChart.Points}"
-                                        Stroke="{StaticResource MoleWindowsGoldBrush}"
+                                        Stroke="{StaticResource WinMoeGoldBrush}"
                                         StrokeEndLineCap="Round"
                                         StrokeLineJoin="Round"
                                         StrokeStartLineCap="Round"
@@ -200,11 +200,11 @@
                                 </Canvas>
                             </Viewbox>
                         </Grid>
-                        <TextBlock Grid.Row="2" Style="{StaticResource MoleWindowsMetricTextStyle}" Text="{Binding MemoryChart.LatestText}" />
+                        <TextBlock Grid.Row="2" Style="{StaticResource WinMoeMetricTextStyle}" Text="{Binding MemoryChart.LatestText}" />
                     </Grid>
                 </Border>
 
-                <Border Grid.Row="1" Style="{StaticResource MoleWindowsCardBorderStyle}">
+                <Border Grid.Row="1" Style="{StaticResource WinMoeCardBorderStyle}">
                     <Grid RowSpacing="16">
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto" />
@@ -216,12 +216,12 @@
                                 <ColumnDefinition Width="*" />
                                 <ColumnDefinition Width="Auto" />
                             </Grid.ColumnDefinitions>
-                            <TextBlock Foreground="{StaticResource MoleWindowsBlueBrush}" Style="{StaticResource MoleWindowsLabelTextStyle}" Text="磁盘使用率" />
+                            <TextBlock Foreground="{StaticResource WinMoeBlueBrush}" Style="{StaticResource WinMoeLabelTextStyle}" Text="磁盘使用率" />
                             <TextBlock
                                 Grid.Column="1"
-                                FontFamily="{StaticResource MoleWindowsMonoFont}"
+                                FontFamily="{StaticResource WinMoeMonoFont}"
                                 FontSize="14"
-                                Foreground="{StaticResource MoleWindowsDimBrush}"
+                                Foreground="{StaticResource WinMoeDimBrush}"
                                 Text="{Binding DiskChart.AverageText}" />
                         </Grid>
                         <Grid Grid.Row="1" MinHeight="180">
@@ -239,7 +239,7 @@
                                 <Canvas Width="100" Height="100">
                                     <Polyline
                                         Points="{Binding DiskChart.Points}"
-                                        Stroke="{StaticResource MoleWindowsBlueBrush}"
+                                        Stroke="{StaticResource WinMoeBlueBrush}"
                                         StrokeEndLineCap="Round"
                                         StrokeLineJoin="Round"
                                         StrokeStartLineCap="Round"
@@ -247,11 +247,11 @@
                                 </Canvas>
                             </Viewbox>
                         </Grid>
-                        <TextBlock Grid.Row="2" Style="{StaticResource MoleWindowsMetricTextStyle}" Text="{Binding DiskChart.LatestText}" />
+                        <TextBlock Grid.Row="2" Style="{StaticResource WinMoeMetricTextStyle}" Text="{Binding DiskChart.LatestText}" />
                     </Grid>
                 </Border>
 
-                <Border Grid.Row="1" Grid.Column="1" Style="{StaticResource MoleWindowsCardBorderStyle}">
+                <Border Grid.Row="1" Grid.Column="1" Style="{StaticResource WinMoeCardBorderStyle}">
                     <Grid RowSpacing="16">
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto" />
@@ -263,12 +263,12 @@
                                 <ColumnDefinition Width="*" />
                                 <ColumnDefinition Width="Auto" />
                             </Grid.ColumnDefinitions>
-                            <TextBlock Foreground="{StaticResource MoleWindowsPurpleBrush}" Style="{StaticResource MoleWindowsLabelTextStyle}" Text="网络速率 / 秒" />
+                            <TextBlock Foreground="{StaticResource WinMoePurpleBrush}" Style="{StaticResource WinMoeLabelTextStyle}" Text="网络速率 / 秒" />
                             <TextBlock
                                 Grid.Column="1"
-                                FontFamily="{StaticResource MoleWindowsMonoFont}"
+                                FontFamily="{StaticResource WinMoeMonoFont}"
                                 FontSize="14"
-                                Foreground="{StaticResource MoleWindowsDimBrush}"
+                                Foreground="{StaticResource WinMoeDimBrush}"
                                 Text="{Binding NetworkChart.AverageText}" />
                         </Grid>
                         <Grid Grid.Row="1" MinHeight="180">
@@ -286,7 +286,7 @@
                                 <Canvas Width="100" Height="100">
                                     <Polyline
                                         Points="{Binding NetworkChart.Points}"
-                                        Stroke="{StaticResource MoleWindowsPurpleBrush}"
+                                        Stroke="{StaticResource WinMoePurpleBrush}"
                                         StrokeEndLineCap="Round"
                                         StrokeLineJoin="Round"
                                         StrokeStartLineCap="Round"
@@ -294,14 +294,14 @@
                                 </Canvas>
                             </Viewbox>
                         </Grid>
-                        <TextBlock Grid.Row="2" Style="{StaticResource MoleWindowsMetricTextStyle}" Text="{Binding NetworkChart.LatestText}" />
+                        <TextBlock Grid.Row="2" Style="{StaticResource WinMoeMetricTextStyle}" Text="{Binding NetworkChart.LatestText}" />
                     </Grid>
                 </Border>
 
                 <Border
                     Grid.Row="2"
                     Grid.ColumnSpan="2"
-                    Style="{StaticResource MoleWindowsCardBorderStyle}">
+                    Style="{StaticResource WinMoeCardBorderStyle}">
                     <Grid RowSpacing="18">
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto" />
@@ -314,20 +314,20 @@
                                 <ColumnDefinition Width="Auto" />
                             </Grid.ColumnDefinitions>
                             <TextBlock
-                                Foreground="{StaticResource MoleWindowsOrangeBrush}"
-                                Style="{StaticResource MoleWindowsLabelTextStyle}"
+                                Foreground="{StaticResource WinMoeOrangeBrush}"
+                                Style="{StaticResource WinMoeLabelTextStyle}"
                                 Text="CPU 峰值进程" />
                             <TextBlock
                                 Grid.Column="1"
-                                FontFamily="{StaticResource MoleWindowsMonoFont}"
+                                FontFamily="{StaticResource WinMoeMonoFont}"
                                 FontSize="14"
-                                Foreground="{StaticResource MoleWindowsDimBrush}"
+                                Foreground="{StaticResource WinMoeDimBrush}"
                                 Text="峰值 / 平均 / 内存" />
                         </Grid>
                         <TextBlock
                             Grid.Row="1"
-                            FontFamily="{StaticResource MoleWindowsMonoFont}"
-                            Foreground="{StaticResource MoleWindowsDimBrush}"
+                            FontFamily="{StaticResource WinMoeMonoFont}"
+                            Foreground="{StaticResource WinMoeDimBrush}"
                             Text="{Binding HistoryPath}"
                             TextWrapping="Wrap" />
                         <ListView
@@ -351,23 +351,23 @@
                                             TextTrimming="CharacterEllipsis" />
                                         <TextBlock
                                             Grid.Column="1"
-                                            FontFamily="{StaticResource MoleWindowsMonoFont}"
-                                            Foreground="{StaticResource MoleWindowsDimBrush}"
+                                            FontFamily="{StaticResource WinMoeMonoFont}"
+                                            Foreground="{StaticResource WinMoeDimBrush}"
                                             Text="{x:Bind ProcessId}" />
                                         <TextBlock
                                             Grid.Column="2"
-                                            FontFamily="{StaticResource MoleWindowsMonoFont}"
-                                            Foreground="{StaticResource MoleWindowsOrangeBrush}"
+                                            FontFamily="{StaticResource WinMoeMonoFont}"
+                                            Foreground="{StaticResource WinMoeOrangeBrush}"
                                             Text="{x:Bind PeakCpuUsageText}" />
                                         <TextBlock
                                             Grid.Column="3"
-                                            FontFamily="{StaticResource MoleWindowsMonoFont}"
-                                            Foreground="{StaticResource MoleWindowsMutedBrush}"
+                                            FontFamily="{StaticResource WinMoeMonoFont}"
+                                            Foreground="{StaticResource WinMoeMutedBrush}"
                                             Text="{x:Bind AverageCpuUsageText}" />
                                         <TextBlock
                                             Grid.Column="4"
-                                            FontFamily="{StaticResource MoleWindowsMonoFont}"
-                                            Foreground="{StaticResource MoleWindowsMutedBrush}"
+                                            FontFamily="{StaticResource WinMoeMonoFont}"
+                                            Foreground="{StaticResource WinMoeMutedBrush}"
                                             Text="{x:Bind PeakWorkingSetText}" />
                                     </Grid>
                                 </DataTemplate>

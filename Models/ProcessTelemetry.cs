@@ -1,6 +1,6 @@
-using MoleWindows.Services;
+using WinMoe.Services;
 
-namespace MoleWindows.Models;
+namespace WinMoe.Models;
 
 public sealed record ProcessTelemetry(
     string Name,

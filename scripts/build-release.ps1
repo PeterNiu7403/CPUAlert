@@ -10,10 +10,25 @@ param(
 
 $ErrorActionPreference = "Stop"
 
+$repositoryUri = $null
+if (
+    -not [Uri]::TryCreate($RepositoryUrl, [UriKind]::Absolute, [ref]$repositoryUri) -or
+    $repositoryUri.Scheme -ne [Uri]::UriSchemeHttps
+) {
+    throw "RepositoryUrl must be an absolute HTTPS URL: $RepositoryUrl"
+}
+
+$repositoryName = $repositoryUri.AbsolutePath.TrimEnd("/").Split("/")[-1]
+$repositoryBaseName = [System.IO.Path]::GetFileNameWithoutExtension($repositoryName)
+if ($repositoryBaseName -ieq "CPUAlert") {
+    throw "Public release is blocked while RepositoryUrl still points to CPUAlert. Rename the GitHub repository, then pass its final HTTPS URL with -RepositoryUrl."
+}
+
+$RepositoryUrl = $RepositoryUrl.TrimEnd("/")
 $root = Split-Path -Parent $PSScriptRoot
 $platform = "x64"
-$packageIdentifier = "PeterNiu.MoleWindows"
-$packageName = "MoleWindows"
+$packageIdentifier = "PeterNiu.WinMoe"
+$packageName = "WinMoe"
 $packageVersion = $Version.TrimStart("v")
 $artifactName = "$packageName-$Version-$Runtime"
 $setupBaseName = "$artifactName-setup"
@@ -25,7 +40,7 @@ $zipPath = Join-Path $releaseRoot $zipFileName
 $installerPath = Join-Path $releaseRoot $setupFileName
 $shaPath = Join-Path $releaseRoot "SHA256SUMS.txt"
 $notesPath = Join-Path $releaseRoot "RELEASE_NOTES.md"
-$wingetRoot = Join-Path $releaseRoot "winget\PeterNiu\MoleWindows\$packageVersion"
+$wingetRoot = Join-Path $releaseRoot "winget\PeterNiu\WinMoe\$packageVersion"
 $releaseBaseUrl = "$RepositoryUrl/releases/download/$Version"
 $installerUrl = "$releaseBaseUrl/$setupFileName"
 
@@ -99,7 +114,7 @@ function Write-WinGetManifests {
     $releaseDate = (Get-Date).ToString("yyyy-MM-dd")
     $versionManifest = @"
 # yaml-language-server: `$schema=https://aka.ms/winget-manifest.version.1.9.0.schema.json
-# Created with MoleWindows release tooling.
+# Created with WinMoe release tooling.
 PackageIdentifier: $packageIdentifier
 PackageVersion: $packageVersion
 DefaultLocale: en-US
@@ -109,7 +124,7 @@ ManifestVersion: $manifestVersion
 
     $installerManifest = @"
 # yaml-language-server: `$schema=https://aka.ms/winget-manifest.installer.1.9.0.schema.json
-# Created with MoleWindows release tooling.
+# Created with WinMoe release tooling.
 PackageIdentifier: $packageIdentifier
 PackageVersion: $packageVersion
 InstallerType: inno
@@ -124,7 +139,7 @@ Dependencies:
   PackageDependencies:
   - PackageIdentifier: Microsoft.DotNet.DesktopRuntime.8
 AppsAndFeaturesEntries:
-- DisplayName: MoleWindows
+- DisplayName: WinMoe
   Publisher: Peter Niu
 Installers:
 - Architecture: x64
@@ -139,23 +154,23 @@ ManifestVersion: $manifestVersion
 
     $localeManifest = @"
 # yaml-language-server: `$schema=https://aka.ms/winget-manifest.defaultLocale.1.9.0.schema.json
-# Created with MoleWindows release tooling.
+# Created with WinMoe release tooling.
 PackageIdentifier: $packageIdentifier
 PackageVersion: $packageVersion
 PackageLocale: en-US
 Publisher: Peter Niu
 PublisherUrl: https://github.com/PeterNiu7403
-PublisherSupportUrl: https://github.com/PeterNiu7403/CPUAlert/issues
-PackageName: MoleWindows
+PublisherSupportUrl: $RepositoryUrl/issues
+PackageName: WinMoe
 PackageUrl: $RepositoryUrl
 License: MIT
 LicenseUrl: $RepositoryUrl/blob/main/LICENSE
 Copyright: Copyright (c) 2026 Peter Niu
-ShortDescription: A native Windows branch candidate for MoleWindows, powered by Mole.
-Description: MoleWindows is a GUI-first system utility for status, cleanup, purge, installer cleanup, optimize, app management, disk analysis, history, activity, tray HUD, and local agent access. This Windows preview bundles the safe Mole Windows engine path plus documented Windows fallbacks.
-Moniker: molewindows
+ShortDescription: A native Windows branch candidate for WinMoe, powered by Mole.
+Description: WinMoe is a GUI-first system utility for status, cleanup, purge, installer cleanup, optimize, app management, disk analysis, history, activity, tray HUD, and local agent access. This Windows preview bundles the safe Mole engine path plus documented Windows fallbacks.
+Moniker: winmoe
 Tags:
-- molewindows
+- winmoe
 - mole
 - cleanup
 - system-utility
@@ -181,23 +196,23 @@ foreach ($path in @($stage, $zipPath, $installerPath, $shaPath, $wingetRoot)) {
 New-Item -ItemType Directory -Path $stage -Force | Out-Null
 
 Invoke-Step "Restore solution" {
-    dotnet restore (Join-Path $root "MoleWindows.sln")
+    dotnet restore (Join-Path $root "WinMoe.sln")
 }
 
-Invoke-Step "Build MoleWindows" {
-    dotnet build (Join-Path $root "MoleWindows.csproj") -c $Configuration -p:Platform=$platform -nr:false -v:minimal
+Invoke-Step "Build WinMoe" {
+    dotnet build (Join-Path $root "WinMoe.csproj") -c $Configuration -p:Platform=$platform -nr:false -v:minimal
 }
 
 Invoke-Step "Build tests" {
-    dotnet build (Join-Path $root "Tests\MoleWindows.Tests\MoleWindows.Tests.csproj") -c $Configuration -nr:false -v:minimal
+    dotnet build (Join-Path $root "Tests\WinMoe.Tests\WinMoe.Tests.csproj") -c $Configuration -nr:false -v:minimal
 }
 
 Invoke-Step "Run tests" {
-    dotnet test (Join-Path $root "Tests\MoleWindows.Tests\MoleWindows.Tests.csproj") -c $Configuration --no-build -v:minimal
+    dotnet test (Join-Path $root "Tests\WinMoe.Tests\WinMoe.Tests.csproj") -c $Configuration --no-build -v:minimal
 }
 
 Invoke-Step "Publish portable payload" {
-    dotnet publish (Join-Path $root "MoleWindows.csproj") `
+    dotnet publish (Join-Path $root "WinMoe.csproj") `
         -c $Configuration `
         -p:Platform=$platform `
         -r $Runtime `
@@ -211,8 +226,8 @@ Invoke-Step "Copy release documents" {
     Copy-Item -LiteralPath (Join-Path $root "README.md") -Destination (Join-Path $stage "README.md") -Force
     Copy-Item -LiteralPath (Join-Path $root "LICENSE") -Destination (Join-Path $stage "LICENSE") -Force
     Copy-Item -LiteralPath (Join-Path $root "THIRD_PARTY_NOTICES.md") -Destination (Join-Path $stage "THIRD_PARTY_NOTICES.md") -Force
-    Copy-Item -LiteralPath (Join-Path $root "docs\windows-mole\requirements.md") -Destination (Join-Path $stage "REQUIREMENTS.md") -Force
-    Copy-Item -LiteralPath (Join-Path $root "docs\windows-mole\design.md") -Destination (Join-Path $stage "DESIGN.md") -Force
+    Copy-Item -LiteralPath (Join-Path $root "docs\winmoe\requirements.md") -Destination (Join-Path $stage "REQUIREMENTS.md") -Force
+    Copy-Item -LiteralPath (Join-Path $root "docs\winmoe\design.md") -Destination (Join-Path $stage "DESIGN.md") -Force
     Copy-Item -LiteralPath (Join-Path $root "packaging\windows\RELEASE_NOTES_TEMPLATE.md") -Destination $notesPath -Force
     Copy-Item -LiteralPath $notesPath -Destination (Join-Path $stage "RELEASE_NOTES.md") -Force
 }
@@ -223,7 +238,7 @@ Invoke-Step "Create ZIP fallback" {
 
 Invoke-Step "Create Inno Setup installer" {
     $compiler = Find-InnoSetupCompiler
-    $script = Join-Path $root "packaging\windows\MoleWindows.iss"
+    $script = Join-Path $root "packaging\windows\WinMoe.iss"
     $icon = Join-Path $root "Assets\AppIcon.ico"
 
     & $compiler `
@@ -232,6 +247,7 @@ Invoke-Step "Create Inno Setup installer" {
         "/DOutputDir=$releaseRoot" `
         "/DOutputBaseFilename=$setupBaseName" `
         "/DAppIcon=$icon" `
+        "/DRepositoryUrl=$RepositoryUrl" `
         $script
 }
 

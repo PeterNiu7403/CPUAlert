@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace MoleWindows.Models;
+namespace WinMoe.Models;
 
 public sealed record SystemTelemetrySnapshot(
     DateTimeOffset CapturedAt,

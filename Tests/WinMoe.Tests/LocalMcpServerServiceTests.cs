@@ -1,0 +1,528 @@
+using System.Reflection;
+using System.Net;
+using System.Text.Json.Nodes;
+using WinMoe.Models;
+using WinMoe.Services;
+using Xunit;
+
+namespace WinMoe.Tests;
+
+public sealed class LocalMcpServerServiceTests
+{
+    [Fact]
+    public void RequestGate_AllowsOnlyLoopbackAndLocalOrigins()
+    {
+        Assert.True(LocalMcpServerService.IsRequestAllowed(IPAddress.Loopback, null));
+        Assert.True(LocalMcpServerService.IsRequestAllowed(IPAddress.IPv6Loopback, "http://localhost:3000"));
+        Assert.True(LocalMcpServerService.IsRequestAllowed(IPAddress.Loopback, "http://127.0.0.1:9277"));
+
+        Assert.False(LocalMcpServerService.IsRequestAllowed(IPAddress.Parse("192.168.1.10"), null));
+        Assert.False(LocalMcpServerService.IsRequestAllowed(IPAddress.Loopback, "https://example.com"));
+        Assert.False(LocalMcpServerService.IsRequestAllowed(IPAddress.Loopback, "not a uri"));
+    }
+
+    [Fact]
+    public void ShouldBlockRestEndpoint_AllowsMcpWhenRestIsDisabled()
+    {
+        Assert.True(LocalMcpServerService.ShouldBlockRestEndpoint(false, "/health", "GET"));
+        Assert.True(LocalMcpServerService.ShouldBlockRestEndpoint(false, "/mcp", "GET"));
+        Assert.False(LocalMcpServerService.ShouldBlockRestEndpoint(false, "/mcp", "POST"));
+        Assert.False(LocalMcpServerService.ShouldBlockRestEndpoint(true, "/health", "GET"));
+    }
+
+    [Fact]
+    public void BuildMcpToolArray_IncludesCanonicalCrossPlatformToolNames()
+    {
+        var tools = BuildMcpTools();
+        var names = tools
+            .Select(tool => tool?["name"]?.GetValue<string>())
+            .Where(name => name is not null)
+            .ToArray();
+
+        Assert.Contains("winmoe_list_apps", names);
+        Assert.Contains("winmoe_purge", names);
+        Assert.Contains("winmoe_installer", names);
+        Assert.Contains("winmoe_uninstall", names);
+    }
+
+    [Theory]
+    [InlineData("winmoe_clean")]
+    [InlineData("winmoe_optimize")]
+    public void BuildMcpToolArray_AdvertisesMaintenanceAsPreviewOnly(string toolName)
+    {
+        var tool = BuildMcpTools()
+            .Select(node => node?.AsObject())
+            .Single(candidate => candidate?["name"]?.GetValue<string>() == toolName)!;
+        var confirmSchema = tool["inputSchema"]?["properties"]?["confirm"]?.AsObject();
+
+        Assert.Contains(
+            "preview-only",
+            tool["description"]!.GetValue<string>(),
+            StringComparison.OrdinalIgnoreCase);
+        Assert.NotNull(confirmSchema);
+        Assert.Equal("boolean", confirmSchema["type"]!.GetValue<string>());
+        Assert.Contains(
+            "must be false",
+            confirmSchema["description"]!.GetValue<string>(),
+            StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public async Task ExecuteToolByNameAsync_RejectsStringConfirm()
+    {
+        var engine = new FakeMoleEngineService();
+        var service = BuildService(engine);
+        var arguments = new JsonObject
+        {
+            ["confirm"] = "true"
+        };
+
+        var response = await ExecuteToolAsync(service, "winmoe_clean", arguments);
+
+        Assert.True(response.ContainsKey("error"));
+        Assert.Contains("confirm", response["error"]!.GetValue<string>(), StringComparison.OrdinalIgnoreCase);
+        Assert.Equal(0, engine.ExecuteCount);
+    }
+
+    [Theory]
+    [InlineData("winmoe_clean", "clean")]
+    [InlineData("winmoe_optimize", "optimize")]
+    public async Task ExecuteToolByNameAsync_RejectsConfirmedMaintenanceEvenWhenDestructiveActionsAreEnabled(
+        string toolName,
+        string command)
+    {
+        var engine = new FakeMoleEngineService();
+        var service = BuildService(
+            engine,
+            settingsService: new FakeApplicationSettingsService(destructiveActionsEnabled: true));
+        var arguments = new JsonObject
+        {
+            ["confirm"] = true
+        };
+
+        var response = await ExecuteToolAsync(service, toolName, arguments);
+
+        Assert.Equal(command, response["command"]!.GetValue<string>());
+        Assert.False(response["supported"]!.GetValue<bool>());
+        Assert.Contains("preview", response["reason"]!.GetValue<string>(), StringComparison.OrdinalIgnoreCase);
+        Assert.Equal(0, engine.ExecuteCount);
+    }
+
+    [Theory]
+    [InlineData("winmoe_clean", "clean --dry-run")]
+    [InlineData("winmoe_optimize", "optimize --dry-run")]
+    public async Task ExecuteToolByNameAsync_AllowsMaintenancePreview(
+        string toolName,
+        string expectedCommand)
+    {
+        var engine = new FakeMoleEngineService();
+        var service = BuildService(engine);
+        var arguments = new JsonObject
+        {
+            ["confirm"] = false
+        };
+
+        var response = await ExecuteToolAsync(service, toolName, arguments);
+
+        Assert.Equal(expectedCommand, response["command"]!.GetValue<string>());
+        Assert.True(response["dry_run"]!.GetValue<bool>());
+        Assert.True(response["succeeded"]!.GetValue<bool>());
+        Assert.Equal(1, engine.ExecuteCount);
+    }
+
+    [Fact]
+    public async Task ExecuteToolByNameAsync_RejectsStringHistoryLimit()
+    {
+        var service = BuildService(new FakeMoleEngineService());
+        var arguments = new JsonObject
+        {
+            ["limit"] = "24"
+        };
+
+        var response = await ExecuteToolAsync(service, "winmoe_history", arguments);
+
+        Assert.True(response.ContainsKey("error"));
+        Assert.Contains("limit", response["error"]!.GetValue<string>(), StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public async Task ExecuteToolByNameAsync_ListAppsUsesCanonicalToolName()
+    {
+        var appService = new FakeInstalledApplicationService();
+        appService.Apps.Add(new InstalledApplication(
+            "test-app",
+            "Test App",
+            "Example Publisher",
+            "1.0",
+            @"C:\Users\me\AppData\Local\Test App",
+            "uninstall.exe",
+            "Registry",
+            2048));
+        var service = BuildService(new FakeMoleEngineService(), appService: appService);
+
+        var response = await ExecuteToolAsync(service, "winmoe_list_apps", new JsonObject());
+
+        Assert.Equal("winmoe_list_apps", response["tool"]!.GetValue<string>());
+        Assert.Equal(1, response["count"]!.GetValue<int>());
+        Assert.Equal(1, response["returned"]!.GetValue<int>());
+    }
+
+    [Fact]
+    public async Task ExecuteToolByNameAsync_AcceptsLegacyReadOnlyAlias()
+    {
+        var appService = new FakeInstalledApplicationService();
+        appService.Apps.Add(new InstalledApplication(
+            "test-app",
+            "Test App",
+            "Example Publisher",
+            "1.0",
+            @"C:\Users\me\AppData\Local\Test App",
+            "uninstall.exe",
+            "Registry",
+            2048));
+        var service = BuildService(new FakeMoleEngineService(), appService: appService);
+
+        var response = await ExecuteToolAsync(service, "molewindows_list_apps", new JsonObject());
+
+        Assert.Equal("winmoe_list_apps", response["tool"]!.GetValue<string>());
+        Assert.Equal(1, response["count"]!.GetValue<int>());
+    }
+
+    [Fact]
+    public async Task ExecuteToolByNameAsync_LegacyMaintenanceAliasKeepsPreviewOnlyGate()
+    {
+        var engine = new FakeMoleEngineService();
+        var service = BuildService(
+            engine,
+            settingsService: new FakeApplicationSettingsService(destructiveActionsEnabled: true));
+        var arguments = new JsonObject
+        {
+            ["confirm"] = true
+        };
+
+        var response = await ExecuteToolAsync(service, "molewindows_clean", arguments);
+
+        Assert.False(response["supported"]!.GetValue<bool>());
+        Assert.Contains("preview", response["reason"]!.GetValue<string>(), StringComparison.OrdinalIgnoreCase);
+        Assert.Equal(0, engine.ExecuteCount);
+    }
+
+    [Fact]
+    public async Task ExecuteToolByNameAsync_PurgeIsPreviewOnly()
+    {
+        var service = BuildService(
+            new FakeMoleEngineService(),
+            purgeService: new FakePurgeArtifactService());
+        var arguments = new JsonObject
+        {
+            ["confirm"] = true
+        };
+
+        var response = await ExecuteToolAsync(service, "winmoe_purge", arguments);
+
+        Assert.Equal("preview", response["action"]!.GetValue<string>());
+        Assert.True(response["confirm_requested"]!.GetValue<bool>());
+        Assert.False(response["mcp_removal_supported"]!.GetValue<bool>());
+        Assert.Equal(1, response["count"]!.GetValue<int>());
+    }
+
+    [Fact]
+    public async Task ExecuteToolByNameAsync_InstallerIsPreviewOnly()
+    {
+        var service = BuildService(
+            new FakeMoleEngineService(),
+            installerService: new FakeInstallerCleanupService());
+        var arguments = new JsonObject
+        {
+            ["confirm"] = true
+        };
+
+        var response = await ExecuteToolAsync(service, "winmoe_installer", arguments);
+
+        Assert.Equal("preview", response["action"]!.GetValue<string>());
+        Assert.True(response["confirm_requested"]!.GetValue<bool>());
+        Assert.False(response["mcp_removal_supported"]!.GetValue<bool>());
+        Assert.Equal(1, response["count"]!.GetValue<int>());
+    }
+
+    private static LocalMcpServerService BuildService(
+        FakeMoleEngineService engine,
+        FakeInstalledApplicationService? appService = null,
+        FakePurgeArtifactService? purgeService = null,
+        FakeInstallerCleanupService? installerService = null,
+        FakeApplicationSettingsService? settingsService = null)
+    {
+        return new LocalMcpServerService(
+            engine,
+            new FakeDiskAnalyzerService(),
+            new FakeTelemetrySamplerService(),
+            new FakeTelemetryHistoryService(),
+            appService ?? new FakeInstalledApplicationService(),
+            purgeService ?? new FakePurgeArtifactService([]),
+            installerService ?? new FakeInstallerCleanupService([]),
+            new FakeOperationHistoryService(),
+            settingsService ?? new FakeApplicationSettingsService());
+    }
+
+    private static async Task<JsonObject> ExecuteToolAsync(
+        LocalMcpServerService service,
+        string name,
+        JsonObject arguments)
+    {
+        var method = typeof(LocalMcpServerService).GetMethod(
+            "ExecuteToolByNameAsync",
+            BindingFlags.Instance | BindingFlags.NonPublic);
+        Assert.NotNull(method);
+
+        var task = (Task<JsonObject>)method.Invoke(
+            service,
+            [name, arguments, CancellationToken.None])!;
+        return await task.ConfigureAwait(false);
+    }
+
+    private static JsonArray BuildMcpTools()
+    {
+        var method = typeof(LocalMcpServerService).GetMethod(
+            "BuildMcpToolArray",
+            BindingFlags.Static | BindingFlags.NonPublic);
+        Assert.NotNull(method);
+
+        return (JsonArray)method.Invoke(null, [])!;
+    }
+
+    private sealed class FakeMoleEngineService : IMoleEngineService
+    {
+        public int ExecuteCount { get; private set; }
+
+        public MoleEngineAvailability GetAvailability()
+        {
+            return new MoleEngineAvailability(true, "mole.ps1", MoleEngineKind.PowerShellScript, "available");
+        }
+
+        public Task<MoleCommandResult> ExecuteCommandAsync(
+            string arguments,
+            Action<string>? onProgress = null,
+            CancellationToken cancellationToken = default)
+        {
+            ExecuteCount++;
+            return Task.FromResult(new MoleCommandResult(0, "ok", string.Empty, false, TimeSpan.Zero));
+        }
+
+        public Task<MoleCommandResult> ExecuteAsync(
+            IReadOnlyList<string> arguments,
+            Action<string>? onProgress = null,
+            CancellationToken cancellationToken = default)
+        {
+            ExecuteCount++;
+            return Task.FromResult(new MoleCommandResult(0, "ok", string.Empty, false, TimeSpan.Zero));
+        }
+    }
+
+    private sealed class FakeDiskAnalyzerService : IDiskAnalyzerService
+    {
+        public Task<DiskUsageNode> AnalyzeAsync(
+            string rootPath,
+            DiskAnalysisOptions options,
+            CancellationToken cancellationToken = default)
+        {
+            return Task.FromResult(new DiskUsageNode("root", rootPath, 0, 100, []));
+        }
+    }
+
+    private sealed class FakeTelemetrySamplerService : ISystemTelemetrySamplerService
+    {
+        public TimeSpan SamplingInterval => TimeSpan.FromSeconds(60);
+
+        public string Source => "test";
+
+        public SystemTelemetrySnapshot? LatestSnapshot => null;
+
+        public Task<SystemTelemetrySnapshot> SampleNowAsync(CancellationToken cancellationToken = default)
+        {
+            return Task.FromResult(Snapshot());
+        }
+    }
+
+    private sealed class FakeTelemetryHistoryService : ISystemTelemetryHistoryService
+    {
+        public string HistoryFilePath => "history.jsonl";
+
+        public Task RecordAsync(SystemTelemetrySnapshot snapshot, CancellationToken cancellationToken = default)
+        {
+            return Task.CompletedTask;
+        }
+
+        public Task<IReadOnlyList<SystemTelemetrySnapshot>> ReadRecentAsync(int limit, CancellationToken cancellationToken = default)
+        {
+            return Task.FromResult<IReadOnlyList<SystemTelemetrySnapshot>>([]);
+        }
+    }
+
+    private sealed class FakeInstalledApplicationService : IInstalledApplicationService
+    {
+        public List<InstalledApplication> Apps { get; } = [];
+
+        public Task<IReadOnlyList<InstalledApplication>> GetInstalledApplicationsAsync(CancellationToken cancellationToken = default)
+        {
+            return Task.FromResult<IReadOnlyList<InstalledApplication>>(Apps);
+        }
+
+        public Task<IReadOnlyList<LeftoverCandidate>> PreviewLeftoversAsync(
+            InstalledApplication application,
+            CancellationToken cancellationToken = default)
+        {
+            return Task.FromResult<IReadOnlyList<LeftoverCandidate>>([]);
+        }
+
+        public Task<MoleCommandResult> LaunchUninstallerAsync(
+            InstalledApplication application,
+            CancellationToken cancellationToken = default)
+        {
+            return Task.FromResult(new MoleCommandResult(0, "ok", string.Empty, false, TimeSpan.Zero));
+        }
+
+        public Task<IReadOnlyList<LeftoverRemovalResult>> RemoveLeftoversAsync(
+            IEnumerable<LeftoverCandidate> leftovers,
+            CancellationToken cancellationToken = default)
+        {
+            return Task.FromResult<IReadOnlyList<LeftoverRemovalResult>>([]);
+        }
+    }
+
+    private sealed class FakePurgeArtifactService : IPurgeArtifactService
+    {
+        private readonly IReadOnlyList<PurgeProjectCandidate> _projects;
+
+        public FakePurgeArtifactService()
+            : this([
+                new PurgeProjectCandidate(
+                    "sample",
+                    @"C:\Users\me\sample",
+                    "package.json",
+                    [
+                        new PurgeArtifactCandidate(
+                            "node_modules",
+                            @"C:\Users\me\sample\node_modules",
+                            "dependency cache",
+                            "node",
+                            4096)
+                    ])
+            ])
+        {
+        }
+
+        public FakePurgeArtifactService(IReadOnlyList<PurgeProjectCandidate> projects)
+        {
+            _projects = projects;
+        }
+
+        public Task<IReadOnlyList<PurgeProjectCandidate>> PreviewAsync(
+            IReadOnlyList<string>? searchRoots = null,
+            CancellationToken cancellationToken = default)
+        {
+            return Task.FromResult(_projects);
+        }
+
+        public Task<IReadOnlyList<LeftoverRemovalResult>> RemoveAsync(
+            IReadOnlyList<PurgeProjectCandidate> projects,
+            CancellationToken cancellationToken = default)
+        {
+            return Task.FromResult<IReadOnlyList<LeftoverRemovalResult>>([]);
+        }
+    }
+
+    private sealed class FakeInstallerCleanupService : IInstallerCleanupService
+    {
+        private readonly IReadOnlyList<InstallerCleanupCandidate> _candidates;
+
+        public FakeInstallerCleanupService()
+            : this([
+                new InstallerCleanupCandidate(
+                    "setup.exe",
+                    @"C:\Users\me\Downloads\setup.exe",
+                    "Installer",
+                    8192,
+                    DateTimeOffset.UtcNow.AddDays(-40))
+            ])
+        {
+        }
+
+        public FakeInstallerCleanupService(IReadOnlyList<InstallerCleanupCandidate> candidates)
+        {
+            _candidates = candidates;
+        }
+
+        public Task<IReadOnlyList<InstallerCleanupCandidate>> PreviewAsync(CancellationToken cancellationToken = default)
+        {
+            return Task.FromResult(_candidates);
+        }
+
+        public Task<IReadOnlyList<LeftoverRemovalResult>> RemoveAsync(
+            IReadOnlyList<InstallerCleanupCandidate> candidates,
+            CancellationToken cancellationToken = default)
+        {
+            return Task.FromResult<IReadOnlyList<LeftoverRemovalResult>>([]);
+        }
+    }
+
+    private sealed class FakeOperationHistoryService : IOperationHistoryService
+    {
+        public string HistoryFilePath => "activity.jsonl";
+
+        public Task RecordAsync(OperationHistoryEntry entry, CancellationToken cancellationToken = default)
+        {
+            return Task.CompletedTask;
+        }
+
+        public Task<IReadOnlyList<OperationHistoryEntry>> ReadRecentAsync(int limit, CancellationToken cancellationToken = default)
+        {
+            return Task.FromResult<IReadOnlyList<OperationHistoryEntry>>([]);
+        }
+    }
+
+    private sealed class FakeApplicationSettingsService : IApplicationSettingsService
+    {
+        public FakeApplicationSettingsService(bool destructiveActionsEnabled = true)
+        {
+            Current = new WinMoeSettings
+            {
+                HttpServerEnabled = false,
+                McpDestructiveActionsEnabled = destructiveActionsEnabled
+            };
+        }
+
+        public string SettingsFilePath => "settings.json";
+
+        public WinMoeSettings Current { get; }
+
+        public event EventHandler<WinMoeSettings>? SettingsChanged;
+
+        public Task<WinMoeSettings> SaveAsync(WinMoeSettings settings, CancellationToken cancellationToken = default)
+        {
+            SettingsChanged?.Invoke(this, settings);
+            return Task.FromResult(settings);
+        }
+
+        public WinMoeSettings Reload()
+        {
+            return Current;
+        }
+    }
+
+    private static SystemTelemetrySnapshot Snapshot()
+    {
+        return new SystemTelemetrySnapshot(
+            DateTimeOffset.UtcNow,
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            "GPU 0%",
+            []);
+    }
+}

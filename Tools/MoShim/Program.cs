@@ -1,7 +1,7 @@
 using System.Diagnostics;
 using System.Text;
 
-namespace MoleWindows.MoShim;
+namespace WinMoe.MoShim;
 
 internal static class Program
 {

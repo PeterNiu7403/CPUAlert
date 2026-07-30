@@ -1,7 +1,7 @@
 using System.Text.Json;
-using MoleWindows.Models;
+using WinMoe.Models;
 
-namespace MoleWindows.Services;
+namespace WinMoe.Services;
 
 public sealed class JsonApplicationSettingsService : IApplicationSettingsService
 {
@@ -13,10 +13,7 @@ public sealed class JsonApplicationSettingsService : IApplicationSettingsService
     private readonly object _sync = new();
 
     public JsonApplicationSettingsService()
-        : this(Path.Combine(
-            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-            "MoleWindows",
-            "settings.json"))
+        : this(ApplicationDataPaths.ResolveFile("settings.json"))
     {
     }
 
@@ -28,15 +25,15 @@ public sealed class JsonApplicationSettingsService : IApplicationSettingsService
 
     public string SettingsFilePath { get; }
 
-    public MoleWindowsSettings Current { get; private set; }
+    public WinMoeSettings Current { get; private set; }
 
-    public event EventHandler<MoleWindowsSettings>? SettingsChanged;
+    public event EventHandler<WinMoeSettings>? SettingsChanged;
 
-    public async Task<MoleWindowsSettings> SaveAsync(
-        MoleWindowsSettings settings,
+    public async Task<WinMoeSettings> SaveAsync(
+        WinMoeSettings settings,
         CancellationToken cancellationToken = default)
     {
-        var normalized = MoleWindowsSettings.Normalize(settings);
+        var normalized = WinMoeSettings.Normalize(settings);
         var directory = Path.GetDirectoryName(SettingsFilePath);
         if (!string.IsNullOrWhiteSpace(directory))
         {
@@ -55,7 +52,7 @@ public sealed class JsonApplicationSettingsService : IApplicationSettingsService
         return normalized;
     }
 
-    public MoleWindowsSettings Reload()
+    public WinMoeSettings Reload()
     {
         var settings = ReadFromDisk();
         lock (_sync)
@@ -67,21 +64,21 @@ public sealed class JsonApplicationSettingsService : IApplicationSettingsService
         return settings;
     }
 
-    private MoleWindowsSettings ReadFromDisk()
+    private WinMoeSettings ReadFromDisk()
     {
         if (!File.Exists(SettingsFilePath))
         {
-            return MoleWindowsSettings.Normalize(null);
+            return WinMoeSettings.Normalize(null);
         }
 
         try
         {
             var json = File.ReadAllText(SettingsFilePath);
-            return MoleWindowsSettings.Normalize(JsonSerializer.Deserialize<MoleWindowsSettings>(json, SerializerOptions));
+            return WinMoeSettings.Normalize(JsonSerializer.Deserialize<WinMoeSettings>(json, SerializerOptions));
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or JsonException)
         {
-            return MoleWindowsSettings.Normalize(null);
+            return WinMoeSettings.Normalize(null);
         }
     }
 }

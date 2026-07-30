@@ -2,12 +2,18 @@ using Microsoft.UI.Windowing;
 using Microsoft.UI;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Media;
-using MoleWindows.Views;
+using System.Runtime.InteropServices;
+using WinMoe.Ui;
+using WinMoe.Views;
+using WinRT.Interop;
 
-namespace MoleWindows;
+namespace WinMoe;
 
 public sealed partial class MainWindow : Window
 {
+    private const int InitialWidthInDips = 1194;
+    private const int InitialHeightInDips = 768;
+    private const uint DefaultDpi = 96;
     private static readonly Windows.UI.Color TitleBarColor = Windows.UI.Color.FromArgb(255, 18, 16, 13);
 
     public MainWindow(ShellPage shellPage)
@@ -28,6 +34,16 @@ public sealed partial class MainWindow : Window
         AppWindow.TitleBar.ButtonForegroundColor = Colors.White;
         AppWindow.TitleBar.ButtonInactiveForegroundColor = Colors.Gray;
         AppWindow.SetIcon("Assets/AppIcon.ico");
-        AppWindow.Resize(new Windows.Graphics.SizeInt32(1194, 768));
+
+        var windowHandle = WindowNative.GetWindowHandle(this);
+        var dpi = GetDpiForWindow(windowHandle);
+        var physicalSize = WindowSizing.ToPhysicalPixels(
+            InitialWidthInDips,
+            InitialHeightInDips,
+            dpi == 0 ? DefaultDpi : dpi);
+        AppWindow.Resize(new Windows.Graphics.SizeInt32(physicalSize.Width, physicalSize.Height));
     }
+
+    [DllImport("user32.dll")]
+    private static extern uint GetDpiForWindow(IntPtr windowHandle);
 }

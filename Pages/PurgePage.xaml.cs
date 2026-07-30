@@ -1,8 +1,8 @@
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using MoleWindows.ViewModels;
+using WinMoe.ViewModels;
 
-namespace MoleWindows.Pages;
+namespace WinMoe.Pages;
 
 public sealed partial class PurgePage : Page
 {
@@ -20,7 +20,7 @@ public sealed partial class PurgePage : Page
         var dialog = new ContentDialog
         {
             Title = "Remove project artifacts?",
-            Content = "MoleWindows will remove the selected build artifacts from the preview list.",
+            Content = "WinMoe will remove the selected build artifacts from the preview list.",
             PrimaryButtonText = "Remove",
             CloseButtonText = "Cancel",
             XamlRoot = XamlRoot

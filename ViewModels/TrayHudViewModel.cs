@@ -1,9 +1,9 @@
 using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
-using MoleWindows.Models;
-using MoleWindows.Services;
+using WinMoe.Models;
+using WinMoe.Services;
 
-namespace MoleWindows.ViewModels;
+namespace WinMoe.ViewModels;
 
 public partial class TrayHudViewModel : ViewModelBase
 {
@@ -45,7 +45,7 @@ public partial class TrayHudViewModel : ViewModelBase
     private string activityTitle = "暂无活动";
 
     [ObservableProperty]
-    private string activityDetail = "Mole Windows 尚未记录操作。";
+    private string activityDetail = "WinMoe 尚未记录操作。";
 
     public async Task RefreshAsync()
     {

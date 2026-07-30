@@ -2,8 +2,9 @@ using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
+using WinMoe.Services;
 
-namespace MoleWindows.McpStdioBridge;
+namespace WinMoe.McpStdioBridge;
 
 internal static class Program
 {
@@ -17,7 +18,8 @@ internal static class Program
 
     private static async Task<int> Main()
     {
-        var endpoint = Environment.GetEnvironmentVariable("MOLEWINDOWS_MCP_ENDPOINT");
+        var endpoint = Environment.GetEnvironmentVariable("WINMOE_MCP_ENDPOINT")
+                       ?? Environment.GetEnvironmentVariable("MOLEWINDOWS_MCP_ENDPOINT");
         if (string.IsNullOrWhiteSpace(endpoint))
         {
             endpoint = ReadEndpointFromSettings() ?? DefaultEndpoint;
@@ -50,10 +52,7 @@ internal static class Program
 
     private static string? ReadEndpointFromSettings()
     {
-        var path = Path.Combine(
-            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-            "MoleWindows",
-            "settings.json");
+        var path = ApplicationDataPaths.ResolveFile("settings.json");
 
         if (!File.Exists(path))
         {
@@ -158,15 +157,15 @@ internal static class Program
             var body = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
             if (!response.IsSuccessStatusCode)
             {
-                return Error(id, -32000, $"MoleWindows MCP HTTP endpoint returned {(int)response.StatusCode}: {body}");
+                return Error(id, -32000, $"WinMoe MCP HTTP endpoint returned {(int)response.StatusCode}: {body}");
             }
 
             var node = JsonNode.Parse(body);
-            return node as JsonObject ?? Error(id, -32603, "MoleWindows MCP HTTP endpoint returned invalid JSON.");
+            return node as JsonObject ?? Error(id, -32603, "WinMoe MCP HTTP endpoint returned invalid JSON.");
         }
         catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException or JsonException)
         {
-            return Error(id, -32000, "MoleWindows MCP HTTP endpoint is unavailable. Start MoleWindows first or set MOLEWINDOWS_MCP_ENDPOINT.");
+            return Error(id, -32000, "WinMoe MCP HTTP endpoint is unavailable. Start WinMoe first or set WINMOE_MCP_ENDPOINT.");
         }
     }
 
@@ -181,7 +180,7 @@ internal static class Program
             },
             ["serverInfo"] = new JsonObject
             {
-                ["name"] = "MoleWindows",
+                ["name"] = "WinMoe",
                 ["version"] = "0.1.0"
             }
         };
@@ -191,53 +190,53 @@ internal static class Program
     {
         return new JsonArray
         {
-            Tool("molewindows_clean", "Preview or run Mole cleanup. Defaults to dry-run unless confirm is true.", new JsonObject
+            Tool("winmoe_clean", "Preview Mole cleanup. MCP maintenance is preview-only until operation-plan validation is connected.", new JsonObject
             {
-                ["confirm"] = Schema("boolean", "Run the cleanup instead of dry-run preview.")
+                ["confirm"] = Schema("boolean", "Optional compatibility flag. Must be false; confirmed cleanup is unavailable until operation-plan validation is connected.")
             }),
-            Tool("molewindows_optimize", "Preview or run Mole optimize. Defaults to dry-run unless confirm is true.", new JsonObject
+            Tool("winmoe_optimize", "Preview Mole optimization. MCP maintenance is preview-only until operation-plan validation is connected.", new JsonObject
             {
-                ["confirm"] = Schema("boolean", "Run the optimization instead of dry-run preview.")
+                ["confirm"] = Schema("boolean", "Optional compatibility flag. Must be false; confirmed optimization is unavailable until operation-plan validation is connected.")
             }),
-            Tool("molewindows_snapshot", "Return current Windows telemetry used by the Dashboard fallback.", new JsonObject()),
-            Tool("molewindows_history", "Return recent Windows telemetry snapshots recorded by MoleWindows.", new JsonObject
+            Tool("winmoe_snapshot", "Return current Windows telemetry used by the Dashboard fallback.", new JsonObject()),
+            Tool("winmoe_history", "Return recent Windows telemetry snapshots recorded by WinMoe.", new JsonObject
             {
                 ["limit"] = Schema("integer", "Maximum snapshots to return.")
             }),
-            Tool("molewindows_top_processes", "Return process CPU or memory leaders from recent telemetry history.", new JsonObject
+            Tool("winmoe_top_processes", "Return process CPU or memory leaders from recent telemetry history.", new JsonObject
             {
                 ["metric"] = Schema("string", "Metric used for ranking: peak_cpu, avg_cpu, cpu_time, peak_mem, or avg_mem."),
                 ["limit"] = Schema("integer", "Maximum processes to return."),
                 ["history_limit"] = Schema("integer", "Maximum telemetry snapshots to scan.")
             }),
-            Tool("molewindows_process_usage", "Rank process usage over recent telemetry history by CPU or memory.", new JsonObject
+            Tool("winmoe_process_usage", "Rank process usage over recent telemetry history by CPU or memory.", new JsonObject
             {
                 ["metric"] = Schema("string", "Requested metric, such as peak_mem, avg_mem, peak_cpu, avg_cpu, or cpu_time."),
                 ["limit"] = Schema("integer", "Maximum processes to return."),
                 ["history_limit"] = Schema("integer", "Maximum telemetry snapshots to scan.")
             }),
-            Tool("molewindows_info", "Return what MoleWindows is recording and where local MCP/HTTP state is stored.", new JsonObject()),
-            Tool("molewindows_engine", "Return Mole engine availability for MoleWindows.", new JsonObject()),
-            Tool("molewindows_analyze", "Analyze a directory and return a size-ranked tree.", new JsonObject
+            Tool("winmoe_info", "Return what WinMoe is recording and where local MCP/HTTP state is stored.", new JsonObject()),
+            Tool("winmoe_engine", "Return Mole engine availability for WinMoe.", new JsonObject()),
+            Tool("winmoe_analyze", "Analyze a directory and return a size-ranked tree.", new JsonObject
             {
                 ["path"] = Schema("string", "Directory path to analyze."),
                 ["max_depth"] = Schema("integer", "Maximum recursive depth."),
                 ["max_children"] = Schema("integer", "Maximum children per directory.")
             }),
-            Tool("molewindows_list_apps", "Installed Windows applications and the IDs `molewindows_uninstall` accepts. Read-only.", new JsonObject
+            Tool("winmoe_list_apps", "Installed Windows applications and the IDs `winmoe_uninstall` accepts. Read-only.", new JsonObject
             {
                 ["search"] = Schema("string", "Optional search text."),
                 ["limit"] = Schema("integer", "Maximum applications to return.")
             }),
-            Tool("molewindows_purge", "Find project build artifacts using the Windows fallback preview. PREVIEW over MCP: real removal must be run from the MoleWindows GUI.", new JsonObject
+            Tool("winmoe_purge", "Find project build artifacts using the Windows fallback preview. PREVIEW over MCP: real removal must be run from the WinMoe GUI.", new JsonObject
             {
                 ["confirm"] = Schema("boolean", "Reserved. Real purge removal is GUI-only over Windows MCP; any value still returns the preview.")
             }),
-            Tool("molewindows_installer", "Find leftover installer/archive files using the Windows fallback preview. PREVIEW over MCP: real removal must be run from the MoleWindows GUI.", new JsonObject
+            Tool("winmoe_installer", "Find leftover installer/archive files using the Windows fallback preview. PREVIEW over MCP: real removal must be run from the WinMoe GUI.", new JsonObject
             {
                 ["confirm"] = Schema("boolean", "Reserved. Real installer cleanup is GUI-only over Windows MCP; any value still returns the preview.")
             }),
-            Tool("molewindows_uninstall", "Windows compatibility tool: list apps, preview leftovers, or launch a confirmed vendor uninstaller.", new JsonObject
+            Tool("winmoe_uninstall", "Windows compatibility tool: list apps, preview leftovers, or launch a confirmed vendor uninstaller.", new JsonObject
             {
                 ["action"] = Schema("string", "One of list, preview_leftovers, or launch_uninstaller."),
                 ["app_id"] = Schema("string", "Installed application ID returned by the list action."),
