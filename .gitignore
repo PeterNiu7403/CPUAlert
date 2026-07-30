@@ -15,3 +15,10 @@ AppPackages/
 *.appinstaller
 *.zip
 TestResults/
+
+# Mole UI research screenshots (internal reference only)
+.research/
+
+# Local environment capture outputs (screenshots, DPI reports)
+artifacts/
+

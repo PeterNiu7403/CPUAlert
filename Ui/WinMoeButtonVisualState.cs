@@ -7,11 +7,15 @@ namespace WinMoe.Ui;
 public static class WinMoeButtonVisualState
 {
     private static readonly Windows.UI.Color Transparent = Windows.UI.Color.FromArgb(0, 0, 0, 0);
-    private static readonly Windows.UI.Color WhitePill = Windows.UI.Color.FromArgb(255, 255, 253, 248);
+    private static readonly Windows.UI.Color WhitePill = Windows.UI.Color.FromArgb(255, 255, 255, 255);
     private static readonly Windows.UI.Color BlackText = Windows.UI.Color.FromArgb(255, 0, 0, 0);
-    private static readonly Windows.UI.Color MutedText = Windows.UI.Color.FromArgb(255, 167, 162, 156);
-    private static readonly Windows.UI.Color DimText = Windows.UI.Color.FromArgb(255, 119, 116, 111);
+    private static readonly Windows.UI.Color MutedText = Windows.UI.Color.FromArgb(255, 163, 156, 146);
+    private static readonly Windows.UI.Color DimText = Windows.UI.Color.FromArgb(255, 122, 116, 108);
     private static readonly Windows.UI.Color DisabledOnLight = Windows.UI.Color.FromArgb(255, 84, 80, 73);
+    // Soft glass hover for unselected Mole capsule tabs (sampled warm gray).
+    private static readonly Windows.UI.Color CapsuleHover = Windows.UI.Color.FromArgb(48, 255, 253, 248);
+    private static readonly Windows.UI.Color CapsuleHoverText = Windows.UI.Color.FromArgb(255, 232, 226, 214);
+    private static readonly Windows.UI.Color CapsulePressed = Windows.UI.Color.FromArgb(72, 255, 253, 248);
 
     private static readonly string[] WinMoeButtonStyleKeys =
     [
@@ -19,6 +23,8 @@ public static class WinMoeButtonVisualState
         "WinMoeSecondaryPillButtonStyle",
         "WinMoeTopNavButtonStyle",
         "WinMoeTopNavButtonSelectedStyle",
+        "WinMoeTextLinkStyle",
+        "WinMoeTextLinkActiveStyle",
         "WinMoeIconButtonStyle",
         "WinMoeIconButtonSelectedStyle"
     ];
@@ -30,8 +36,34 @@ public static class WinMoeButtonVisualState
 
         button.Background = new SolidColorBrush(background);
         button.Foreground = new SolidColorBrush(foreground);
-        button.BorderBrush = new SolidColorBrush(background);
-        Freeze(button);
+        button.BorderBrush = new SolidColorBrush(isSelected ? WhitePill : Transparent);
+
+        if (isSelected)
+        {
+            // Selected white pill stays stable — no hover wash (Mole).
+            Freeze(button);
+            return;
+        }
+
+        // Unselected capsule tabs: gentle glass hover / press, not frozen flat.
+        ApplyCapsuleIdleHover(button);
+    }
+
+    public static void ApplyCapsuleIdleHover(Button button)
+    {
+        var background = CloneBrush(button.Background) ?? new SolidColorBrush(Transparent);
+        var foreground = CloneBrush(button.Foreground) ?? new SolidColorBrush(MutedText);
+        var border = CloneBrush(button.BorderBrush) ?? new SolidColorBrush(Transparent);
+
+        button.Resources["ButtonBackgroundPointerOver"] = new SolidColorBrush(CapsuleHover);
+        button.Resources["ButtonForegroundPointerOver"] = new SolidColorBrush(CapsuleHoverText);
+        button.Resources["ButtonBorderBrushPointerOver"] = new SolidColorBrush(CapsuleHover);
+        button.Resources["ButtonBackgroundPressed"] = new SolidColorBrush(CapsulePressed);
+        button.Resources["ButtonForegroundPressed"] = new SolidColorBrush(CapsuleHoverText);
+        button.Resources["ButtonBorderBrushPressed"] = new SolidColorBrush(CapsulePressed);
+        button.Resources["ButtonBackgroundDisabled"] = CloneBrush(background);
+        button.Resources["ButtonForegroundDisabled"] = new SolidColorBrush(DimText);
+        button.Resources["ButtonBorderBrushDisabled"] = CloneBrush(border);
     }
 
     public static void Freeze(Button button)

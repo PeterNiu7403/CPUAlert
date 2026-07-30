@@ -13,7 +13,10 @@ public partial class InstalledApplication : ObservableObject
         string? installLocation,
         string? uninstallString,
         string source,
-        long sizeBytes)
+        long sizeBytes,
+        string? iconPath = null,
+        DateTimeOffset? lastActivityUtc = null,
+        string? installDateRaw = null)
     {
         Id = id;
         Name = name;
@@ -23,6 +26,9 @@ public partial class InstalledApplication : ObservableObject
         UninstallString = uninstallString ?? string.Empty;
         Source = source;
         SizeBytes = sizeBytes;
+        IconPath = iconPath ?? string.Empty;
+        LastActivityUtc = lastActivityUtc;
+        InstallDateRaw = installDateRaw ?? string.Empty;
     }
 
     public string Id { get; }
@@ -40,6 +46,15 @@ public partial class InstalledApplication : ObservableObject
     public string Source { get; }
 
     public long SizeBytes { get; }
+
+    /// <summary>Raw DisplayIcon / install-path hint (may include ",0" suffix).</summary>
+    public string IconPath { get; }
+
+    /// <summary>Best-effort last activity (exe/dir mtime or registry InstallDate).</summary>
+    public DateTimeOffset? LastActivityUtc { get; }
+
+    /// <summary>Registry InstallDate raw (yyyyMMdd) when present.</summary>
+    public string InstallDateRaw { get; }
 
     public string SizeText => SizeBytes <= 0 ? "Unknown" : SystemTelemetryFormatter.Bytes(SizeBytes);
 

@@ -10,83 +10,88 @@
 
     <Grid
         x:Name="HudRoot"
-        Width="430"
-        MinHeight="860"
-        Padding="18"
-        Background="#26312D"
-        RowSpacing="14">
+        Width="340"
+        MinHeight="720"
+        Padding="10"
+        Background="{StaticResource WinMoeBackgroundHudBrush}"
+        RowSpacing="6">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
-        <Grid x:Name="HudTitleBar" ColumnSpacing="12">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="Auto" />
-                <ColumnDefinition Width="*" />
-            </Grid.ColumnDefinitions>
-            <Image
-                Width="34"
-                Height="34"
-                Source="ms-appx:///Assets/Brand/winmoe-mark.svg" />
-            <StackPanel Grid.Column="1" VerticalAlignment="Center">
-                <TextBlock
-                    FontSize="20"
-                    FontWeight="SemiBold"
-                    Text="WinMoe" />
-                <TextBlock
-                    FontFamily="{StaticResource WinMoeMonoFont}"
-                    FontSize="12"
-                    Foreground="{StaticResource WinMoeDimBrush}"
-                    Text="{Binding SampleText}" />
-            </StackPanel>
-        </Grid>
+        <!-- Drag region for borderless HUD. -->
+        <Border
+            x:Name="HudTitleBar"
+            Height="10"
+            Background="Transparent" />
 
-        <Border Grid.Row="1" Style="{StaticResource WinMoeCardBorderStyle}">
-            <Grid ColumnSpacing="16">
+        <!-- Health hero + device chip (Mole menu-bar HUD) -->
+        <Border
+            Grid.Row="1"
+            Padding="12,10"
+            Background="#332E24"
+            BorderBrush="#40392E"
+            BorderThickness="1"
+            CornerRadius="12">
+            <Grid ColumnSpacing="10">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*" />
                     <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
-                <StackPanel Spacing="8">
-                    <TextBlock
-                        Foreground="{StaticResource WinMoeGoldBrush}"
-                        Style="{StaticResource WinMoeLabelTextStyle}"
-                        Text="健康度" />
-                    <StackPanel Orientation="Horizontal" Spacing="10">
+                <StackPanel Spacing="4">
+                    <StackPanel Orientation="Horizontal" Spacing="8">
                         <TextBlock
-                            FontSize="42"
+                            FontSize="34"
                             FontWeight="SemiBold"
                             Text="{Binding HealthScore}" />
                         <TextBlock
                             VerticalAlignment="Center"
-                            FontSize="18"
+                            FontSize="12"
                             FontWeight="SemiBold"
                             Foreground="{StaticResource WinMoeGreenBrush}"
-                            Text="{Binding HealthLabel}" />
+                            Text="{Binding HealthLabel}"
+                            TextWrapping="Wrap" />
                     </StackPanel>
-                </StackPanel>
-                <Border
-                    Grid.Column="1"
-                    Width="86"
-                    Height="86"
-                    BorderBrush="{StaticResource WinMoeGreenBrush}"
-                    BorderThickness="9"
-                    CornerRadius="43">
+                    <Border
+                        HorizontalAlignment="Left"
+                        Padding="8,3"
+                        Background="#40392E"
+                        CornerRadius="10">
+                        <TextBlock
+                            FontSize="10"
+                            Foreground="{StaticResource WinMoeMutedBrush}"
+                            Text="{Binding DeviceChipText}"
+                            TextTrimming="CharacterEllipsis" />
+                    </Border>
                     <TextBlock
-                        HorizontalAlignment="Center"
-                        VerticalAlignment="Center"
-                        FontSize="24"
-                        FontWeight="SemiBold"
-                        Text="{Binding HealthScore}" />
-                </Border>
+                        FontSize="10"
+                        Foreground="{StaticResource WinMoeDimBrush}"
+                        Text="{Binding SampleText}"
+                        TextTrimming="CharacterEllipsis" />
+                </StackPanel>
+                <Ellipse
+                    Grid.Column="1"
+                    Width="44"
+                    Height="44"
+                    VerticalAlignment="Top"
+                    Margin="0,2,0,0">
+                    <Ellipse.Fill>
+                        <ImageBrush
+                            ImageSource="ms-appx:///Assets/Hero/status.png"
+                            Stretch="UniformToFill" />
+                    </Ellipse.Fill>
+                </Ellipse>
             </Grid>
         </Border>
 
-        <Grid Grid.Row="2" ColumnSpacing="12" RowSpacing="12">
+        <!-- 2×3 metrics: CPU GPU / Memory Disk / Network Fan -->
+        <Grid Grid.Row="2" ColumnSpacing="6" RowSpacing="6">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*" />
                 <ColumnDefinition Width="*" />
@@ -94,142 +99,252 @@
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
 
-            <Border Padding="14" Style="{StaticResource WinMoeCardBorderStyle}">
-                <StackPanel Spacing="8">
-                    <TextBlock Foreground="{StaticResource WinMoeGreenBrush}" Style="{StaticResource WinMoeLabelTextStyle}" Text="CPU" />
-                    <TextBlock FontSize="28" FontWeight="SemiBold" Text="{Binding CpuText}" />
+            <Border Padding="10,8" Background="#332E24" BorderBrush="#40392E" BorderThickness="1" CornerRadius="10">
+                <StackPanel Spacing="1">
+                    <TextBlock FontSize="10" Foreground="{StaticResource WinMoeGreenBrush}" Text="CPU" />
+                    <TextBlock FontSize="20" FontWeight="SemiBold" Text="{Binding CpuText}" />
+                    <TextBlock FontSize="10" Foreground="{StaticResource WinMoeDimBrush}" Text="{Binding SampleText}" TextTrimming="CharacterEllipsis" />
                 </StackPanel>
             </Border>
-            <Border
-                Grid.Column="1"
-                Padding="14"
-                Style="{StaticResource WinMoeCardBorderStyle}">
-                <StackPanel Spacing="8">
-                    <TextBlock Foreground="{StaticResource WinMoeGoldBrush}" Style="{StaticResource WinMoeLabelTextStyle}" Text="内存" />
-                    <TextBlock FontSize="28" FontWeight="SemiBold" Text="{Binding MemoryText}" />
+            <Border Grid.Column="1" Padding="10,8" Background="#332E24" BorderBrush="#40392E" BorderThickness="1" CornerRadius="10">
+                <StackPanel Spacing="1">
+                    <TextBlock FontSize="10" Foreground="{StaticResource WinMoeGoldBrush}" Text="GPU" />
+                    <TextBlock FontSize="18" FontWeight="SemiBold" Text="{Binding GpuText}" TextTrimming="CharacterEllipsis" />
+                    <TextBlock FontSize="10" Foreground="{StaticResource WinMoeDimBrush}" Text="Windows 采样" />
                 </StackPanel>
             </Border>
-            <Border
-                Grid.Row="1"
-                Padding="14"
-                Style="{StaticResource WinMoeCardBorderStyle}">
-                <StackPanel Spacing="8">
-                    <TextBlock Foreground="{StaticResource WinMoeRedBrush}" Style="{StaticResource WinMoeLabelTextStyle}" Text="磁盘" />
-                    <TextBlock FontSize="28" FontWeight="SemiBold" Text="{Binding DiskText}" />
+
+            <Border Grid.Row="1" Padding="10,8" Background="#332E24" BorderBrush="#40392E" BorderThickness="1" CornerRadius="10">
+                <StackPanel Spacing="1">
+                    <TextBlock FontSize="10" Foreground="{StaticResource WinMoeGreenBrush}" Text="内存" />
+                    <TextBlock FontSize="20" FontWeight="SemiBold" Text="{Binding MemoryText}" />
+                    <TextBlock FontSize="10" Foreground="{StaticResource WinMoeDimBrush}" Text="{Binding MemoryDetailText}" TextTrimming="CharacterEllipsis" />
                 </StackPanel>
             </Border>
-            <Border
-                Grid.Row="1"
-                Grid.Column="1"
-                Padding="14"
-                Style="{StaticResource WinMoeCardBorderStyle}">
-                <StackPanel Spacing="8">
-                    <TextBlock Foreground="{StaticResource WinMoeBlueBrush}" Style="{StaticResource WinMoeLabelTextStyle}" Text="网络" />
-                    <TextBlock
-                        FontFamily="{StaticResource WinMoeMonoFont}"
-                        FontSize="13"
-                        Text="{Binding NetworkText}"
-                        TextWrapping="Wrap" />
+            <Border Grid.Row="1" Grid.Column="1" Padding="10,8" Background="#332E24" BorderBrush="#40392E" BorderThickness="1" CornerRadius="10">
+                <StackPanel Spacing="1">
+                    <TextBlock FontSize="10" Foreground="{StaticResource WinMoeBlueBrush}" Text="磁盘" />
+                    <TextBlock FontSize="20" FontWeight="SemiBold" Text="{Binding DiskText}" />
+                    <TextBlock FontSize="10" Foreground="{StaticResource WinMoeDimBrush}" Text="{Binding DiskDetailText}" TextTrimming="CharacterEllipsis" />
+                </StackPanel>
+            </Border>
+
+            <Border Grid.Row="2" Padding="10,8" Background="#332E24" BorderBrush="#40392E" BorderThickness="1" CornerRadius="10">
+                <StackPanel Spacing="1">
+                    <TextBlock FontSize="10" Foreground="{StaticResource WinMoeBlueBrush}" Text="网络" />
+                    <TextBlock FontSize="16" FontWeight="SemiBold" Text="{Binding NetworkText}" TextTrimming="CharacterEllipsis" />
+                    <TextBlock FontSize="10" Foreground="{StaticResource WinMoeDimBrush}" Text="{Binding NetworkDetailText}" TextTrimming="CharacterEllipsis" />
+                </StackPanel>
+            </Border>
+            <Border Grid.Row="2" Grid.Column="1" Padding="10,8" Background="#332E24" BorderBrush="#40392E" BorderThickness="1" CornerRadius="10">
+                <StackPanel Spacing="1">
+                    <TextBlock FontSize="10" Foreground="{StaticResource WinMoeGoldBrush}" Text="风扇" />
+                    <TextBlock FontSize="18" FontWeight="SemiBold" Text="{Binding FanText}" />
+                    <TextBlock FontSize="10" Foreground="{StaticResource WinMoeDimBrush}" Text="Windows 无 SMC" />
                 </StackPanel>
             </Border>
         </Grid>
 
-        <Border Grid.Row="3" Style="{StaticResource WinMoeCardBorderStyle}">
-            <StackPanel Spacing="8">
-                <Grid ColumnSpacing="10">
+        <!-- Top processes -->
+        <Border
+            Grid.Row="3"
+            Padding="10,8"
+            Background="#332E24"
+            BorderBrush="#40392E"
+            BorderThickness="1"
+            CornerRadius="10">
+            <Grid RowSpacing="4">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+                <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="48" />
+                        <ColumnDefinition Width="64" />
                     </Grid.ColumnDefinitions>
-                    <TextBlock
-                        Foreground="{StaticResource WinMoeGoldBrush}"
-                        Style="{StaticResource WinMoeLabelTextStyle}"
-                        Text="最近活动" />
-                    <Button
-                        Grid.Column="1"
-                        Click="NavigationButton_Click"
-                        Content="查看"
-                        Style="{StaticResource WinMoeSecondaryPillButtonStyle}"
-                        Tag="activity" />
+                    <TextBlock FontSize="10" Foreground="{StaticResource WinMoeMutedBrush}" Text="高占用进程" />
+                    <TextBlock Grid.Column="1" HorizontalAlignment="Right" FontSize="10" Foreground="{StaticResource WinMoeDimBrush}" Text="CPU" />
+                    <TextBlock Grid.Column="2" HorizontalAlignment="Right" FontSize="10" Foreground="{StaticResource WinMoeDimBrush}" Text="内存" />
                 </Grid>
-                <TextBlock
-                    FontSize="18"
-                    FontWeight="SemiBold"
-                    Text="{Binding ActivityTitle}"
-                    TextTrimming="CharacterEllipsis" />
-                <TextBlock
-                    FontFamily="{StaticResource WinMoeMonoFont}"
-                    FontSize="12"
-                    Foreground="{StaticResource WinMoeDimBrush}"
-                    Text="{Binding ActivityDetail}"
-                    TextWrapping="Wrap" />
-            </StackPanel>
+                <ListView
+                    Grid.Row="1"
+                    MaxHeight="132"
+                    ItemsSource="{Binding TopProcesses}"
+                    SelectionMode="None">
+                    <ListView.ItemContainerStyle>
+                        <Style TargetType="ListViewItem">
+                            <Setter Property="Padding" Value="0" />
+                            <Setter Property="MinHeight" Value="22" />
+                            <Setter Property="Margin" Value="0,1" />
+                            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+                            <Setter Property="Background" Value="Transparent" />
+                        </Style>
+                    </ListView.ItemContainerStyle>
+                    <ListView.ItemTemplate>
+                        <DataTemplate>
+                            <Grid MinHeight="22" ColumnSpacing="6">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="48" />
+                                    <ColumnDefinition Width="64" />
+                                </Grid.ColumnDefinitions>
+                                <TextBlock
+                                    FontSize="11"
+                                    FontWeight="SemiBold"
+                                    Text="{Binding Name}"
+                                    TextTrimming="CharacterEllipsis" />
+                                <TextBlock
+                                    Grid.Column="1"
+                                    HorizontalAlignment="Right"
+                                    FontFamily="{StaticResource WinMoeMonoFont}"
+                                    FontSize="10"
+                                    Foreground="{StaticResource WinMoeOrangeBrush}"
+                                    Text="{Binding CpuUsageText}" />
+                                <TextBlock
+                                    Grid.Column="2"
+                                    HorizontalAlignment="Right"
+                                    FontFamily="{StaticResource WinMoeMonoFont}"
+                                    FontSize="10"
+                                    Foreground="{StaticResource WinMoeDimBrush}"
+                                    Text="{Binding WorkingSetText}" />
+                            </Grid>
+                        </DataTemplate>
+                    </ListView.ItemTemplate>
+                </ListView>
+            </Grid>
         </Border>
 
-        <Grid Grid.Row="4" RowSpacing="12">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="Auto" />
-                <RowDefinition Height="*" />
-                <RowDefinition Height="Auto" />
-            </Grid.RowDefinitions>
-
+        <!-- Spacer + recent activity line -->
+        <StackPanel Grid.Row="4" VerticalAlignment="Bottom" Spacing="4">
             <TextBlock
-                Foreground="{StaticResource WinMoeMutedBrush}"
-                Style="{StaticResource WinMoeLabelTextStyle}"
-                Text="高占用进程" />
-            <ListView
-                Grid.Row="1"
-                MaxHeight="150"
-                ItemsSource="{Binding TopProcesses}"
-                SelectionMode="None">
-                <ListView.ItemTemplate>
-                    <DataTemplate>
-                        <Grid MinHeight="30" ColumnSpacing="10">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*" />
-                                <ColumnDefinition Width="Auto" />
-                                <ColumnDefinition Width="Auto" />
-                            </Grid.ColumnDefinitions>
-                            <TextBlock
-                                FontSize="14"
-                                FontWeight="SemiBold"
-                                Foreground="{StaticResource WinMoeTextBrush}"
-                                Text="{Binding Name}"
-                                TextTrimming="CharacterEllipsis" />
-                            <TextBlock
-                                Grid.Column="1"
-                                FontFamily="{StaticResource WinMoeMonoFont}"
-                                Foreground="{StaticResource WinMoeOrangeBrush}"
-                                Text="{Binding CpuUsageText}" />
-                            <TextBlock
-                                Grid.Column="2"
-                                FontFamily="{StaticResource WinMoeMonoFont}"
-                                Foreground="{StaticResource WinMoeDimBrush}"
-                                Text="{Binding WorkingSetText}" />
-                        </Grid>
-                    </DataTemplate>
-                </ListView.ItemTemplate>
-            </ListView>
+                FontSize="10"
+                Foreground="{StaticResource WinMoeDimBrush}"
+                Text="{Binding ActivityTitle}"
+                TextTrimming="CharacterEllipsis" />
+            <TextBlock
+                FontSize="10"
+                Foreground="{StaticResource WinMoeDimBrush}"
+                Opacity="0.75"
+                Text="{Binding ActivityDetail}"
+                TextTrimming="CharacterEllipsis" />
+        </StackPanel>
 
-            <Grid Grid.Row="2" ColumnSpacing="8" RowSpacing="8">
+        <!-- Quiet shortcut strip -->
+        <Grid Grid.Row="5" ColumnSpacing="4">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            <Button
+                HorizontalAlignment="Stretch"
+                MinHeight="32"
+                Padding="4,4"
+                Click="NavigationButton_Click"
+                Content="清理"
+                FontSize="11"
+                Style="{StaticResource WinMoeGhostPillButtonStyle}"
+                Tag="clean" />
+            <Button
+                Grid.Column="1"
+                HorizontalAlignment="Stretch"
+                MinHeight="32"
+                Padding="4,4"
+                Click="NavigationButton_Click"
+                Content="软件"
+                FontSize="11"
+                Style="{StaticResource WinMoeGhostPillButtonStyle}"
+                Tag="apps" />
+            <Button
+                Grid.Column="2"
+                HorizontalAlignment="Stretch"
+                MinHeight="32"
+                Padding="4,4"
+                Click="NavigationButton_Click"
+                Content="优化"
+                FontSize="11"
+                Style="{StaticResource WinMoeGhostPillButtonStyle}"
+                Tag="optimize" />
+            <Button
+                Grid.Column="3"
+                HorizontalAlignment="Stretch"
+                MinHeight="32"
+                Padding="4,4"
+                Click="NavigationButton_Click"
+                Content="分析"
+                FontSize="11"
+                Style="{StaticResource WinMoeGhostPillButtonStyle}"
+                Tag="analyze" />
+            <Button
+                Grid.Column="4"
+                HorizontalAlignment="Stretch"
+                MinHeight="32"
+                Padding="4,4"
+                Click="NavigationButton_Click"
+                Content="状态"
+                FontSize="11"
+                Style="{StaticResource WinMoeGhostPillButtonStyle}"
+                Tag="status" />
+        </Grid>
+
+        <!-- Lifetime stats -->
+        <Border
+            Grid.Row="6"
+            Padding="10,8"
+            Background="#181610"
+            BorderBrush="#2E2A22"
+            BorderThickness="1"
+            CornerRadius="12">
+            <Grid ColumnSpacing="6">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*" />
                     <ColumnDefinition Width="*" />
                     <ColumnDefinition Width="*" />
                 </Grid.ColumnDefinitions>
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="Auto" />
-                </Grid.RowDefinitions>
-                <Button Click="NavigationButton_Click" Content="状态" Style="{StaticResource WinMoePillButtonStyle}" Tag="status" />
-                <Button Grid.Column="1" Click="NavigationButton_Click" Content="清理" Style="{StaticResource WinMoeSecondaryPillButtonStyle}" Tag="clean" />
-                <Button Grid.Column="2" Click="NavigationButton_Click" Content="优化" Style="{StaticResource WinMoeSecondaryPillButtonStyle}" Tag="optimize" />
-                <Button Grid.Row="1" Click="NavigationButton_Click" Content="历史" Style="{StaticResource WinMoeSecondaryPillButtonStyle}" Tag="history" />
-                <Button Grid.Row="1" Grid.Column="1" Click="NavigationButton_Click" Content="活动" Style="{StaticResource WinMoeSecondaryPillButtonStyle}" Tag="activity" />
-                <Button Grid.Row="1" Grid.Column="2" Click="NavigationButton_Click" Content="设置" Style="{StaticResource WinMoeSecondaryPillButtonStyle}" Tag="settings" />
+                <StackPanel HorizontalAlignment="Center">
+                    <TextBlock
+                        HorizontalAlignment="Center"
+                        FontSize="15"
+                        FontWeight="SemiBold"
+                        Text="{Binding LifetimeCleanedText}" />
+                    <TextBlock
+                        HorizontalAlignment="Center"
+                        FontSize="10"
+                        Foreground="{StaticResource WinMoeDimBrush}"
+                        Text="已清理" />
+                </StackPanel>
+                <StackPanel Grid.Column="1" HorizontalAlignment="Center">
+                    <TextBlock
+                        HorizontalAlignment="Center"
+                        FontSize="15"
+                        FontWeight="SemiBold"
+                        Text="{Binding LifetimeUninstalledText}" />
+                    <TextBlock
+                        HorizontalAlignment="Center"
+                        FontSize="10"
+                        Foreground="{StaticResource WinMoeDimBrush}"
+                        Text="已卸载" />
+                </StackPanel>
+                <StackPanel Grid.Column="2" HorizontalAlignment="Center">
+                    <TextBlock
+                        HorizontalAlignment="Center"
+                        FontSize="15"
+                        FontWeight="SemiBold"
+                        Text="{Binding LifetimeOptimizedText}" />
+                    <TextBlock
+                        HorizontalAlignment="Center"
+                        FontSize="10"
+                        Foreground="{StaticResource WinMoeDimBrush}"
+                        Text="已优化" />
+                </StackPanel>
             </Grid>
-        </Grid>
+        </Border>
     </Grid>
 </Window>

@@ -1,6 +1,7 @@
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using WinMoe.Services;
+using WinMoe.Ui;
 using WinMoe.ViewModels;
 
 namespace WinMoe.Pages;
@@ -22,6 +23,8 @@ public sealed partial class OptimizePage : Page
 
     private async void OptimizePage_Loaded(object sender, RoutedEventArgs e)
     {
+        PlanetMotion.StartSlowSpin(PlanetVisual, secondsPerRevolution: 100);
+
         if (_autoPreviewStarted)
         {
             return;

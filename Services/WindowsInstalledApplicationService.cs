@@ -183,9 +183,15 @@ public sealed class WindowsInstalledApplicationService : IInstalledApplicationSe
         var installLocation = ReadString(values, "InstallLocation");
         var publisher = ReadString(values, "Publisher");
         var version = ReadString(values, "DisplayVersion");
+        var displayIcon = ReadString(values, "DisplayIcon");
         var estimatedSizeKb = ReadLong(values, "EstimatedSize");
         var sizeBytes = estimatedSizeKb > 0 ? estimatedSizeKb * 1024 : 0;
+        var installDateRaw = ReadString(values, "InstallDate");
         var id = string.Join("|", [name, publisher, version, installLocation, keyName]).ToLowerInvariant();
+        var iconPath = !string.IsNullOrWhiteSpace(displayIcon)
+            ? displayIcon
+            : GuessIconFromInstallLocation(installLocation);
+        var lastActivity = AppActivityFormatter.ResolveLastActivityUtc(installLocation, iconPath, installDateRaw);
 
         return new InstalledApplication(
             id,
@@ -195,7 +201,29 @@ public sealed class WindowsInstalledApplicationService : IInstalledApplicationSe
             installLocation,
             uninstallString,
             source,
-            sizeBytes);
+            sizeBytes,
+            iconPath,
+            lastActivity,
+            installDateRaw);
+    }
+
+    private static string? GuessIconFromInstallLocation(string? installLocation)
+    {
+        if (string.IsNullOrWhiteSpace(installLocation) || !Directory.Exists(installLocation))
+        {
+            return null;
+        }
+
+        try
+        {
+            return Directory.EnumerateFiles(installLocation, "*.exe", SearchOption.TopDirectoryOnly)
+                .OrderBy(path => path.Length)
+                .FirstOrDefault();
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        {
+            return null;
+        }
     }
 
     public static IReadOnlyList<(string Category, string Path)> BuildLeftoverPaths(InstalledApplication application)

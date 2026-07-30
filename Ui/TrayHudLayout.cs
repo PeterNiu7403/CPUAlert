@@ -21,8 +21,8 @@ public readonly record struct TrayHudLayoutMetrics(
 
 public static class TrayHudLayout
 {
-    private const int WidthInDips = 430;
-    private const int HeightInDips = 860;
+    public const int WidthInDips = DpiScaleMatrix.TrayHudWidthDips;
+    public const int HeightInDips = DpiScaleMatrix.TrayHudHeightDips;
     private const int ScreenEdgeInsetInDips = 8;
     private const int AnchorOffsetInDips = 12;
 
@@ -38,5 +38,15 @@ public static class TrayHudLayout
             clientSize,
             ScreenEdgeInset: spacing.Width,
             AnchorOffset: spacing.Height);
+    }
+
+    /// <summary>
+    /// Prefer the monitor under the tray/cursor anchor (mixed-DPI aware), not the
+    /// monitor that currently hosts a previously shown HUD window.
+    /// </summary>
+    public static TrayHudLayoutMetrics ForAnchorPoint(int anchorX, int anchorY, uint fallbackDpi = 96)
+    {
+        var dpi = DisplayDpi.GetDpiForPoint(anchorX, anchorY, fallbackDpi);
+        return ForDpi(dpi);
     }
 }

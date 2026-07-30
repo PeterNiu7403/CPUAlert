@@ -5,6 +5,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:models="using:WinMoe.Models"
+    xmlns:services="using:WinMoe.Services"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:viewModels="using:WinMoe.ViewModels"
     x:Name="AppsRoot"
@@ -22,15 +23,15 @@
         </Style>
 
         <Style x:Key="AppsSearchBoxStyle" TargetType="TextBox">
-            <Setter Property="Width" Value="320" />
-            <Setter Property="Height" Value="42" />
-            <Setter Property="Padding" Value="18,8" />
-            <Setter Property="CornerRadius" Value="22" />
+            <Setter Property="Width" Value="140" />
+            <Setter Property="Height" Value="30" />
+            <Setter Property="Padding" Value="10,3" />
+            <Setter Property="CornerRadius" Value="15" />
             <Setter Property="Background" Value="#14100E" />
             <Setter Property="Foreground" Value="{StaticResource WinMoeTextBrush}" />
-            <Setter Property="BorderBrush" Value="{StaticResource WinMoeStrokeBrush}" />
-            <Setter Property="FontFamily" Value="{StaticResource WinMoeMonoFont}" />
-            <Setter Property="FontSize" Value="15" />
+            <Setter Property="BorderBrush" Value="{StaticResource WinMoeStrokeAppsBrush}" />
+            <Setter Property="FontFamily" Value="{StaticResource WinMoeTextFont}" />
+            <Setter Property="FontSize" Value="12" />
         </Style>
 
         <Style x:Key="AppsSmallPillStyle" TargetType="Border">
@@ -42,46 +43,43 @@
 
     <Grid RowSpacing="0">
         <Grid.RowDefinitions>
-            <RowDefinition Height="92" />
+            <RowDefinition Height="52" />
             <RowDefinition Height="*" />
-            <RowDefinition Height="72" />
+            <RowDefinition Height="56" />
         </Grid.RowDefinitions>
 
-        <Grid Padding="24,0" ColumnSpacing="18">
+        <Grid Padding="16,0" ColumnSpacing="10">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="72" />
                 <ColumnDefinition Width="Auto" />
                 <ColumnDefinition Width="*" />
                 <ColumnDefinition Width="Auto" />
             </Grid.ColumnDefinitions>
 
-            <Border Width="56" Height="56" VerticalAlignment="Center" CornerRadius="16">
-                <Image Source="ms-appx:///Assets/Hero/software.png" Stretch="UniformToFill" />
-            </Border>
-
             <Border
-                Grid.Column="1"
                 VerticalAlignment="Center"
-                Padding="4"
+                Padding="3"
                 Background="#1A120F"
-                BorderBrush="{StaticResource WinMoeStrokeBrush}"
+                BorderBrush="{StaticResource WinMoeStrokeAppsBrush}"
                 BorderThickness="1"
-                CornerRadius="30">
-                <StackPanel Orientation="Horizontal" Spacing="4">
+                CornerRadius="17">
+                <StackPanel Orientation="Horizontal" Spacing="1">
                     <Button
                         x:Name="UninstallTabButton"
+                        MinWidth="52"
                         Click="AppsTabButton_Click"
                         Content="卸载"
                         Style="{StaticResource WinMoeTopNavButtonSelectedStyle}"
                         Tag="uninstall" />
                     <Button
                         x:Name="UpdatesTabButton"
+                        MinWidth="52"
                         Click="AppsTabButton_Click"
                         Content="更新"
                         Style="{StaticResource WinMoeTopNavButtonStyle}"
                         Tag="updates" />
                     <Button
                         x:Name="StartupTabButton"
+                        MinWidth="60"
                         Click="AppsTabButton_Click"
                         Content="启动项"
                         Style="{StaticResource WinMoeTopNavButtonStyle}"
@@ -89,66 +87,62 @@
                 </StackPanel>
             </Border>
 
-            <Grid
-                Grid.Column="2"
-                Width="456"
+            <!-- Mole: text-link sort + arrows + refresh + compact search -->
+            <StackPanel
+                Grid.Column="1"
                 HorizontalAlignment="Right"
                 VerticalAlignment="Center"
-                ColumnSpacing="14">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="Auto" />
-                </Grid.ColumnDefinitions>
-
+                Orientation="Horizontal"
+                Spacing="0">
                 <Button
                     x:Name="NameSortButton"
-                    HorizontalAlignment="Stretch"
-                    MinWidth="112"
                     Command="{Binding SortCommand}"
                     CommandParameter="name"
-                    Content="名称"
-                    Style="{StaticResource WinMoeTopNavButtonStyle}" />
+                    Content="{Binding NameSortLabel}"
+                    Style="{StaticResource WinMoeTextLinkStyle}" />
                 <Button
                     x:Name="SizeSortButton"
-                    Grid.Column="1"
-                    HorizontalAlignment="Stretch"
-                    MinWidth="112"
                     Command="{Binding SortCommand}"
                     CommandParameter="size"
-                    Content="大小"
-                    Style="{StaticResource WinMoeTopNavButtonSelectedStyle}" />
+                    Content="{Binding SizeSortLabel}"
+                    Style="{StaticResource WinMoeTextLinkActiveStyle}" />
                 <Button
                     x:Name="SourceSortButton"
-                    Grid.Column="2"
-                    HorizontalAlignment="Stretch"
-                    MinWidth="112"
                     Command="{Binding SortCommand}"
-                    CommandParameter="source"
-                    Content="来源"
-                    Style="{StaticResource WinMoeTopNavButtonStyle}" />
+                    CommandParameter="lastused"
+                    Content="{Binding SourceSortLabel}"
+                    Style="{StaticResource WinMoeTextLinkStyle}" />
                 <Button
-                    Grid.Column="3"
                     Command="{Binding LoadCommand}"
-                    Content="&#xE72C;"
-                    FontFamily="Segoe MDL2 Assets"
-                    Style="{StaticResource WinMoeIconButtonStyle}" />
-            </Grid>
+                    Style="{StaticResource WinMoeIconButtonStyle}"
+                    ToolTipService.ToolTip="刷新">
+                    <FontIcon FontSize="12" Glyph="&#xE72C;" />
+                </Button>
+            </StackPanel>
 
-            <TextBox
-                Grid.Column="3"
-                VerticalAlignment="Center"
-                PlaceholderText="搜索软件"
-                Style="{StaticResource AppsSearchBoxStyle}"
-                Text="{Binding SearchQuery, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+            <Grid Grid.Column="2" VerticalAlignment="Center" Width="148">
+                <TextBox
+                    Padding="28,3,10,3"
+                    PlaceholderText="搜索"
+                    Style="{StaticResource AppsSearchBoxStyle}"
+                    Width="148"
+                    Text="{Binding SearchQuery, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                <FontIcon
+                    Margin="10,0,0,0"
+                    HorizontalAlignment="Left"
+                    VerticalAlignment="Center"
+                    FontSize="12"
+                    Foreground="{StaticResource WinMoeDimBrush}"
+                    Glyph="&#xE721;"
+                    IsHitTestVisible="False" />
+            </Grid>
         </Grid>
 
         <Border Grid.Row="1" BorderBrush="{StaticResource WinMoeStrokeBrush}" BorderThickness="0,1,0,1">
             <Grid>
                 <Grid x:Name="UninstallContent">
                     <ListView
-                        Padding="24,16,24,0"
+                        Padding="12,8,12,0"
                         ItemContainerStyle="{StaticResource AppsListViewItemStyle}"
                         ItemsSource="{Binding Applications}"
                         SelectedItem="{Binding SelectedApplicationRow, Mode=TwoWay}"
@@ -161,110 +155,141 @@
                                         <RowDefinition Height="Auto" />
                                     </Grid.RowDefinitions>
 
-                                    <Grid MinHeight="88" Padding="0,8,18,8" ColumnSpacing="18">
+                                    <Grid MinHeight="56" Padding="10,8,10,8" ColumnSpacing="10">
                                         <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="44" />
-                                            <ColumnDefinition Width="60" />
+                                            <ColumnDefinition Width="40" />
                                             <ColumnDefinition Width="*" />
-                                            <ColumnDefinition Width="220" />
-                                            <ColumnDefinition Width="52" />
+                                            <ColumnDefinition Width="Auto" />
+                                            <ColumnDefinition Width="Auto" />
+                                            <ColumnDefinition Width="28" />
                                         </Grid.ColumnDefinitions>
 
-                                        <TextBlock
-                                            HorizontalAlignment="Center"
-                                            VerticalAlignment="Center"
-                                            FontFamily="{StaticResource WinMoeMonoFont}"
-                                            FontSize="26"
-                                            FontWeight="Bold"
-                                            Foreground="{StaticResource WinMoeDimBrush}"
-                                            Text="{x:Bind ChevronText, Mode=OneWay}" />
-
                                         <Border
-                                            Grid.Column="1"
-                                            Width="44"
-                                            Height="44"
+                                            Width="32"
+                                            Height="32"
                                             VerticalAlignment="Center"
-                                            Background="#263646"
-                                            CornerRadius="9">
-                                            <TextBlock
-                                                HorizontalAlignment="Center"
-                                                VerticalAlignment="Center"
-                                                FontSize="18"
-                                                FontWeight="Bold"
-                                                Foreground="{StaticResource WinMoeTextBrush}"
-                                                Text="{x:Bind Initials}" />
+                                            Background="#2A1C1A"
+                                            CornerRadius="8">
+                                            <Grid>
+                                                <TextBlock
+                                                    HorizontalAlignment="Center"
+                                                    VerticalAlignment="Center"
+                                                    FontSize="12"
+                                                    FontWeight="SemiBold"
+                                                    Foreground="{StaticResource WinMoeTextBrush}"
+                                                    Text="{x:Bind Initials}"
+                                                    Visibility="{x:Bind InitialsVisibility, Mode=OneWay}" />
+                                                <Image
+                                                    Width="32"
+                                                    Height="32"
+                                                    Source="{x:Bind IconSource, Mode=OneWay}"
+                                                    Stretch="UniformToFill"
+                                                    Visibility="{x:Bind IconVisibility, Mode=OneWay}" />
+                                            </Grid>
                                         </Border>
 
-                                        <StackPanel Grid.Column="2" VerticalAlignment="Center">
+                                        <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="1">
                                             <TextBlock
-                                                FontSize="22"
+                                                FontSize="14"
                                                 FontWeight="SemiBold"
                                                 Foreground="{StaticResource WinMoeTextBrush}"
                                                 Text="{x:Bind Name}"
                                                 TextTrimming="CharacterEllipsis" />
-                                            <TextBlock
-                                                FontFamily="{StaticResource WinMoeMonoFont}"
-                                                FontSize="16"
-                                                FontWeight="Bold"
-                                                Foreground="{StaticResource WinMoeDimBrush}"
-                                                Text="{x:Bind DetailLine}"
-                                                TextTrimming="CharacterEllipsis" />
+                                            <StackPanel Orientation="Horizontal" Spacing="6">
+                                                <TextBlock
+                                                    FontFamily="{StaticResource WinMoeTextFont}"
+                                                    FontSize="11"
+                                                    Foreground="{StaticResource WinMoeDimBrush}"
+                                                    Text="{x:Bind VersionText}"
+                                                    TextTrimming="CharacterEllipsis" />
+                                                <TextBlock
+                                                    FontFamily="{StaticResource WinMoeMonoFont}"
+                                                    FontSize="11"
+                                                    Foreground="{StaticResource WinMoeDimBrush}"
+                                                    Text="{x:Bind SizeText}" />
+                                                <TextBlock
+                                                    FontFamily="{StaticResource WinMoeTextFont}"
+                                                    FontSize="11"
+                                                    FontWeight="SemiBold"
+                                                    Foreground="{x:Bind ActivityBrush, Mode=OneWay}"
+                                                    Text="{x:Bind ActivityText, Mode=OneWay}"
+                                                    TextTrimming="CharacterEllipsis" />
+                                            </StackPanel>
                                         </StackPanel>
 
                                         <TextBlock
-                                            Grid.Column="3"
+                                            Grid.Column="2"
+                                            MaxWidth="220"
                                             HorizontalAlignment="Right"
                                             VerticalAlignment="Center"
                                             FontFamily="{StaticResource WinMoeMonoFont}"
-                                            FontSize="18"
-                                            FontWeight="Bold"
-                                            Foreground="{StaticResource WinMoeMutedBrush}"
-                                            Text="{x:Bind RightSummary}" />
+                                            FontSize="11"
+                                            Foreground="{StaticResource WinMoeOrangeBrush}"
+                                            Text="{x:Bind RightSummary, Mode=OneWay}"
+                                            TextTrimming="CharacterEllipsis" />
 
-                                        <Ellipse
-                                            Grid.Column="4"
-                                            Width="31"
-                                            Height="31"
-                                            HorizontalAlignment="Center"
+                                        <Button
+                                            Grid.Column="3"
+                                            MinWidth="0"
+                                            Padding="8,2"
                                             VerticalAlignment="Center"
-                                            Stroke="{StaticResource WinMoeDimBrush}"
-                                            StrokeThickness="2.5" />
+                                            Command="{Binding DataContext.ToggleExpandCommand, ElementName=AppsRoot}"
+                                            CommandParameter="{x:Bind}"
+                                            Content="{x:Bind ChevronText, Mode=OneWay}"
+                                            FontSize="11"
+                                            Style="{StaticResource WinMoeTextLinkStyle}" />
+
+                                        <Button
+                                            Grid.Column="4"
+                                            Width="22"
+                                            Height="22"
+                                            Padding="0"
+                                            VerticalAlignment="Center"
+                                            Background="{x:Bind CheckBackground, Mode=OneWay}"
+                                            BorderBrush="{x:Bind CheckBorder, Mode=OneWay}"
+                                            BorderThickness="1.5"
+                                            Command="{Binding DataContext.ToggleAppSelectionCommand, ElementName=AppsRoot}"
+                                            CommandParameter="{x:Bind}"
+                                            CornerRadius="4">
+                                            <FontIcon
+                                                FontSize="10"
+                                                Foreground="White"
+                                                Glyph="&#xE73E;"
+                                                Visibility="{x:Bind CheckMarkVisibility, Mode=OneWay}" />
+                                        </Button>
                                     </Grid>
 
                                     <Border
                                         Grid.Row="1"
-                                        Margin="54,0,20,20"
-                                        Padding="22"
+                                        Margin="42,0,10,12"
+                                        Padding="14"
                                         Background="#151110"
-                                        BorderBrush="{StaticResource WinMoeStrokeBrush}"
+                                        BorderBrush="{StaticResource WinMoeStrokeAppsBrush}"
                                         BorderThickness="1"
-                                        CornerRadius="18"
+                                        CornerRadius="12"
                                         Visibility="{x:Bind DetailVisibility, Mode=OneWay}">
-                                        <Grid RowSpacing="14">
+                                        <Grid RowSpacing="10">
                                             <Grid.RowDefinitions>
-                                                <RowDefinition Height="Auto" />
                                                 <RowDefinition Height="Auto" />
                                                 <RowDefinition Height="Auto" />
                                                 <RowDefinition Height="*" />
                                             </Grid.RowDefinitions>
 
-                                            <Grid ColumnSpacing="14">
+                                            <Grid ColumnSpacing="10">
                                                 <Grid.ColumnDefinitions>
                                                     <ColumnDefinition Width="*" />
                                                     <ColumnDefinition Width="Auto" />
                                                     <ColumnDefinition Width="Auto" />
                                                 </Grid.ColumnDefinitions>
-                                                <StackPanel>
+                                                <StackPanel Spacing="2">
                                                     <TextBlock
-                                                        FontSize="22"
+                                                        FontSize="13"
                                                         FontWeight="SemiBold"
-                                                        Foreground="{StaticResource WinMoeTextBrush}"
                                                         Text="{x:Bind Name}"
                                                         TextTrimming="CharacterEllipsis" />
                                                     <TextBlock
                                                         FontFamily="{StaticResource WinMoeMonoFont}"
-                                                        FontSize="16"
-                                                        FontWeight="Bold"
+                                                        FontSize="11"
                                                         Foreground="{StaticResource WinMoeDimBrush}"
                                                         Text="{x:Bind InstallLocation}"
                                                         TextTrimming="CharacterEllipsis" />
@@ -273,63 +298,45 @@
                                                     Grid.Column="1"
                                                     VerticalAlignment="Center"
                                                     FontFamily="{StaticResource WinMoeMonoFont}"
-                                                    FontSize="17"
-                                                    FontWeight="Bold"
+                                                    FontSize="11"
                                                     Foreground="{StaticResource WinMoeMutedBrush}"
                                                     Text="{Binding DataContext.LeftoverSelectionText, ElementName=AppsRoot}" />
                                                 <Button
                                                     Grid.Column="2"
                                                     Command="{Binding DataContext.SelectAllLeftoversCommand, ElementName=AppsRoot}"
                                                     Content="全选"
-                                                    Foreground="{StaticResource WinMoeOrangeBrush}"
-                                                    Style="{StaticResource WinMoeTopNavButtonStyle}" />
+                                                    FontSize="12"
+                                                    Style="{StaticResource WinMoeTextLinkActiveStyle}" />
                                             </Grid>
 
-                                            <StackPanel
-                                                Grid.Row="1"
-                                                Orientation="Horizontal"
-                                                Spacing="12">
-                                                <Button
-                                                    Command="{Binding DataContext.PreviewLeftoversCommand, ElementName=AppsRoot}"
-                                                    Content="预览残留"
-                                                    Style="{StaticResource WinMoeSecondaryPillButtonStyle}" />
-                                                <TextBlock
-                                                    VerticalAlignment="Center"
-                                                    FontFamily="{StaticResource WinMoeMonoFont}"
-                                                    FontWeight="Bold"
-                                                    Foreground="{StaticResource WinMoeDimBrush}"
-                                                    Text="{Binding DataContext.LeftoverSummary, ElementName=AppsRoot}" />
-                                            </StackPanel>
-
                                             <TextBlock
-                                                Grid.Row="2"
-                                                FontFamily="{StaticResource WinMoeMonoFont}"
-                                                FontSize="16"
-                                                FontWeight="Bold"
+                                                Grid.Row="1"
+                                                FontSize="11"
                                                 Foreground="{StaticResource WinMoeDimBrush}"
-                                                Text="默认不选择，确认后移入回收站" />
+                                                Text="{Binding DataContext.LeftoverSummary, ElementName=AppsRoot}" />
 
                                             <ListView
-                                                Grid.Row="3"
-                                                MaxHeight="260"
+                                                Grid.Row="2"
+                                                MaxHeight="200"
                                                 ItemContainerStyle="{StaticResource AppsListViewItemStyle}"
                                                 ItemsSource="{Binding DataContext.Leftovers, ElementName=AppsRoot}"
                                                 SelectionMode="None">
                                                 <ListView.ItemTemplate>
                                                     <DataTemplate x:DataType="models:LeftoverCandidate">
-                                                        <Grid MinHeight="42" ColumnSpacing="14">
+                                                        <Grid MinHeight="32" ColumnSpacing="10">
                                                             <Grid.ColumnDefinitions>
-                                                                <ColumnDefinition Width="42" />
-                                                                <ColumnDefinition Width="180" />
-                                                                <ColumnDefinition Width="100" />
+                                                                <ColumnDefinition Width="28" />
+                                                                <ColumnDefinition Width="120" />
+                                                                <ColumnDefinition Width="72" />
                                                                 <ColumnDefinition Width="*" />
-                                                                <ColumnDefinition Width="36" />
                                                             </Grid.ColumnDefinitions>
-                                                            <CheckBox IsChecked="{x:Bind IsSelected, Mode=TwoWay}" />
+                                                            <CheckBox
+                                                                MinWidth="0"
+                                                                IsChecked="{x:Bind IsSelected, Mode=TwoWay}" />
                                                             <TextBlock
                                                                 Grid.Column="1"
                                                                 VerticalAlignment="Center"
-                                                                FontSize="17"
+                                                                FontSize="12"
                                                                 FontWeight="SemiBold"
                                                                 Foreground="{StaticResource WinMoeMutedBrush}"
                                                                 Text="{x:Bind Category}"
@@ -338,24 +345,17 @@
                                                                 Grid.Column="2"
                                                                 VerticalAlignment="Center"
                                                                 FontFamily="{StaticResource WinMoeMonoFont}"
-                                                                FontWeight="Bold"
+                                                                FontSize="11"
                                                                 Foreground="{StaticResource WinMoeDimBrush}"
                                                                 Text="{x:Bind SizeText}" />
                                                             <TextBlock
                                                                 Grid.Column="3"
                                                                 VerticalAlignment="Center"
                                                                 FontFamily="{StaticResource WinMoeMonoFont}"
-                                                                FontWeight="Bold"
+                                                                FontSize="11"
                                                                 Foreground="{StaticResource WinMoeDimBrush}"
                                                                 Text="{x:Bind Path}"
                                                                 TextTrimming="CharacterEllipsis" />
-                                                            <FontIcon
-                                                                Grid.Column="4"
-                                                                HorizontalAlignment="Center"
-                                                                VerticalAlignment="Center"
-                                                                FontSize="16"
-                                                                Foreground="{StaticResource WinMoeDimBrush}"
-                                                                Glyph="&#xE721;" />
                                                         </Grid>
                                                     </DataTemplate>
                                                 </ListView.ItemTemplate>
@@ -365,7 +365,7 @@
 
                                     <Border
                                         Height="1"
-                                        Margin="98,0,18,0"
+                                        Margin="52,0,10,0"
                                         VerticalAlignment="Bottom"
                                         Background="#332622" />
                                 </Grid>
@@ -374,193 +374,194 @@
                     </ListView>
                 </Grid>
 
+                <!-- Mole Updates: quiet empty surface, never auto-installs -->
                 <Grid x:Name="UpdatesContent" Visibility="Collapsed">
+                    <StackPanel
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center"
+                        MaxWidth="420"
+                        Spacing="14">
+                        <FontIcon
+                            HorizontalAlignment="Center"
+                            FontSize="36"
+                            Foreground="{StaticResource WinMoeDimBrush}"
+                            Glyph="&#xE895;" />
+                        <TextBlock
+                            HorizontalAlignment="Center"
+                            FontSize="22"
+                            FontWeight="SemiBold"
+                            Foreground="{StaticResource WinMoeMutedBrush}"
+                            Text="{Binding UpdatesHeadline}" />
+                        <TextBlock
+                            HorizontalAlignment="Center"
+                            FontSize="13"
+                            Foreground="{StaticResource WinMoeDimBrush}"
+                            Text="{Binding UpdatesSummary}"
+                            TextAlignment="Center"
+                            TextWrapping="WrapWholeWords" />
+                        <Button
+                            HorizontalAlignment="Center"
+                            MinWidth="140"
+                            Click="UnsupportedAppsFeatureButton_Click"
+                            Content="重新检查"
+                            Style="{StaticResource WinMoeGhostPillButtonStyle}" />
+                    </StackPanel>
+                </Grid>
+
+                <!-- Startup: read-only Windows Run keys + Startup folders -->
+                <Grid x:Name="StartupContent" Visibility="Collapsed">
                     <Grid.RowDefinitions>
-                        <RowDefinition Height="118" />
+                        <RowDefinition Height="48" />
                         <RowDefinition Height="*" />
                     </Grid.RowDefinitions>
-
-                    <Grid Padding="24,0" ColumnSpacing="16">
+                    <Grid Padding="16,0" ColumnSpacing="10">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="Auto" />
                             <ColumnDefinition Width="Auto" />
                         </Grid.ColumnDefinitions>
                         <TextBlock
                             VerticalAlignment="Center"
-                            FontFamily="{StaticResource WinMoeMonoFont}"
-                            FontSize="22"
-                            FontWeight="Bold"
+                            FontSize="14"
+                            FontWeight="SemiBold"
                             Foreground="{StaticResource WinMoeMutedBrush}"
-                            Text="0 个可用更新" />
-                        <StackPanel
+                            Text="{Binding StartupHeadline}" />
+                        <TextBlock
                             Grid.Column="1"
                             VerticalAlignment="Center"
-                            Orientation="Horizontal"
-                            Spacing="10">
-                            <ProgressRing
-                                Width="26"
-                                Height="26"
-                                IsActive="{Binding IsBusy}" />
-                            <TextBlock
-                                VerticalAlignment="Center"
-                                FontFamily="{StaticResource WinMoeMonoFont}"
-                                FontSize="16"
-                                FontWeight="Bold"
-                                Foreground="{StaticResource WinMoeDimBrush}"
-                                Text="正在检查…" />
-                        </StackPanel>
-                        <Button
-                            Grid.Column="2"
-                            Click="UnsupportedAppsFeatureButton_Click"
-                            Content="检查更新"
-                            Style="{StaticResource WinMoePillButtonStyle}" />
+                            FontSize="11"
+                            Foreground="{StaticResource WinMoeDimBrush}"
+                            Text="{Binding StartupSummary}" />
                     </Grid>
-
-                    <ScrollViewer Grid.Row="1">
-                        <StackPanel Padding="36,28,36,36" Spacing="26">
-                            <TextBlock
-                                FontFamily="{StaticResource WinMoeMonoFont}"
-                                FontSize="18"
-                                FontWeight="Bold"
-                                Foreground="{StaticResource WinMoeDimBrush}"
-                                Text="支持安全更新源的软件 0" />
-                            <Border
-                                Padding="24"
-                                Background="#14100E"
-                                BorderBrush="{StaticResource WinMoeStrokeBrush}"
-                                BorderThickness="1"
-                                CornerRadius="18">
-                                <Grid ColumnSpacing="18">
+                    <ListView
+                        Grid.Row="1"
+                        Padding="12,0,12,12"
+                        ItemContainerStyle="{StaticResource AppsListViewItemStyle}"
+                        ItemsSource="{Binding StartupItems}"
+                        SelectionMode="None">
+                        <ListView.ItemTemplate>
+                            <DataTemplate x:DataType="services:StartupItem">
+                                <Grid MinHeight="48" Padding="10,8" ColumnSpacing="12">
                                     <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="54" />
+                                        <ColumnDefinition Width="28" />
                                         <ColumnDefinition Width="*" />
-                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="120" />
                                     </Grid.ColumnDefinitions>
                                     <FontIcon
                                         VerticalAlignment="Center"
-                                        FontSize="28"
-                                        Foreground="{StaticResource WinMoeOrangeBrush}"
-                                        Glyph="&#xE895;" />
-                                    <StackPanel Grid.Column="1">
-                                        <TextBlock
-                                            FontSize="22"
-                                            FontWeight="SemiBold"
-                                            Text="WinMoe 软件更新" />
-                                        <TextBlock
-                                            FontFamily="{StaticResource WinMoeMonoFont}"
-                                            FontSize="16"
-                                            FontWeight="Bold"
-                                            Foreground="{StaticResource WinMoeDimBrush}"
-                                            Text="{Binding UpdatesSummary}"
-                                            TextWrapping="Wrap" />
-                                    </StackPanel>
-                                    <Border Grid.Column="2" Style="{StaticResource AppsSmallPillStyle}">
-                                        <TextBlock
-                                            FontFamily="{StaticResource WinMoeMonoFont}"
-                                            FontWeight="Bold"
-                                            Foreground="{StaticResource WinMoeOrangeBrush}"
-                                            Text="预览中" />
-                                    </Border>
-                                </Grid>
-                            </Border>
-                        </StackPanel>
-                    </ScrollViewer>
-                </Grid>
-
-                <Grid x:Name="StartupContent" Visibility="Collapsed">
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="118" />
-                        <RowDefinition Height="*" />
-                    </Grid.RowDefinitions>
-
-                    <Grid Padding="24,0">
-                        <TextBlock
-                            VerticalAlignment="Center"
-                            FontFamily="{StaticResource WinMoeMonoFont}"
-                            FontSize="22"
-                            FontWeight="Bold"
-                            Foreground="{StaticResource WinMoeMutedBrush}"
-                            Text="启动项清单" />
-                    </Grid>
-
-                    <ScrollViewer Grid.Row="1">
-                        <StackPanel Padding="36,28,36,36" Spacing="26">
-                            <TextBlock
-                                FontFamily="{StaticResource WinMoeMonoFont}"
-                                FontSize="18"
-                                FontWeight="Bold"
-                                Foreground="{StaticResource WinMoeDimBrush}"
-                                Text="WINDOWS 启动项 0" />
-                            <Border
-                                Padding="24"
-                                Background="#14100E"
-                                BorderBrush="{StaticResource WinMoeStrokeBrush}"
-                                BorderThickness="1"
-                                CornerRadius="18">
-                                <Grid ColumnSpacing="18">
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="54" />
-                                        <ColumnDefinition Width="*" />
-                                        <ColumnDefinition Width="Auto" />
-                                    </Grid.ColumnDefinitions>
-                                    <FontIcon
-                                        VerticalAlignment="Center"
-                                        FontSize="28"
+                                        FontSize="14"
                                         Foreground="{StaticResource WinMoeGoldBrush}"
                                         Glyph="&#xE7C1;" />
-                                    <StackPanel Grid.Column="1">
+                                    <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2">
                                         <TextBlock
-                                            FontSize="22"
+                                            FontSize="13"
                                             FontWeight="SemiBold"
-                                            Text="启动项管理" />
+                                            Text="{x:Bind Name}"
+                                            TextTrimming="CharacterEllipsis" />
                                         <TextBlock
                                             FontFamily="{StaticResource WinMoeMonoFont}"
-                                            FontSize="16"
-                                            FontWeight="Bold"
+                                            FontSize="11"
                                             Foreground="{StaticResource WinMoeDimBrush}"
-                                            Text="{Binding StartupSummary}"
-                                            TextWrapping="Wrap" />
+                                            Text="{x:Bind ShortCommand}"
+                                            TextTrimming="CharacterEllipsis"
+                                            ToolTipService.ToolTip="{x:Bind Command}" />
                                     </StackPanel>
-                                    <Border Grid.Column="2" Style="{StaticResource AppsSmallPillStyle}">
-                                        <TextBlock
-                                            FontFamily="{StaticResource WinMoeMonoFont}"
-                                            FontWeight="Bold"
-                                            Foreground="{StaticResource WinMoeGoldBrush}"
-                                            Text="待接入" />
-                                    </Border>
+                                    <TextBlock
+                                        Grid.Column="2"
+                                        VerticalAlignment="Center"
+                                        HorizontalAlignment="Right"
+                                        FontSize="11"
+                                        Foreground="{StaticResource WinMoeDimBrush}"
+                                        Text="{x:Bind Source}"
+                                        TextTrimming="CharacterEllipsis" />
                                 </Grid>
-                            </Border>
-                        </StackPanel>
-                    </ScrollViewer>
+                            </DataTemplate>
+                        </ListView.ItemTemplate>
+                    </ListView>
                 </Grid>
             </Grid>
         </Border>
 
-        <Grid Grid.Row="2" Padding="24,0" Background="#100E0D">
+        <!-- Mole sticky footer: icon stack · N apps · size · Clear selection · Remove N -->
+        <Grid Grid.Row="2" Padding="14,0,16,0" Background="#120E0D" MinHeight="56">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*" />
                 <ColumnDefinition Width="Auto" />
-                <ColumnDefinition Width="Auto" />
             </Grid.ColumnDefinitions>
-            <TextBlock
+            <StackPanel
                 VerticalAlignment="Center"
-                FontFamily="{StaticResource WinMoeMonoFont}"
-                FontSize="20"
-                FontWeight="Bold"
-                Foreground="{StaticResource WinMoeMutedBrush}"
-                Text="{Binding AppsCountText}" />
+                Orientation="Horizontal"
+                Spacing="10">
+                <ItemsControl
+                    VerticalAlignment="Center"
+                    ItemsSource="{Binding SelectedFooterApps}"
+                    Visibility="{Binding SelectedIconsVisibility}">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <StackPanel Orientation="Horizontal" Spacing="-6" />
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate x:DataType="viewModels:ApplicationRowViewModel">
+                            <Border
+                                Width="22"
+                                Height="22"
+                                Background="#2A1C1A"
+                                BorderBrush="#120E0D"
+                                BorderThickness="1.5"
+                                CornerRadius="6"
+                                ToolTipService.ToolTip="{x:Bind Name}">
+                                <Grid>
+                                    <TextBlock
+                                        HorizontalAlignment="Center"
+                                        VerticalAlignment="Center"
+                                        FontSize="9"
+                                        FontWeight="SemiBold"
+                                        Foreground="{StaticResource WinMoeTextBrush}"
+                                        Text="{x:Bind Initials}"
+                                        Visibility="{x:Bind InitialsVisibility, Mode=OneWay}" />
+                                    <Image
+                                        Width="18"
+                                        Height="18"
+                                        HorizontalAlignment="Center"
+                                        VerticalAlignment="Center"
+                                        Source="{x:Bind IconSource, Mode=OneWay}"
+                                        Stretch="UniformToFill"
+                                        Visibility="{x:Bind IconVisibility, Mode=OneWay}" />
+                                </Grid>
+                            </Border>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+                <TextBlock
+                    VerticalAlignment="Center"
+                    FontFamily="{StaticResource WinMoeTextFont}"
+                    FontSize="12"
+                    Foreground="{StaticResource WinMoeMutedBrush}"
+                    Text="{Binding AppsCountText}" />
+                <Button
+                    VerticalAlignment="Center"
+                    Command="{Binding ClearSelectionCommand}"
+                    Content="清除选择"
+                    FontSize="12"
+                    Foreground="{StaticResource WinMoeOrangeBrush}"
+                    Style="{StaticResource WinMoeTextLinkStyle}"
+                    Visibility="{Binding ClearSelectionVisibility}" />
+                <Button
+                    VerticalAlignment="Center"
+                    Click="RemoveLeftoversButton_Click"
+                    Content="移入回收站"
+                    FontSize="12"
+                    IsEnabled="{Binding CanRemoveSelectedLeftovers}"
+                    Style="{StaticResource WinMoeTextLinkStyle}"
+                    Visibility="{Binding ClearSelectionVisibility}" />
+            </StackPanel>
             <Button
                 Grid.Column="1"
-                Margin="0,0,12,0"
-                Click="RemoveLeftoversButton_Click"
-                Content="移入回收站"
-                IsEnabled="{Binding CanRemoveSelectedLeftovers}"
-                Style="{StaticResource WinMoeSecondaryPillButtonStyle}" />
-            <Button
-                Grid.Column="2"
+                MinWidth="132"
+                MinHeight="38"
+                VerticalAlignment="Center"
                 Click="UninstallButton_Click"
-                Content="启动卸载程序"
+                Content="{Binding RemoveButtonLabel}"
                 IsEnabled="{Binding CanLaunchUninstaller}"
                 Style="{StaticResource WinMoePillButtonStyle}" />
         </Grid>

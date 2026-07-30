@@ -108,7 +108,9 @@ public partial class SettingsViewModel : ViewModelBase
             HttpServerPort = ParseInt(HttpServerPort, current.HttpServerPort),
             TrayIconEnabled = TrayIconEnabled,
             McpDestructiveActionsEnabled = McpDestructiveActionsEnabled,
-            TelemetryEnabled = TelemetryEnabled
+            TelemetryEnabled = TelemetryEnabled,
+            // Preserve Status process pins when editing other preferences.
+            PinnedProcessNames = current.PinnedProcessNames.ToList()
         });
 
         var saved = await _settingsService.SaveAsync(settings).ConfigureAwait(false);

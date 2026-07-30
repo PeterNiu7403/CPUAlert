@@ -44,6 +44,13 @@
     <Compile Include="..\..\Models\SystemTelemetrySnapshot.cs" Link="Production\Models\SystemTelemetrySnapshot.cs" />
     <Compile Include="..\..\Models\TrayHudStatus.cs" Link="Production\Models\TrayHudStatus.cs" />
     <Compile Include="..\..\Services\CleanPreviewParser.cs" Link="Production\Services\CleanPreviewParser.cs" />
+    <Compile Include="..\..\Services\CleanupCategoryGrouper.cs" Link="Production\Services\CleanupCategoryGrouper.cs" />
+    <Compile Include="..\..\Services\DiskVolumeStats.cs" Link="Production\Services\DiskVolumeStats.cs" />
+    <Compile Include="..\..\Services\AppActivityHintResolver.cs" Link="Production\Services\AppActivityHintResolver.cs" />
+    <Compile Include="..\..\Services\AppActivityFormatter.cs" Link="Production\Services\AppActivityFormatter.cs" />
+    <Compile Include="..\..\Services\CircularProgressGeometry.cs" Link="Production\Services\CircularProgressGeometry.cs" />
+    <Compile Include="..\..\Services\ShellPathActions.cs" Link="Production\Services\ShellPathActions.cs" />
+    <Compile Include="..\..\Services\WindowsStartupItemService.cs" Link="Production\Services\WindowsStartupItemService.cs" />
     <Compile Include="..\..\Services\ApplicationDataPaths.cs" Link="Production\Services\ApplicationDataPaths.cs" />
     <Compile Include="..\..\Services\WinMoeStartupOptions.cs" Link="Production\Services\WinMoeStartupOptions.cs" />
     <Compile Include="..\..\Services\DiskAnalyzerService.cs" Link="Production\Services\DiskAnalyzerService.cs" />
@@ -81,8 +88,13 @@
     <Compile Include="..\..\Services\SystemTelemetryFormatter.cs" Link="Production\Services\SystemTelemetryFormatter.cs" />
     <Compile Include="..\..\Services\TrayHudStatusFormatter.cs" Link="Production\Services\TrayHudStatusFormatter.cs" />
     <Compile Include="..\..\Services\TrayIconTextFormatter.cs" Link="Production\Services\TrayIconTextFormatter.cs" />
+    <Compile Include="..\..\Services\LifetimeStatsAggregator.cs" Link="Production\Services\LifetimeStatsAggregator.cs" />
+    <Compile Include="..\..\Services\AppIconResolver.cs" Link="Production\Services\AppIconResolver.cs" />
     <Compile Include="..\..\Services\WindowsInstalledApplicationService.cs" Link="Production\Services\WindowsInstalledApplicationService.cs" />
     <Compile Include="..\..\Ui\TrayHudLayout.cs" Link="Production\Ui\TrayHudLayout.cs" />
     <Compile Include="..\..\Ui\WindowSizing.cs" Link="Production\Ui\WindowSizing.cs" />
+    <Compile Include="..\..\Ui\DpiScaleMatrix.cs" Link="Production\Ui\DpiScaleMatrix.cs" />
+    <Compile Include="..\..\Ui\DisplayDpi.cs" Link="Production\Ui\DisplayDpi.cs" />
+    <Compile Include="..\..\Services\WindowsPlatformCapabilities.cs" Link="Production\Services\WindowsPlatformCapabilities.cs" />
   </ItemGroup>
 </Project>

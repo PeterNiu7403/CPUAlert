@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using WinMoe.Models;
@@ -14,13 +15,21 @@ public partial class AnalyzeViewModel : ViewModelBase
     private const double MinimumTreemapHeight = 220;
     private readonly IMoleEngineService _moleEngineService;
     private readonly IDiskAnalyzerService _diskAnalyzerService;
+    private readonly ISafeDeletionService _safeDeletionService;
+    private readonly IOperationHistoryService _operationHistoryService;
     private CancellationTokenSource? _scanCancellationTokenSource;
     private DiskUsageNode? _lastScanResult;
 
-    public AnalyzeViewModel(IMoleEngineService moleEngineService, IDiskAnalyzerService diskAnalyzerService)
+    public AnalyzeViewModel(
+        IMoleEngineService moleEngineService,
+        IDiskAnalyzerService diskAnalyzerService,
+        ISafeDeletionService safeDeletionService,
+        IOperationHistoryService operationHistoryService)
     {
         _moleEngineService = moleEngineService;
         _diskAnalyzerService = diskAnalyzerService;
+        _safeDeletionService = safeDeletionService;
+        _operationHistoryService = operationHistoryService;
         var startupRoot = Environment.GetEnvironmentVariable("WINMOE_ANALYZE_ROOT")
                           ?? Environment.GetEnvironmentVariable("MOLEWINDOWS_ANALYZE_ROOT");
         RootPath = string.IsNullOrWhiteSpace(startupRoot)
@@ -43,7 +52,7 @@ public partial class AnalyzeViewModel : ViewModelBase
     private string summary = "选择目录后开始分析";
 
     [ObservableProperty]
-    private string breadcrumbText = "主目录";
+    private string breadcrumbText = "整盘 › 主目录";
 
     [ObservableProperty]
     private string scanStatusText = "尚未扫描";
@@ -67,6 +76,23 @@ public partial class AnalyzeViewModel : ViewModelBase
     private string totalSize = "尚未扫描";
 
     [ObservableProperty]
+    private string actionStatusText = string.Empty;
+
+    /// <summary>Mole header: "Current 252.86 GB"</summary>
+    [ObservableProperty]
+    private string currentSizeMetric = "当前 —";
+
+    /// <summary>Mole header: "Disk 487 / 994 GB"</summary>
+    [ObservableProperty]
+    private string diskVolumeMetric = "磁盘 —";
+
+    [ObservableProperty]
+    private string headerMetricsText = "当前 — · 磁盘 —";
+
+    [ObservableProperty]
+    private double diskUsagePercent;
+
+    [ObservableProperty]
     private double treemapCanvasWidth = DefaultTreemapWidth;
 
     [ObservableProperty]
@@ -75,6 +101,9 @@ public partial class AnalyzeViewModel : ViewModelBase
     public bool CanCancel => IsBusy && _scanCancellationTokenSource is not null;
 
     public string OutputText => string.Join(Environment.NewLine, OutputLines);
+
+    /// <summary>Width of the tiny disk-used bar (0–48 dip).</summary>
+    public double DiskUsageBarWidth => Math.Clamp(DiskUsagePercent, 0, 100) / 100d * 48d;
 
     [RelayCommand]
     public async Task ScanAsync()
@@ -96,6 +125,8 @@ public partial class AnalyzeViewModel : ViewModelBase
         TotalSize = "正在扫描";
         TotalItemCountText = "0 个项目";
         AnalyzeOverviewText = "0 个项目 · 正在扫描";
+        CurrentSizeMetric = "当前 …";
+        RefreshVolumeMetrics(RootPath);
         OnPropertyChanged(nameof(OutputText));
 
         try
@@ -120,6 +151,8 @@ public partial class AnalyzeViewModel : ViewModelBase
                 AnalyzeOverviewText = $"{itemCount} 个项目 · {result.SizeText}";
                 ScanStatusText = $"{itemCount} 个项目 · {result.SizeText}";
                 BreadcrumbText = BuildBreadcrumbText(result.Path);
+                CurrentSizeMetric = $"当前 {result.SizeText}";
+                RefreshVolumeMetrics(result.Path);
                 Summary = AnalyzeOverviewText;
                 HasScanResult = true;
                 CanShowTreemap = TreemapTiles.Count > 0;
@@ -131,6 +164,8 @@ public partial class AnalyzeViewModel : ViewModelBase
             ScanStatusText = "扫描失败";
             TotalSize = "尚未扫描";
             AnalyzeOverviewText = "0 个项目 · 尚未扫描";
+            CurrentSizeMetric = "当前 —";
+            RefreshVolumeMetrics(RootPath);
             HasScanResult = false;
             CanShowTreemap = false;
             AppendOutput(ex.Message);
@@ -150,6 +185,127 @@ public partial class AnalyzeViewModel : ViewModelBase
         _scanCancellationTokenSource?.Cancel();
     }
 
+    [RelayCommand]
+    public async Task OpenPathAsync(string? path)
+    {
+        if (string.IsNullOrWhiteSpace(path) || !ShellPathActions.CanOpen(path))
+        {
+            ActionStatusText = "无法打开该路径";
+            return;
+        }
+
+        await Task.Run(() =>
+        {
+            ShellPathActions.TryOpenInExplorer(path, out var message);
+            RunOnUiThread(() => ActionStatusText = message);
+        }).ConfigureAwait(false);
+    }
+
+    [RelayCommand]
+    public async Task DrillIntoPathAsync(string? path)
+    {
+        if (string.IsNullOrWhiteSpace(path) || !Directory.Exists(path) || IsBusy)
+        {
+            ActionStatusText = "无法进入该文件夹";
+            return;
+        }
+
+        try
+        {
+            RootPath = ShellPathActions.Normalize(path);
+        }
+        catch
+        {
+            ActionStatusText = "路径无效";
+            return;
+        }
+
+        ActionStatusText = $"正在分析 {Path.GetFileName(RootPath.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar))}…";
+        await ScanAsync().ConfigureAwait(false);
+    }
+
+    [RelayCommand]
+    public async Task GoUpAsync()
+    {
+        if (IsBusy)
+        {
+            return;
+        }
+
+        try
+        {
+            var current = ShellPathActions.Normalize(RootPath);
+            var parent = Directory.GetParent(current)?.FullName;
+            if (string.IsNullOrWhiteSpace(parent))
+            {
+                ActionStatusText = "已在根目录";
+                return;
+            }
+
+            RootPath = parent;
+            await ScanAsync().ConfigureAwait(false);
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or ArgumentException)
+        {
+            ActionStatusText = ex.Message;
+        }
+    }
+
+    [RelayCommand]
+    public async Task SendToRecycleBinAsync(string? path)
+    {
+        if (string.IsNullOrWhiteSpace(path))
+        {
+            ActionStatusText = "路径无效";
+            return;
+        }
+
+        if (!ShellPathActions.CanSendToRecycleBin(path))
+        {
+            ActionStatusText = "该路径受保护，不能移入回收站";
+            return;
+        }
+
+        try
+        {
+            var full = ShellPathActions.Normalize(path);
+            var size = ShellPathActions.TryMeasureSize(full);
+            var result = await Task.Run(() => _safeDeletionService.DeleteFileOrDirectory(full, size))
+                .ConfigureAwait(false);
+
+            if (result.Succeeded)
+            {
+                try
+                {
+                    await _operationHistoryService.RecordAsync(new OperationHistoryEntry(
+                        DateTimeOffset.UtcNow,
+                        "ui",
+                        "clean",
+                        "analyze-trash",
+                        0,
+                        true,
+                        0,
+                        $"Freed {size} bytes · analyze trash · {full}")).ConfigureAwait(false);
+                }
+                catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+                {
+                }
+
+                RunOnUiThread(() => ActionStatusText = $"已移入回收站：{Path.GetFileName(full)}");
+                // Refresh current view so treemap drops the deleted node.
+                await ScanAsync().ConfigureAwait(false);
+            }
+            else
+            {
+                RunOnUiThread(() => ActionStatusText = result.Message);
+            }
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or ArgumentException)
+        {
+            ActionStatusText = ex.Message;
+        }
+    }
+
     partial void OnIsBusyChanged(bool value)
     {
         OnPropertyChanged(nameof(CanCancel));
@@ -158,6 +314,15 @@ public partial class AnalyzeViewModel : ViewModelBase
     partial void OnRootPathChanged(string value)
     {
         BreadcrumbText = BuildBreadcrumbText(value);
+        if (!HasScanResult)
+        {
+            RefreshVolumeMetrics(value);
+        }
+    }
+
+    partial void OnDiskUsagePercentChanged(double value)
+    {
+        OnPropertyChanged(nameof(DiskUsageBarWidth));
     }
 
     public void UpdateTreemapViewport(double width, double height)
@@ -236,30 +401,22 @@ public partial class AnalyzeViewModel : ViewModelBase
         return count;
     }
 
-    private static string BuildBreadcrumbText(string path)
+    private void RefreshVolumeMetrics(string? path)
     {
-        if (string.IsNullOrWhiteSpace(path))
+        var volume = DiskVolumeStats.TryGetForPath(path);
+        if (volume is null)
         {
-            return "主目录";
+            DiskVolumeMetric = "磁盘 —";
+            DiskUsagePercent = 0;
+        }
+        else
+        {
+            DiskVolumeMetric = $"磁盘 {volume.UsedOverTotalText}";
+            DiskUsagePercent = volume.UsagePercent;
         }
 
-        try
-        {
-            var expandedPath = Environment.ExpandEnvironmentVariables(path.Trim());
-            var profilePath = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
-            var fullPath = Path.GetFullPath(expandedPath).TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
-            var fullProfilePath = Path.GetFullPath(profilePath).TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
-            if (string.Equals(fullPath, fullProfilePath, StringComparison.OrdinalIgnoreCase))
-            {
-                return "主目录";
-            }
-
-            var name = Path.GetFileName(fullPath);
-            return string.IsNullOrWhiteSpace(name) ? fullPath : $"主目录 › {name}";
-        }
-        catch
-        {
-            return "主目录";
-        }
+        HeaderMetricsText = DiskVolumeStats.FormatHeaderMetrics(CurrentSizeMetric, volume);
     }
+
+    private static string BuildBreadcrumbText(string path) => DiskVolumeStats.BuildBreadcrumb(path);
 }

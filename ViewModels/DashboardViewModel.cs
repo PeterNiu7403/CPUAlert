@@ -1,8 +1,10 @@
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.Globalization;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.UI.Xaml.Media;
+using Windows.ApplicationModel.DataTransfer;
 using Windows.Foundation;
 using WinMoe.Models;
 using WinMoe.Services;
@@ -24,18 +26,37 @@ public partial class DashboardViewModel : ViewModelBase
     private readonly ISystemTelemetrySamplerService _telemetrySamplerService;
     private readonly ISystemTelemetryHistoryService _systemTelemetryHistoryService;
     private readonly IOperationHistoryService _operationHistoryService;
+    private readonly IApplicationSettingsService _settingsService;
+    private readonly HashSet<string> _pinnedProcessNames;
+    private readonly object _pinSync = new();
 
     public DashboardViewModel(
         IMoleEngineService moleEngineService,
         ISystemTelemetrySamplerService telemetrySamplerService,
         ISystemTelemetryHistoryService systemTelemetryHistoryService,
-        IOperationHistoryService operationHistoryService)
+        IOperationHistoryService operationHistoryService,
+        IApplicationSettingsService settingsService)
     {
         _moleEngineService = moleEngineService;
         _telemetrySamplerService = telemetrySamplerService;
         _systemTelemetryHistoryService = systemTelemetryHistoryService;
         _operationHistoryService = operationHistoryService;
+        _settingsService = settingsService;
+        _pinnedProcessNames = new HashSet<string>(
+            WinMoeSettings.NormalizePinnedProcessNames(_settingsService.Current.PinnedProcessNames),
+            StringComparer.OrdinalIgnoreCase);
         TelemetryHistoryPath = _systemTelemetryHistoryService.HistoryFilePath;
+        _settingsService.SettingsChanged += (_, settings) =>
+        {
+            lock (_pinSync)
+            {
+                _pinnedProcessNames.Clear();
+                foreach (var name in WinMoeSettings.NormalizePinnedProcessNames(settings.PinnedProcessNames))
+                {
+                    _pinnedProcessNames.Add(name);
+                }
+            }
+        };
     }
 
     public ObservableCollection<string> OutputLines { get; } = new();
@@ -167,6 +188,12 @@ public partial class DashboardViewModel : ViewModelBase
     private string batteryPercentText = "-";
 
     [ObservableProperty]
+    private double batteryChargePercent;
+
+    [ObservableProperty]
+    private DoubleCollection batteryRingDash = ToDashCollection(CircularProgressGeometry.CreateDash(0, 22));
+
+    [ObservableProperty]
     private string fanMetricText = "-";
 
     [ObservableProperty]
@@ -210,9 +237,20 @@ public partial class DashboardViewModel : ViewModelBase
 
     public string HealthScore => HealthScoreValue.ToString("0", CultureInfo.InvariantCulture);
 
-    public string HealthStatusText => DiskUsagePercent > 90 || MemoryUsagePercent > 90 ? "需关注" : "良好";
+    // Mole: "Excellent" / "All checks passed" — Chinese HUD uses 各项指标正常.
+    public string HealthStatusText => HealthScoreValue >= 80
+        ? "各项指标正常"
+        : HealthScoreValue >= 60
+            ? "需关注"
+            : "繁忙";
 
-    public string HealthReason => DiskUsagePercent > 90 ? "磁盘空间即将用尽" : "系统状态正常";
+    public string HealthReason => DiskUsagePercent > 90
+        ? "磁盘空间即将用尽"
+        : MemoryUsagePercent > 90
+            ? "内存压力偏高"
+            : CpuUsagePercent > 90
+                ? "CPU 负载偏高"
+                : "检查项均通过";
 
     [RelayCommand]
     public async Task RefreshAsync()
@@ -255,6 +293,97 @@ public partial class DashboardViewModel : ViewModelBase
         }
     }
 
+    [RelayCommand]
+    public async Task<string> TogglePinProcessAsync(ProcessTelemetry? process)
+    {
+        if (process is null || string.IsNullOrWhiteSpace(process.Name))
+        {
+            return "无效进程";
+        }
+
+        var name = NormalizeProcessName(process.Name);
+        bool pinned;
+        lock (_pinSync)
+        {
+            if (_pinnedProcessNames.Contains(name))
+            {
+                _pinnedProcessNames.Remove(name);
+                pinned = false;
+            }
+            else
+            {
+                if (_pinnedProcessNames.Count >= WinMoeSettings.MaxPinnedProcessNames)
+                {
+                    return $"最多固定 {WinMoeSettings.MaxPinnedProcessNames} 个进程";
+                }
+
+                _pinnedProcessNames.Add(name);
+                pinned = true;
+            }
+        }
+
+        await PersistPinnedNamesAsync().ConfigureAwait(false);
+        return pinned ? $"已固定 {name}" : $"已取消固定 {name}";
+    }
+
+    [RelayCommand]
+    public Task<string> TerminateProcessAsync(ProcessTelemetry? process)
+    {
+        if (process is null || process.ProcessId <= 0)
+        {
+            return Task.FromResult("无效进程");
+        }
+
+        try
+        {
+            using var target = Process.GetProcessById(process.ProcessId);
+            var name = target.ProcessName;
+            target.Kill(entireProcessTree: false);
+            return Task.FromResult($"已结束 {name} ({process.ProcessId})");
+        }
+        catch (Exception ex) when (ex is ArgumentException or InvalidOperationException or System.ComponentModel.Win32Exception or NotSupportedException)
+        {
+            return Task.FromResult($"无法结束进程：{ex.Message}");
+        }
+    }
+
+    [RelayCommand]
+    public Task<string> CopyProcessPathAsync(ProcessTelemetry? process)
+    {
+        if (process is null || process.ProcessId <= 0)
+        {
+            return Task.FromResult("无效进程");
+        }
+
+        try
+        {
+            using var target = Process.GetProcessById(process.ProcessId);
+            string path;
+            try
+            {
+                path = target.MainModule?.FileName ?? string.Empty;
+            }
+            catch (Exception ex) when (ex is System.ComponentModel.Win32Exception or InvalidOperationException or NotSupportedException)
+            {
+                path = string.Empty;
+            }
+
+            if (string.IsNullOrWhiteSpace(path))
+            {
+                path = $"{process.Name} · PID {process.ProcessId}";
+            }
+
+            var package = new DataPackage();
+            package.SetText(path);
+            Clipboard.SetContent(package);
+            return Task.FromResult($"已复制：{path}");
+        }
+        catch (Exception ex) when (ex is ArgumentException or InvalidOperationException or System.ComponentModel.Win32Exception)
+        {
+            return Task.FromResult($"无法读取路径：{ex.Message}");
+        }
+    }
+
     partial void OnCpuUsagePercentChanged(double value)
     {
         OnPropertyChanged(nameof(CpuUsageText));
@@ -280,6 +409,113 @@ public partial class DashboardViewModel : ViewModelBase
         OnPropertyChanged(nameof(HealthScore));
         OnPropertyChanged(nameof(HealthStatusText));
         OnPropertyChanged(nameof(HealthReason));
+    }
+
+    private IReadOnlyList<ProcessTelemetry> BuildProcessList(IReadOnlyList<ProcessTelemetry> liveTop)
+    {
+        string[] pinnedNames;
+        lock (_pinSync)
+        {
+            pinnedNames = _pinnedProcessNames.ToArray();
+        }
+
+        var byId = liveTop.ToDictionary(process => process.ProcessId);
+        var presentNames = new HashSet<string>(
+            liveTop.Select(process => NormalizeProcessName(process.Name)),
+            StringComparer.OrdinalIgnoreCase);
+
+        foreach (var pinnedName in pinnedNames)
+        {
+            if (presentNames.Contains(pinnedName))
+            {
+                continue;
+            }
+
+            try
+            {
+                foreach (var process in Process.GetProcessesByName(pinnedName))
+                {
+                    try
+                    {
+                        if (byId.ContainsKey(process.Id))
+                        {
+                            continue;
+                        }
+
+                        byId[process.Id] = new ProcessTelemetry(
+                            process.ProcessName,
+                            process.Id,
+                            process.WorkingSet64,
+                            0,
+                            0,
+                            IsPinned: true);
+                        presentNames.Add(pinnedName);
+                        break;
+                    }
+                    finally
+                    {
+                        process.Dispose();
+                    }
+                }
+            }
+            catch
+            {
+                // Process may have exited between name lookup and inspection.
+            }
+        }
+
+        return byId.Values
+            .Select(process => process with
+            {
+                IsPinned = pinnedNames.Contains(NormalizeProcessName(process.Name), StringComparer.OrdinalIgnoreCase)
+            })
+            .OrderByDescending(process => process.IsPinned)
+            .ThenByDescending(process => process.CpuUsagePercent)
+            .ThenByDescending(process => process.WorkingSetBytes)
+            .Take(18)
+            .ToArray();
+    }
+
+    private async Task PersistPinnedNamesAsync()
+    {
+        List<string> names;
+        lock (_pinSync)
+        {
+            names = _pinnedProcessNames.OrderBy(name => name, StringComparer.OrdinalIgnoreCase).ToList();
+        }
+
+        var current = _settingsService.Current;
+        var next = WinMoeSettings.Normalize(new WinMoeSettings
+        {
+            SamplingIntervalSeconds = current.SamplingIntervalSeconds,
+            HistoryRetentionDays = current.HistoryRetentionDays,
+            HttpServerEnabled = current.HttpServerEnabled,
+            HttpServerPort = current.HttpServerPort,
+            TrayIconEnabled = current.TrayIconEnabled,
+            McpDestructiveActionsEnabled = current.McpDestructiveActionsEnabled,
+            TelemetryEnabled = current.TelemetryEnabled,
+            PinnedProcessNames = names
+        });
+
+        try
+        {
+            await _settingsService.SaveAsync(next).ConfigureAwait(false);
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        {
+            // Keep in-memory pins even if disk write fails this tick.
+        }
+    }
+
+    private static string NormalizeProcessName(string name)
+    {
+        var trimmed = name.Trim();
+        if (trimmed.EndsWith(".exe", StringComparison.OrdinalIgnoreCase) && trimmed.Length > 4)
+        {
+            return trimmed[..^4];
+        }
+
+        return trimmed;
     }
 
     private async Task RefreshTelemetryAsync()
@@ -329,16 +565,22 @@ public partial class DashboardViewModel : ViewModelBase
             DiskTotalBadge = SystemTelemetryFormatter.Bytes(snapshot.DiskTotalBytes);
             SetDiskFreeText(snapshot);
             SetBatteryText(snapshot);
-            FanMetricText = "-";
-            FanBadge = "0 fans";
-            FanFooter = "Windows 风扇指标不可用";
+            FanMetricText = "—";
+            FanBadge = "系统托管";
+            FanFooter = "由 Windows 管理 · 无 SMC 转速";
 
             TopProcesses.Clear();
-            foreach (var process in snapshot.TopProcesses.Take(8))
+            foreach (var process in BuildProcessList(snapshot.TopProcesses))
             {
                 TopProcesses.Add(process);
             }
-            TopProcessesTitle = $"NAME ({TopProcesses.Count})";
+
+            TopProcessesTitle = $"名称 ({TopProcesses.Count})";
+            // Device chip closer to Mole "M5 Pro · 48 GB · …"
+            if (snapshot.MemoryTotalBytes > 0)
+            {
+                DeviceSummary = $"{Environment.MachineName} · {SystemTelemetryFormatter.Bytes(snapshot.MemoryTotalBytes)}";
+            }
 
             var chartSamples = BuildStatusSamples(recentSnapshots, snapshot);
             RebuildCpuBars(chartSamples);
@@ -377,29 +619,39 @@ public partial class DashboardViewModel : ViewModelBase
             BatteryBadge = "正常";
             BatteryHealthBadge = "不可用";
             BatteryPercentText = "-";
+            BatteryChargePercent = 0;
+            BatteryRingDash = ToDashCollection(CircularProgressGeometry.CreateDash(0, 22));
             return;
         }
 
         var percent = Math.Clamp(snapshot.BatteryChargePercent.Value, 0, 100);
+        BatteryChargePercent = percent;
         BatteryMetricText = percent.ToString("0", CultureInfo.InvariantCulture);
-        BatteryStateText = snapshot.BatteryStatusText;
+        BatteryStateText = LocalizeBatteryStatus(snapshot.BatteryStatusText);
         BatteryFooter = BuildBatteryFooter(snapshot);
-        BatteryBadge = snapshot.BatteryHealthText;
-        BatteryHealthBadge = snapshot.BatteryHealthText;
+        BatteryBadge = LocalizeBatteryHealth(snapshot.BatteryHealthText);
+        BatteryHealthBadge = LocalizeBatteryHealth(snapshot.BatteryHealthText);
         BatteryPercentText = string.Create(CultureInfo.InvariantCulture, $"{percent:0}%");
+        BatteryRingDash = ToDashCollection(CircularProgressGeometry.CreateDash(percent, 22));
     }
+
+    private static DoubleCollection ToDashCollection(CircularProgressGeometry.Dash dash)
+        => new() { dash.Filled, dash.Gap };
 
     private static string BuildBatteryFooter(SystemTelemetrySnapshot snapshot)
     {
         var parts = new List<string>();
         if (snapshot.BatteryEstimatedSecondsRemaining is > 0)
         {
-            parts.Add($"{FormatBatteryDuration(snapshot.BatteryEstimatedSecondsRemaining.Value)} left");
+            var duration = FormatBatteryDuration(snapshot.BatteryEstimatedSecondsRemaining.Value);
+            var status = LocalizeBatteryStatus(snapshot.BatteryStatusText);
+            parts.Add(string.Equals(status, "充电中", StringComparison.Ordinal)
+                ? $"{duration} 后充满"
+                : $"剩余 {duration}");
         }
 
-        parts.Add(string.Create(CultureInfo.InvariantCulture, $"{Math.Clamp(snapshot.BatteryChargePercent ?? 0, 0, 100):0}% charge"));
-        parts.Add(snapshot.BatteryStatusText);
-        return string.Join(" - ", parts);
+        parts.Add(LocalizeBatteryStatus(snapshot.BatteryStatusText));
+        return string.Join(" · ", parts);
     }
 
     private static string FormatBatteryDuration(int seconds)
@@ -407,11 +659,28 @@ public partial class DashboardViewModel : ViewModelBase
         var duration = TimeSpan.FromSeconds(seconds);
         if (duration.TotalHours >= 1)
         {
-            return $"{(int)duration.TotalHours}:{duration.Minutes:00}";
+            return $"{(int)duration.TotalHours}h {duration.Minutes:0}m";
         }
 
-        return $"{duration.Minutes:0}m";
+        return $"{Math.Max(1, duration.Minutes)}m";
     }
+
+    private static string LocalizeBatteryStatus(string status) => status.ToLowerInvariant() switch
+    {
+        "charging" => "充电中",
+        "plugged in" => "已接电源",
+        "discharging" => "放电中",
+        "unknown" => "未知",
+        _ => string.IsNullOrWhiteSpace(status) ? "电池" : status
+    };
+
+    private static string LocalizeBatteryHealth(string health) => health.ToLowerInvariant() switch
+    {
+        "good" => "健康",
+        "low" => "电量低",
+        "critical" => "严重",
+        _ => string.IsNullOrWhiteSpace(health) ? "—" : health
+    };
 
     private void RebuildCpuBars(IReadOnlyList<SystemTelemetrySnapshot> samples)
     {

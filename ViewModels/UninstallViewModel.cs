@@ -1,6 +1,7 @@
 using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using Microsoft.UI.Xaml;
 using WinMoe.Models;
 using WinMoe.Services;
 
@@ -14,19 +15,27 @@ public partial class UninstallViewModel : ViewModelBase
 
     private readonly IMoleEngineService _moleEngineService;
     private readonly IInstalledApplicationService _installedApplicationService;
+    private readonly IOperationHistoryService _operationHistoryService;
+    private readonly IWindowsStartupItemService _startupItemService;
     private readonly List<InstalledApplication> _allApplications = [];
 
     public UninstallViewModel(
         IMoleEngineService moleEngineService,
-        IInstalledApplicationService installedApplicationService)
+        IInstalledApplicationService installedApplicationService,
+        IOperationHistoryService operationHistoryService,
+        IWindowsStartupItemService startupItemService)
     {
         _moleEngineService = moleEngineService;
         _installedApplicationService = installedApplicationService;
+        _operationHistoryService = operationHistoryService;
+        _startupItemService = startupItemService;
     }
 
     public ObservableCollection<ApplicationRowViewModel> Applications { get; } = new();
 
     public ObservableCollection<LeftoverCandidate> Leftovers { get; } = new();
+
+    public ObservableCollection<StartupItem> StartupItems { get; } = new();
 
     public ObservableCollection<string> OutputLines { get; } = new();
 
@@ -62,15 +71,56 @@ public partial class UninstallViewModel : ViewModelBase
     public bool CanPreviewLeftovers => SelectedApplication is not null && !IsBusy;
 
     public bool CanLaunchUninstaller =>
-        SelectedApplication is not null &&
-        !string.IsNullOrWhiteSpace(SelectedApplication.UninstallString) &&
-        !IsBusy;
+        !IsBusy &&
+        (Applications.Any(row => row.IsSelected && !string.IsNullOrWhiteSpace(row.Application.UninstallString)) ||
+         (SelectedApplication is not null && !string.IsNullOrWhiteSpace(SelectedApplication.UninstallString)));
 
     public bool CanRemoveSelectedLeftovers => Leftovers.Any(leftover => leftover.IsSelected) && !IsBusy;
 
+    public bool CanRemoveSelectedApps => Applications.Any(row => row.IsSelected) && !IsBusy;
+
     public string SortSummary => $"按 {SortKey} {(SortDescending ? "降序" : "升序")}";
 
-    public string AppsCountText => $"{Applications.Count} 个软件";
+    /// <summary>Mole sort links: Name ↕ / Size ↕ / Source ↕ with active arrow.</summary>
+    public string NameSortLabel => FormatSortLabel("名称", "name");
+
+    public string SizeSortLabel => FormatSortLabel("大小", "size");
+
+    public string SourceSortLabel => FormatSortLabel("上次使用", "lastused");
+
+    public string AppsCountText
+    {
+        get
+        {
+            var selected = Applications.Where(row => row.IsSelected).ToArray();
+            if (selected.Length == 0)
+            {
+                return $"{Applications.Count} 个软件";
+            }
+
+            var bytes = selected.Sum(row => row.Application.SizeBytes);
+            // Mole footer: "3 apps · 9.61 GB"
+            return $"{selected.Length} 个 · {SystemTelemetryFormatter.Bytes(bytes)}";
+        }
+    }
+
+    public string RemoveButtonLabel
+    {
+        get
+        {
+            var selected = Applications.Count(row => row.IsSelected);
+            return selected <= 0 ? "移除" : $"移除 {selected}";
+        }
+    }
+
+    public Visibility ClearSelectionVisibility =>
+        Applications.Any(row => row.IsSelected) ? Visibility.Visible : Visibility.Collapsed;
+
+    public Visibility SelectedIconsVisibility =>
+        Applications.Any(row => row.IsSelected) ? Visibility.Visible : Visibility.Collapsed;
+
+    /// <summary>Up to 5 selected app chips for the sticky bottom bar (Mole icon stack).</summary>
+    public ObservableCollection<ApplicationRowViewModel> SelectedFooterApps { get; } = new();
 
     public string LoadedCountText => _allApplications.Count == 0
         ? "正在读取已安装软件"
@@ -91,10 +141,18 @@ public partial class UninstallViewModel : ViewModelBase
         : $"已选 {Leftovers.Count(leftover => leftover.IsSelected)}/{Leftovers.Count}";
 
     public string UpdatesSummary =>
-        "安全更新源正在接入。只有当引擎提供非交互元数据与明确确认流程后，更新才会出现在这里。";
+        "未发现可静默安装的安全更新源。WinMoe 不会从未知通道自动更新软件。";
+
+    public string UpdatesHeadline => "0 个可用更新";
 
     public string StartupSummary =>
-        "Windows 启动项清单正在接入。当前版本不会直接修改注册表、计划任务或服务。";
+        StartupItems.Count == 0
+            ? "未发现启动项（或无权限读取）。列表只读，不会修改注册表或服务。"
+            : $"只读清单 · {StartupItems.Count} 项 · 不会修改注册表 / 计划任务 / 服务";
+
+    public string StartupHeadline => StartupItems.Count == 0
+        ? "启动项"
+        : $"{StartupItems.Count} 个启动项";
 
     [RelayCommand]
     public async Task LoadAsync()
@@ -107,14 +165,30 @@ public partial class UninstallViewModel : ViewModelBase
 
         try
         {
-            var apps = await _installedApplicationService.GetInstalledApplicationsAsync();
+            var appsTask = _installedApplicationService.GetInstalledApplicationsAsync();
+            var startupTask = _startupItemService.GetStartupItemsAsync();
+            await Task.WhenAll(appsTask, startupTask).ConfigureAwait(false);
+
+            var apps = await appsTask.ConfigureAwait(false);
+            var startups = await startupTask.ConfigureAwait(false);
+            var runningHints = AppActivityHintResolver.ResolveForApps(apps.Select(app => app.Name));
             RunOnUiThread(() =>
             {
                 _allApplications.Clear();
                 _allApplications.AddRange(apps);
-                ApplyFilter();
-                Summary = $"已载入 {_allApplications.Count} 个软件";
+                ApplyFilter(runningHints);
+
+                StartupItems.Clear();
+                foreach (var item in startups)
+                {
+                    StartupItems.Add(item);
+                }
+
+                Summary = $"已载入 {_allApplications.Count} 个软件 · {StartupItems.Count} 个启动项";
                 OnPropertyChanged(nameof(LoadedCountText));
+                OnPropertyChanged(nameof(StartupSummary));
+                OnPropertyChanged(nameof(StartupHeadline));
+                OnPropertyChanged(nameof(UpdatesHeadline));
             });
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
@@ -150,7 +224,7 @@ public partial class UninstallViewModel : ViewModelBase
         }
 
         ApplyFilter();
-        OnPropertyChanged(nameof(SortSummary));
+        NotifySortLabels();
     }
 
     [RelayCommand]
@@ -179,6 +253,63 @@ public partial class UninstallViewModel : ViewModelBase
         }
 
         NotifyLeftoverSelectionState();
+    }
+
+    [RelayCommand]
+    public void ClearSelection()
+    {
+        foreach (var row in Applications)
+        {
+            row.IsSelected = false;
+        }
+
+        NotifyAppSelectionState();
+    }
+
+    [RelayCommand]
+    public void ToggleAppSelection(ApplicationRowViewModel? row)
+    {
+        if (row is null)
+        {
+            return;
+        }
+
+        row.IsSelected = !row.IsSelected;
+        NotifyAppSelectionState();
+    }
+
+    [RelayCommand]
+    public async Task ToggleExpandAsync(ApplicationRowViewModel? row)
+    {
+        if (row is null)
+        {
+            return;
+        }
+
+        var expanding = !row.IsExpanded;
+        foreach (var other in Applications)
+        {
+            other.IsExpanded = false;
+        }
+
+        row.IsExpanded = expanding;
+        if (expanding)
+        {
+            SelectedApplicationRow = row;
+            SelectedApplication = row.Application;
+            if (Leftovers.Count == 0 ||
+                !string.Equals(LeftoverSummary, $"已选择 {row.Name}", StringComparison.Ordinal) &&
+                !LeftoverSummary.Contains(row.Name, StringComparison.Ordinal))
+            {
+                await PreviewLeftoversAsync();
+            }
+
+            var leftoverCount = Leftovers.Count;
+            var leftoverBytes = Leftovers.Sum(item => item.SizeBytes);
+            row.SelectionHint = leftoverCount == 0
+                ? $"review · {row.SizeText}"
+                : $"{leftoverCount} 项 · {SystemTelemetryFormatter.Bytes(leftoverBytes)} review";
+        }
     }
 
     [RelayCommand(CanExecute = nameof(CanPreviewLeftovers))]
@@ -223,7 +354,13 @@ public partial class UninstallViewModel : ViewModelBase
     [RelayCommand(CanExecute = nameof(CanLaunchUninstaller))]
     public async Task LaunchUninstallerAsync()
     {
-        if (SelectedApplication is null)
+        var queue = Applications.Where(row => row.IsSelected).Select(row => row.Application).ToList();
+        if (queue.Count == 0 && SelectedApplication is not null)
+        {
+            queue.Add(SelectedApplication);
+        }
+
+        if (queue.Count == 0)
         {
             return;
         }
@@ -234,11 +371,48 @@ public partial class UninstallViewModel : ViewModelBase
 
         try
         {
-            var result = await _installedApplicationService.LaunchUninstallerAsync(SelectedApplication);
-            AppendOutput(result.Succeeded ? result.StandardOutput : result.StandardError);
-            Summary = result.Succeeded
-                ? $"Started uninstaller for {SelectedApplication.Name}"
-                : $"Uninstaller launch failed for {SelectedApplication.Name}";
+            var started = 0;
+            foreach (var app in queue)
+            {
+                SelectedApplication = app;
+                var result = await _installedApplicationService.LaunchUninstallerAsync(app);
+                AppendOutput(result.Succeeded
+                    ? $"{app.Name}: {result.StandardOutput}"
+                    : $"{app.Name}: {result.StandardError}");
+                if (result.Succeeded)
+                {
+                    started++;
+                }
+
+                // Brief gap so multiple vendor UIs don't thrash focus (Mole batch style).
+                if (queue.Count > 1)
+                {
+                    await Task.Delay(400).ConfigureAwait(false);
+                }
+            }
+
+            Summary = started == queue.Count
+                ? $"已启动 {started} 个卸载程序"
+                : $"已启动 {started}/{queue.Count} 个卸载程序";
+
+            if (started > 0)
+            {
+                try
+                {
+                    await _operationHistoryService.RecordAsync(new OperationHistoryEntry(
+                        DateTimeOffset.UtcNow,
+                        "ui",
+                        "uninstall",
+                        "launch_uninstaller",
+                        0,
+                        true,
+                        0,
+                        $"Started {started} uninstaller(s)")).ConfigureAwait(false);
+                }
+                catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+                {
+                }
+            }
         }
         finally
         {
@@ -318,14 +492,28 @@ public partial class UninstallViewModel : ViewModelBase
         ApplyFilter();
     }
 
-    partial void OnSortKeyChanged(string value)
+    partial void OnSortKeyChanged(string value) => NotifySortLabels();
+
+    partial void OnSortDescendingChanged(bool value) => NotifySortLabels();
+
+    private void NotifySortLabels()
     {
         OnPropertyChanged(nameof(SortSummary));
+        OnPropertyChanged(nameof(NameSortLabel));
+        OnPropertyChanged(nameof(SizeSortLabel));
+        OnPropertyChanged(nameof(SourceSortLabel));
     }
 
-    partial void OnSortDescendingChanged(bool value)
+    // SourceSortLabel is bound to "上次使用" / lastused for Mole parity.
+
+    private string FormatSortLabel(string title, string key)
     {
-        OnPropertyChanged(nameof(SortSummary));
+        if (!string.Equals(SortKey, key, StringComparison.OrdinalIgnoreCase))
+        {
+            return $"{title} ↕";
+        }
+
+        return SortDescending ? $"{title} ↓" : $"{title} ↑";
     }
 
     partial void OnSelectedApplicationChanged(InstalledApplication? value)
@@ -369,7 +557,7 @@ public partial class UninstallViewModel : ViewModelBase
         RemoveSelectedLeftoversCommand.NotifyCanExecuteChanged();
     }
 
-    private void ApplyFilter()
+    private void ApplyFilter(IReadOnlyDictionary<string, string>? activityHints = null)
     {
         var query = SearchQuery.Trim();
         IEnumerable<InstalledApplication> filtered = string.IsNullOrWhiteSpace(query)
@@ -385,13 +573,37 @@ public partial class UninstallViewModel : ViewModelBase
         var selectedId = SelectedApplication?.Id;
         ApplicationRowViewModel? selectedRow = null;
 
+        var selectedIds = Applications
+            .Where(row => row.IsSelected)
+            .Select(row => row.Id)
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+        var previousActivity = Applications
+            .Where(row => !string.IsNullOrWhiteSpace(row.ActivityText))
+            .ToDictionary(row => row.Id, row => row.ActivityText, StringComparer.OrdinalIgnoreCase);
+
         Applications.Clear();
         foreach (var app in filtered.Take(500))
         {
             var row = new ApplicationRowViewModel(app)
             {
-                IsExpanded = !string.IsNullOrWhiteSpace(selectedId) && string.Equals(app.Id, selectedId, StringComparison.OrdinalIgnoreCase)
+                IsExpanded = !string.IsNullOrWhiteSpace(selectedId) &&
+                             string.Equals(app.Id, selectedId, StringComparison.OrdinalIgnoreCase),
+                IsSelected = selectedIds.Contains(app.Id)
             };
+
+            var isRunning = activityHints is not null && activityHints.ContainsKey(app.Name);
+            var activity = AppActivityFormatter.Format(app.LastActivityUtc, isRunning);
+            if (!string.IsNullOrWhiteSpace(activity))
+            {
+                row.ActivityText = activity;
+            }
+            else if (previousActivity.TryGetValue(app.Id, out var prior))
+            {
+                row.ActivityText = prior;
+            }
+
+            TrackAppRow(row);
             Applications.Add(row);
             if (row.IsExpanded)
             {
@@ -400,8 +612,40 @@ public partial class UninstallViewModel : ViewModelBase
         }
 
         SelectedApplicationRow = selectedRow;
-        OnPropertyChanged(nameof(AppsCountText));
+        NotifyAppSelectionState();
         OnPropertyChanged(nameof(LoadedCountText));
+    }
+
+    private void TrackAppRow(ApplicationRowViewModel row)
+    {
+        row.PropertyChanged += (_, e) =>
+        {
+            if (e.PropertyName is nameof(ApplicationRowViewModel.IsSelected))
+            {
+                NotifyAppSelectionState();
+            }
+        };
+    }
+
+    private void NotifyAppSelectionState()
+    {
+        RebuildSelectedFooterApps();
+        OnPropertyChanged(nameof(AppsCountText));
+        OnPropertyChanged(nameof(RemoveButtonLabel));
+        OnPropertyChanged(nameof(ClearSelectionVisibility));
+        OnPropertyChanged(nameof(SelectedIconsVisibility));
+        OnPropertyChanged(nameof(CanRemoveSelectedApps));
+        OnPropertyChanged(nameof(CanLaunchUninstaller));
+        LaunchUninstallerCommand.NotifyCanExecuteChanged();
+    }
+
+    private void RebuildSelectedFooterApps()
+    {
+        SelectedFooterApps.Clear();
+        foreach (var row in Applications.Where(item => item.IsSelected).Take(5))
+        {
+            SelectedFooterApps.Add(row);
+        }
     }
 
     private IEnumerable<InstalledApplication> SortApplications(IEnumerable<InstalledApplication> apps)
@@ -411,9 +655,11 @@ public partial class UninstallViewModel : ViewModelBase
             "name" => SortDescending
                 ? apps.OrderByDescending(app => app.Name, StringComparer.OrdinalIgnoreCase)
                 : apps.OrderBy(app => app.Name, StringComparer.OrdinalIgnoreCase),
-            "source" => SortDescending
-                ? apps.OrderByDescending(app => app.Source, StringComparer.OrdinalIgnoreCase).ThenBy(app => app.Name, StringComparer.OrdinalIgnoreCase)
-                : apps.OrderBy(app => app.Source, StringComparer.OrdinalIgnoreCase).ThenBy(app => app.Name, StringComparer.OrdinalIgnoreCase),
+            "source" or "lastused" => SortDescending
+                ? apps.OrderByDescending(app => app.LastActivityUtc ?? DateTimeOffset.MinValue)
+                    .ThenBy(app => app.Name, StringComparer.OrdinalIgnoreCase)
+                : apps.OrderBy(app => app.LastActivityUtc ?? DateTimeOffset.MaxValue)
+                    .ThenBy(app => app.Name, StringComparer.OrdinalIgnoreCase),
             _ => SortDescending
                 ? apps.OrderByDescending(app => app.SizeBytes).ThenBy(app => app.Name, StringComparer.OrdinalIgnoreCase)
                 : apps.OrderBy(app => app.SizeBytes).ThenBy(app => app.Name, StringComparer.OrdinalIgnoreCase)

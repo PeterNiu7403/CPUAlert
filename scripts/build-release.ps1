@@ -5,7 +5,10 @@ param(
     [ValidateSet("Release", "Debug")]
     [string]$Configuration = "Release",
     [string]$RepositoryUrl = "https://github.com/PeterNiu7403/CPUAlert",
-    [string]$InnoSetupCompilerPath
+    [string]$InnoSetupCompilerPath,
+    # Local/dev packaging while the GitHub repo is still named CPUAlert.
+    # Do not use for public/WinGet releases without renaming the remote.
+    [switch]$LocalPackage
 )
 
 $ErrorActionPreference = "Stop"
@@ -20,8 +23,8 @@ if (
 
 $repositoryName = $repositoryUri.AbsolutePath.TrimEnd("/").Split("/")[-1]
 $repositoryBaseName = [System.IO.Path]::GetFileNameWithoutExtension($repositoryName)
-if ($repositoryBaseName -ieq "CPUAlert") {
-    throw "Public release is blocked while RepositoryUrl still points to CPUAlert. Rename the GitHub repository, then pass its final HTTPS URL with -RepositoryUrl."
+if ($repositoryBaseName -ieq "CPUAlert" -and -not $LocalPackage) {
+    throw "Public release is blocked while RepositoryUrl still points to CPUAlert. Rename the GitHub repository, then pass its final HTTPS URL with -RepositoryUrl. For local installer/ZIP builds only, pass -LocalPackage."
 }
 
 $RepositoryUrl = $RepositoryUrl.TrimEnd("/")

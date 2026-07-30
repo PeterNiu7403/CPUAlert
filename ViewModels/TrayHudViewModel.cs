@@ -30,6 +30,9 @@ public partial class TrayHudViewModel : ViewModelBase
     private string healthLabel = "准备中";
 
     [ObservableProperty]
+    private string deviceChipText = "Windows";
+
+    [ObservableProperty]
     private string cpuText = "--";
 
     [ObservableProperty]
@@ -42,16 +45,44 @@ public partial class TrayHudViewModel : ViewModelBase
     private string networkText = "--";
 
     [ObservableProperty]
+    private string gpuText = "—";
+
+    [ObservableProperty]
+    private string fanText = "—";
+
+    [ObservableProperty]
+    private string memoryDetailText = string.Empty;
+
+    [ObservableProperty]
+    private string diskDetailText = string.Empty;
+
+    [ObservableProperty]
+    private string networkDetailText = string.Empty;
+
+    [ObservableProperty]
     private string activityTitle = "暂无活动";
 
     [ObservableProperty]
     private string activityDetail = "WinMoe 尚未记录操作。";
 
+    [ObservableProperty]
+    private string lifetimeCleanedText = "—";
+
+    [ObservableProperty]
+    private string lifetimeUninstalledText = "—";
+
+    [ObservableProperty]
+    private string lifetimeOptimizedText = "—";
+
     public async Task RefreshAsync()
     {
         var snapshot = _telemetrySamplerService.LatestSnapshot;
-        var entries = await _operationHistoryService.ReadRecentAsync(1).ConfigureAwait(false);
-        var status = TrayHudStatusFormatter.Build(snapshot, entries.FirstOrDefault());
+        // Lifetime totals need a wider window than the activity headline.
+        var entries = await _operationHistoryService.ReadRecentAsync(2500).ConfigureAwait(false);
+        var status = TrayHudStatusFormatter.Build(
+            snapshot,
+            entries.FirstOrDefault(),
+            entries);
 
         RunOnUiThread(() => ApplyStatus(status));
     }
@@ -61,12 +92,21 @@ public partial class TrayHudViewModel : ViewModelBase
         SampleText = status.SampleText;
         HealthScore = status.HealthScore;
         HealthLabel = status.HealthLabel;
+        DeviceChipText = status.DeviceChipText;
         CpuText = status.CpuText;
         MemoryText = status.MemoryText;
         DiskText = status.DiskText;
         NetworkText = status.NetworkText;
+        GpuText = status.GpuText;
+        FanText = status.FanText;
+        MemoryDetailText = status.MemoryDetailText;
+        DiskDetailText = status.DiskDetailText;
+        NetworkDetailText = status.NetworkDetailText;
         ActivityTitle = status.ActivityTitle;
         ActivityDetail = status.ActivityDetail;
+        LifetimeCleanedText = status.LifetimeCleanedText;
+        LifetimeUninstalledText = status.LifetimeUninstalledText;
+        LifetimeOptimizedText = status.LifetimeOptimizedText;
 
         TopProcesses.Clear();
         foreach (var process in status.TopProcesses)

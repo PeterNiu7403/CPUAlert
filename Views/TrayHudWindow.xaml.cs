@@ -50,7 +50,8 @@ public sealed partial class TrayHudWindow : Window
         var windowHandle = WindowNative.GetWindowHandle(this);
         var windowId = Win32Interop.GetWindowIdFromWindow(windowHandle);
         var appWindow = AppWindow.GetFromWindowId(windowId);
-        var layout = ResizeForCurrentDpi(windowHandle, appWindow);
+        // Mixed-DPI: size/margins follow the monitor under the tray anchor, not a stale host window.
+        var layout = ResizeForAnchor(appWindow, x, y);
         var outerSize = appWindow.Size;
         var position = layout.PositionNear(x, y, outerSize.Width, outerSize.Height);
         appWindow.MoveAndResize(new RectInt32(
@@ -78,9 +79,9 @@ public sealed partial class TrayHudWindow : Window
         var windowHandle = WindowNative.GetWindowHandle(this);
         var windowId = Win32Interop.GetWindowIdFromWindow(windowHandle);
         var appWindow = AppWindow.GetFromWindowId(windowId);
-        ResizeForCurrentDpi(windowHandle, appWindow);
-        appWindow.TitleBar.BackgroundColor = Windows.UI.Color.FromArgb(255, 38, 49, 45);
-        appWindow.TitleBar.ButtonBackgroundColor = Windows.UI.Color.FromArgb(255, 38, 49, 45);
+        ResizeForWindow(windowHandle, appWindow);
+        appWindow.TitleBar.BackgroundColor = Windows.UI.Color.FromArgb(255, 42, 38, 28);
+        appWindow.TitleBar.ButtonBackgroundColor = Windows.UI.Color.FromArgb(255, 42, 38, 28);
         appWindow.TitleBar.ButtonForegroundColor = Colors.White;
 
         if (appWindow.Presenter is OverlappedPresenter presenter)
@@ -91,12 +92,19 @@ public sealed partial class TrayHudWindow : Window
         }
     }
 
-    private static TrayHudLayoutMetrics ResizeForCurrentDpi(
-        IntPtr windowHandle,
-        AppWindow appWindow)
+    private static TrayHudLayoutMetrics ResizeForWindow(IntPtr windowHandle, AppWindow appWindow)
     {
-        var dpi = GetDpiForWindow(windowHandle);
+        var dpi = DisplayDpi.GetDpiForWindow(windowHandle);
         var layout = TrayHudLayout.ForDpi(dpi == 0 ? DefaultDpi : dpi);
+        appWindow.ResizeClient(new SizeInt32(
+            layout.ClientSize.Width,
+            layout.ClientSize.Height));
+        return layout;
+    }
+
+    private static TrayHudLayoutMetrics ResizeForAnchor(AppWindow appWindow, int anchorX, int anchorY)
+    {
+        var layout = TrayHudLayout.ForAnchorPoint(anchorX, anchorY, DefaultDpi);
         appWindow.ResizeClient(new SizeInt32(
             layout.ClientSize.Width,
             layout.ClientSize.Height));
@@ -123,7 +131,4 @@ public sealed partial class TrayHudWindow : Window
 
     [DllImport("user32.dll", SetLastError = true)]
     private static extern bool SetForegroundWindow(IntPtr windowHandle);
-
-    [DllImport("user32.dll")]
-    private static extern uint GetDpiForWindow(IntPtr windowHandle);
 }

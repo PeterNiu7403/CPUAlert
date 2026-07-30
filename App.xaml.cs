@@ -42,6 +42,7 @@ public partial class App : Application
                 services.AddSingleton<IPurgeArtifactService, PurgeArtifactService>();
                 services.AddSingleton<IInstallerCleanupService, InstallerCleanupService>();
                 services.AddSingleton<IInstalledApplicationService, WindowsInstalledApplicationService>();
+                services.AddSingleton<IWindowsStartupItemService, WindowsStartupItemService>();
                 services.AddSingleton<ITrayIconService, WindowsTrayIconService>();
                 services.AddSingleton<LocalMcpServerService>();
                 services.AddHostedService(provider => provider.GetRequiredService<LocalMcpServerService>());

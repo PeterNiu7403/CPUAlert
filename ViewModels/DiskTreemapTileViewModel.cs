@@ -7,16 +7,17 @@ namespace WinMoe.ViewModels;
 
 public sealed class DiskTreemapTileViewModel
 {
+    // DaisyDisk-style earth tones sampled from mole.fit analyze.jpg
     private static readonly string[] Palette =
     [
-        "#5B8FBD",
-        "#5FA894",
-        "#B99243",
-        "#7467B6",
-        "#A85A70",
-        "#9C6747",
-        "#5B7FAF",
-        "#5E8A61"
+        "#C6A771",
+        "#B88448",
+        "#86727E",
+        "#A1553B",
+        "#83717F",
+        "#615348",
+        "#D0B080",
+        "#9A6B4A"
     ];
 
     public DiskTreemapTileViewModel(DiskTreemapRect rect)
@@ -28,10 +29,10 @@ public sealed class DiskTreemapTileViewModel
         Y = rect.Y;
         Width = rect.Width;
         Height = rect.Height;
-        FontSize = rect.Width > 220 && rect.Height > 150 ? 20 : 14;
-        ShowDetail = rect.Width > 118 && rect.Height > 72;
+        FontSize = rect.Width > 220 && rect.Height > 150 ? 15 : 12;
+        ShowDetail = rect.Width > 100 && rect.Height > 64;
         LabelOpacity = ShowDetail ? 1 : 0;
-        IconVisibility = rect.Width > 150 && rect.Height > 96 ? Visibility.Visible : Visibility.Collapsed;
+        IconVisibility = rect.Width > 140 && rect.Height > 90 ? Visibility.Visible : Visibility.Collapsed;
         FillBrush = new SolidColorBrush(ParseColor(Palette[rect.ColorIndex % Palette.Length]));
     }
 

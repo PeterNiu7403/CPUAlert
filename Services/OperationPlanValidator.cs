@@ -56,6 +56,30 @@ public sealed class OperationPlanValidator : IOperationPlanValidator
             "The plan is current and explicitly confirmed.");
     }
 
+    public static bool IsConcreteDeletablePath(string path)
+    {
+        try
+        {
+            if (string.IsNullOrWhiteSpace(path))
+            {
+                return false;
+            }
+
+            var expanded = Environment.ExpandEnvironmentVariables(path.Trim());
+            if (!Path.IsPathFullyQualified(expanded) || IsUnsafeTarget(expanded))
+            {
+                return false;
+            }
+
+            var fullPath = Path.GetFullPath(expanded);
+            return File.Exists(fullPath) || Directory.Exists(fullPath);
+        }
+        catch (Exception ex) when (ex is ArgumentException or NotSupportedException or PathTooLongException or IOException)
+        {
+            return false;
+        }
+    }
+
     internal static bool IsUnsafeTarget(string path)
     {
         if (string.IsNullOrWhiteSpace(path))

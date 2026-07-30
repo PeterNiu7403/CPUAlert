@@ -3,36 +3,69 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
-    <Color x:Key="WinMoeColorBackground">#121217</Color>
-    <Color x:Key="WinMoeColorBackgroundGreen">#151A2B</Color>
-    <Color x:Key="WinMoeColorBackgroundBlue">#2D2017</Color>
-    <Color x:Key="WinMoeColorBackgroundBrown">#2A261F</Color>
-    <Color x:Key="WinMoeColorBackgroundPurple">#221F18</Color>
-    <Color x:Key="WinMoeColorBackgroundSoftware">#211819</Color>
-    <Color x:Key="WinMoeColorPanel">#1D1D22</Color>
-    <Color x:Key="WinMoeColorPanelWarm">#221C16</Color>
-    <Color x:Key="WinMoeColorStroke">#343238</Color>
-    <Color x:Key="WinMoeColorText">#F3ECDD</Color>
-    <Color x:Key="WinMoeColorMuted">#B5AEA2</Color>
-    <Color x:Key="WinMoeColorDim">#807A72</Color>
+    <!--
+      Pixel-sampled tokens from Mole for Mac product screenshots (mole.fit).
+      See docs/winmoe/mole-ui-pixel-audit.md
+    -->
+
+    <!-- Route surfaces -->
+    <Color x:Key="WinMoeColorBackground">#1C1810</Color>
+    <Color x:Key="WinMoeColorBackgroundClean">#0E1B36</Color>
+    <Color x:Key="WinMoeColorBackgroundGreen">#0E1B36</Color>
+    <Color x:Key="WinMoeColorBackgroundBlue">#1A130F</Color>
+    <Color x:Key="WinMoeColorBackgroundBrown">#1A130F</Color>
+    <Color x:Key="WinMoeColorBackgroundPurple">#221E14</Color>
+    <Color x:Key="WinMoeColorBackgroundSoftware">#241416</Color>
+    <Color x:Key="WinMoeColorBackgroundStatus">#1C1810</Color>
+    <Color x:Key="WinMoeColorBackgroundOptimize">#221E14</Color>
+    <Color x:Key="WinMoeColorBackgroundAnalyze">#1A130F</Color>
+    <Color x:Key="WinMoeColorBackgroundAnalyzeRail">#16100C</Color>
+    <Color x:Key="WinMoeColorBackgroundHud">#2A261C</Color>
+
+    <!-- Glass panels (Status card face ≈ #3A3320 sampled, darkened for WinUI contrast) -->
+    <Color x:Key="WinMoeColorPanel">#2C271E</Color>
+    <Color x:Key="WinMoeColorPanelWarm">#2E2920</Color>
+    <Color x:Key="WinMoeColorPanelGlass">#2A251C</Color>
+    <Color x:Key="WinMoeColorPanelProcess">#1E1C19</Color>
+    <Color x:Key="WinMoeColorPanelApps">#2F1717</Color>
+    <Color x:Key="WinMoeColorStroke">#3D372C</Color>
+    <Color x:Key="WinMoeColorStrokeSoft">#353028</Color>
+    <Color x:Key="WinMoeColorStrokeApps">#3A2824</Color>
+
+    <!-- Type -->
+    <Color x:Key="WinMoeColorText">#F0EBE0</Color>
+    <Color x:Key="WinMoeColorMuted">#A39C92</Color>
+    <Color x:Key="WinMoeColorDim">#7A746C</Color>
     <Color x:Key="WinMoeColorAccent">#D9A066</Color>
     <Color x:Key="WinMoeColorOnAccent">#241B12</Color>
-    <Color x:Key="WinMoeColorGreen">#57D58E</Color>
-    <Color x:Key="WinMoeColorGold">#E6A93C</Color>
-    <Color x:Key="WinMoeColorOrange">#F2894E</Color>
+    <Color x:Key="WinMoeColorGreen">#5BD48E</Color>
+    <Color x:Key="WinMoeColorGold">#E0B03C</Color>
+    <Color x:Key="WinMoeColorOrange">#E07040</Color>
     <Color x:Key="WinMoeColorBlue">#5AA8F0</Color>
     <Color x:Key="WinMoeColorRed">#F0604E</Color>
     <Color x:Key="WinMoeColorPurple">#8E84F0</Color>
+    <Color x:Key="WinMoeColorNavGhost">#4A6A8A</Color>
 
     <SolidColorBrush x:Key="WinMoeBackgroundBrush" Color="{StaticResource WinMoeColorBackground}" />
-    <SolidColorBrush x:Key="WinMoeBackgroundGreenBrush" Color="{StaticResource WinMoeColorBackgroundGreen}" />
-    <SolidColorBrush x:Key="WinMoeBackgroundBlueBrush" Color="{StaticResource WinMoeColorBackgroundBlue}" />
-    <SolidColorBrush x:Key="WinMoeBackgroundBrownBrush" Color="{StaticResource WinMoeColorBackgroundBrown}" />
-    <SolidColorBrush x:Key="WinMoeBackgroundPurpleBrush" Color="{StaticResource WinMoeColorBackgroundPurple}" />
+    <SolidColorBrush x:Key="WinMoeBackgroundCleanBrush" Color="{StaticResource WinMoeColorBackgroundClean}" />
+    <SolidColorBrush x:Key="WinMoeBackgroundGreenBrush" Color="{StaticResource WinMoeColorBackgroundClean}" />
+    <SolidColorBrush x:Key="WinMoeBackgroundBlueBrush" Color="{StaticResource WinMoeColorBackgroundAnalyze}" />
+    <SolidColorBrush x:Key="WinMoeBackgroundBrownBrush" Color="{StaticResource WinMoeColorBackgroundAnalyze}" />
+    <SolidColorBrush x:Key="WinMoeBackgroundPurpleBrush" Color="{StaticResource WinMoeColorBackgroundOptimize}" />
     <SolidColorBrush x:Key="WinMoeBackgroundSoftwareBrush" Color="{StaticResource WinMoeColorBackgroundSoftware}" />
+    <SolidColorBrush x:Key="WinMoeBackgroundStatusBrush" Color="{StaticResource WinMoeColorBackgroundStatus}" />
+    <SolidColorBrush x:Key="WinMoeBackgroundOptimizeBrush" Color="{StaticResource WinMoeColorBackgroundOptimize}" />
+    <SolidColorBrush x:Key="WinMoeBackgroundAnalyzeBrush" Color="{StaticResource WinMoeColorBackgroundAnalyze}" />
+    <SolidColorBrush x:Key="WinMoeBackgroundAnalyzeRailBrush" Color="{StaticResource WinMoeColorBackgroundAnalyzeRail}" />
+    <SolidColorBrush x:Key="WinMoeBackgroundHudBrush" Color="{StaticResource WinMoeColorBackgroundHud}" />
     <SolidColorBrush x:Key="WinMoePanelBrush" Color="{StaticResource WinMoeColorPanel}" />
     <SolidColorBrush x:Key="WinMoePanelWarmBrush" Color="{StaticResource WinMoeColorPanelWarm}" />
+    <SolidColorBrush x:Key="WinMoePanelGlassBrush" Color="{StaticResource WinMoeColorPanelGlass}" />
+    <SolidColorBrush x:Key="WinMoePanelProcessBrush" Color="{StaticResource WinMoeColorPanelProcess}" />
+    <SolidColorBrush x:Key="WinMoePanelAppsBrush" Color="{StaticResource WinMoeColorPanelApps}" />
     <SolidColorBrush x:Key="WinMoeStrokeBrush" Color="{StaticResource WinMoeColorStroke}" />
+    <SolidColorBrush x:Key="WinMoeStrokeSoftBrush" Color="{StaticResource WinMoeColorStrokeSoft}" />
+    <SolidColorBrush x:Key="WinMoeStrokeAppsBrush" Color="{StaticResource WinMoeColorStrokeApps}" />
     <SolidColorBrush x:Key="WinMoeTextBrush" Color="{StaticResource WinMoeColorText}" />
     <SolidColorBrush x:Key="WinMoeMutedBrush" Color="{StaticResource WinMoeColorMuted}" />
     <SolidColorBrush x:Key="WinMoeDimBrush" Color="{StaticResource WinMoeColorDim}" />
@@ -44,91 +77,151 @@
     <SolidColorBrush x:Key="WinMoeBlueBrush" Color="{StaticResource WinMoeColorBlue}" />
     <SolidColorBrush x:Key="WinMoeRedBrush" Color="{StaticResource WinMoeColorRed}" />
     <SolidColorBrush x:Key="WinMoePurpleBrush" Color="{StaticResource WinMoeColorPurple}" />
-    <SolidColorBrush x:Key="WinMoeWhitePillBrush" Color="#FFFDF8" />
+    <SolidColorBrush x:Key="WinMoeWhitePillBrush" Color="#FFFFFF" />
+    <SolidColorBrush x:Key="WinMoeNavCapsuleBrush" Color="#331A1814" />
+    <SolidColorBrush x:Key="WinMoeNavGhostBrush" Color="{StaticResource WinMoeColorNavGhost}" />
 
     <FontFamily x:Key="WinMoeTextFont">Segoe UI Variable Text, Microsoft YaHei UI</FontFamily>
     <FontFamily x:Key="WinMoeMonoFont">Cascadia Mono, Consolas</FontFamily>
     <FontFamily x:Key="WinMoeSerifFont">Segoe UI Variable Display, Microsoft YaHei UI</FontFamily>
 
+    <!-- Type scale (single app scale) -->
+    <x:Double x:Key="WinMoeTypeLabel">11</x:Double>
+    <x:Double x:Key="WinMoeTypeBody">13</x:Double>
+    <x:Double x:Key="WinMoeTypeBodyStrong">14</x:Double>
+    <x:Double x:Key="WinMoeTypeTitle">28</x:Double>
+    <x:Double x:Key="WinMoeTypeMetric">38</x:Double>
+    <x:Double x:Key="WinMoeTypeHero">48</x:Double>
+
     <Style x:Key="TitleTextBlockStyle" TargetType="TextBlock">
         <Setter Property="FontFamily" Value="{StaticResource WinMoeSerifFont}" />
-        <Setter Property="FontSize" Value="42" />
+        <Setter Property="FontSize" Value="28" />
         <Setter Property="FontWeight" Value="SemiBold" />
         <Setter Property="Foreground" Value="{StaticResource WinMoeTextBrush}" />
     </Style>
 
     <Style x:Key="SubtitleTextBlockStyle" TargetType="TextBlock">
-        <Setter Property="FontFamily" Value="{StaticResource WinMoeMonoFont}" />
-        <Setter Property="FontSize" Value="16" />
-        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="FontFamily" Value="{StaticResource WinMoeTextFont}" />
+        <Setter Property="FontSize" Value="14" />
+        <Setter Property="FontWeight" Value="Normal" />
         <Setter Property="Foreground" Value="{StaticResource WinMoeMutedBrush}" />
     </Style>
 
     <Style x:Key="WinMoeLabelTextStyle" TargetType="TextBlock">
-        <Setter Property="FontFamily" Value="{StaticResource WinMoeMonoFont}" />
-        <Setter Property="FontSize" Value="15" />
-        <Setter Property="FontWeight" Value="Bold" />
-        <Setter Property="CharacterSpacing" Value="80" />
+        <Setter Property="FontFamily" Value="{StaticResource WinMoeTextFont}" />
+        <Setter Property="FontSize" Value="11" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="CharacterSpacing" Value="40" />
         <Setter Property="Foreground" Value="{StaticResource WinMoeMutedBrush}" />
     </Style>
 
     <Style x:Key="WinMoeMetricTextStyle" TargetType="TextBlock">
-        <Setter Property="FontSize" Value="34" />
+        <Setter Property="FontSize" Value="38" />
         <Setter Property="FontWeight" Value="SemiBold" />
         <Setter Property="Foreground" Value="{StaticResource WinMoeTextBrush}" />
     </Style>
 
+    <Style x:Key="WinMoeHeroMetricStyle" TargetType="TextBlock">
+        <Setter Property="FontFamily" Value="{StaticResource WinMoeSerifFont}" />
+        <Setter Property="FontSize" Value="48" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="Foreground" Value="{StaticResource WinMoeTextBrush}" />
+        <Setter Property="HorizontalAlignment" Value="Center" />
+    </Style>
+
     <Style x:Key="WinMoeCardBorderStyle" TargetType="Border">
-        <Setter Property="Padding" Value="20" />
-        <Setter Property="CornerRadius" Value="20" />
+        <Setter Property="Padding" Value="14" />
+        <Setter Property="CornerRadius" Value="14" />
         <Setter Property="Background" Value="{StaticResource WinMoePanelBrush}" />
-        <Setter Property="BorderBrush" Value="{StaticResource WinMoeStrokeBrush}" />
+        <Setter Property="BorderBrush" Value="{StaticResource WinMoeStrokeSoftBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+    </Style>
+
+    <Style x:Key="WinMoeGlassCardStyle" TargetType="Border">
+        <Setter Property="Padding" Value="14" />
+        <Setter Property="CornerRadius" Value="14" />
+        <Setter Property="Background" Value="#CC2A251C" />
+        <Setter Property="BorderBrush" Value="{StaticResource WinMoeStrokeSoftBrush}" />
         <Setter Property="BorderThickness" Value="1" />
     </Style>
 
     <Style x:Key="WinMoePillButtonStyle" TargetType="Button">
-        <Setter Property="MinHeight" Value="44" />
+        <Setter Property="MinHeight" Value="40" />
+        <Setter Property="MinWidth" Value="132" />
         <Setter Property="Padding" Value="24,8" />
-        <Setter Property="CornerRadius" Value="22" />
-        <Setter Property="FontFamily" Value="{StaticResource WinMoeMonoFont}" />
-        <Setter Property="FontSize" Value="16" />
-        <Setter Property="FontWeight" Value="Bold" />
+        <Setter Property="CornerRadius" Value="20" />
+        <Setter Property="FontFamily" Value="{StaticResource WinMoeTextFont}" />
+        <Setter Property="FontSize" Value="14" />
+        <Setter Property="FontWeight" Value="SemiBold" />
         <Setter Property="Background" Value="{StaticResource WinMoeWhitePillBrush}" />
         <Setter Property="Foreground" Value="Black" />
         <Setter Property="BorderBrush" Value="{StaticResource WinMoeWhitePillBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
     </Style>
 
     <Style x:Key="WinMoeSecondaryPillButtonStyle" TargetType="Button" BasedOn="{StaticResource WinMoePillButtonStyle}">
-        <Setter Property="Background" Value="{StaticResource WinMoePanelBrush}" />
+        <Setter Property="Background" Value="Transparent" />
         <Setter Property="Foreground" Value="{StaticResource WinMoeTextBrush}" />
         <Setter Property="BorderBrush" Value="{StaticResource WinMoeStrokeBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+    </Style>
+
+    <!-- Clean/Optimize primary ghost CTA (Mole "Return to Earth") -->
+    <Style x:Key="WinMoeGhostPillButtonStyle" TargetType="Button" BasedOn="{StaticResource WinMoePillButtonStyle}">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="Foreground" Value="{StaticResource WinMoeMutedBrush}" />
+        <Setter Property="BorderBrush" Value="{StaticResource WinMoeNavGhostBrush}" />
+        <Setter Property="BorderThickness" Value="1.25" />
+        <Setter Property="MinHeight" Value="38" />
     </Style>
 
     <Style x:Key="WinMoeTopNavButtonStyle" TargetType="Button">
-        <Setter Property="MinHeight" Value="42" />
-        <Setter Property="Padding" Value="18,6" />
-        <Setter Property="CornerRadius" Value="22" />
+        <Setter Property="MinHeight" Value="30" />
+        <Setter Property="MinWidth" Value="56" />
+        <Setter Property="Padding" Value="12,3" />
+        <Setter Property="CornerRadius" Value="15" />
         <Setter Property="FontFamily" Value="{StaticResource WinMoeTextFont}" />
-        <Setter Property="FontSize" Value="16" />
-        <Setter Property="FontWeight" Value="Bold" />
+        <Setter Property="FontSize" Value="13" />
+        <Setter Property="FontWeight" Value="SemiBold" />
         <Setter Property="Background" Value="Transparent" />
         <Setter Property="Foreground" Value="{StaticResource WinMoeMutedBrush}" />
         <Setter Property="BorderBrush" Value="Transparent" />
+        <Setter Property="BorderThickness" Value="0" />
     </Style>
 
     <Style x:Key="WinMoeTopNavButtonSelectedStyle" TargetType="Button" BasedOn="{StaticResource WinMoeTopNavButtonStyle}">
         <Setter Property="Background" Value="{StaticResource WinMoeWhitePillBrush}" />
         <Setter Property="Foreground" Value="Black" />
+        <Setter Property="BorderBrush" Value="{StaticResource WinMoeWhitePillBrush}" />
+    </Style>
+
+    <Style x:Key="WinMoeTextLinkStyle" TargetType="Button">
+        <Setter Property="MinHeight" Value="28" />
+        <Setter Property="MinWidth" Value="0" />
+        <Setter Property="Padding" Value="8,4" />
+        <Setter Property="CornerRadius" Value="6" />
+        <Setter Property="FontFamily" Value="{StaticResource WinMoeTextFont}" />
+        <Setter Property="FontSize" Value="12" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="Foreground" Value="{StaticResource WinMoeDimBrush}" />
+        <Setter Property="BorderBrush" Value="Transparent" />
+        <Setter Property="BorderThickness" Value="0" />
+    </Style>
+
+    <Style x:Key="WinMoeTextLinkActiveStyle" TargetType="Button" BasedOn="{StaticResource WinMoeTextLinkStyle}">
+        <Setter Property="Foreground" Value="{StaticResource WinMoeOrangeBrush}" />
     </Style>
 
     <Style x:Key="WinMoeIconButtonStyle" TargetType="Button">
-        <Setter Property="Width" Value="42" />
-        <Setter Property="Height" Value="42" />
+        <Setter Property="Width" Value="32" />
+        <Setter Property="Height" Value="32" />
         <Setter Property="Padding" Value="0" />
-        <Setter Property="CornerRadius" Value="21" />
+        <Setter Property="CornerRadius" Value="16" />
         <Setter Property="Background" Value="Transparent" />
         <Setter Property="Foreground" Value="{StaticResource WinMoeMutedBrush}" />
         <Setter Property="BorderBrush" Value="Transparent" />
+        <Setter Property="BorderThickness" Value="0" />
     </Style>
 
     <Style x:Key="WinMoeIconButtonSelectedStyle" TargetType="Button" BasedOn="{StaticResource WinMoeIconButtonStyle}">
@@ -145,10 +238,10 @@
     </Style>
 
     <Style TargetType="TextBox">
-        <Setter Property="Background" Value="#141412" />
+        <Setter Property="Background" Value="#141210" />
         <Setter Property="Foreground" Value="{StaticResource WinMoeTextBrush}" />
         <Setter Property="BorderBrush" Value="{StaticResource WinMoeStrokeBrush}" />
-        <Setter Property="FontFamily" Value="{StaticResource WinMoeMonoFont}" />
+        <Setter Property="FontFamily" Value="{StaticResource WinMoeTextFont}" />
     </Style>
 
     <Style TargetType="ListView">
@@ -163,9 +256,9 @@
     </Style>
 
     <Style TargetType="ProgressBar">
-        <Setter Property="Foreground" Value="{StaticResource WinMoeGreenBrush}" />
-        <Setter Property="Background" Value="#343331" />
-        <Setter Property="MinHeight" Value="8" />
-        <Setter Property="CornerRadius" Value="5" />
+        <Setter Property="Foreground" Value="{StaticResource WinMoeBlueBrush}" />
+        <Setter Property="Background" Value="#343028" />
+        <Setter Property="MinHeight" Value="6" />
+        <Setter Property="CornerRadius" Value="3" />
     </Style>
 </ResourceDictionary>

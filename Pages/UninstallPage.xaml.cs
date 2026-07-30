@@ -40,7 +40,9 @@ public sealed partial class UninstallPage : Page
             UpdateAppsSurface();
         }
 
-        if (e.PropertyName is nameof(UninstallViewModel.SortKey))
+        if (e.PropertyName is nameof(UninstallViewModel.SortKey)
+            or nameof(UninstallViewModel.SortDescending)
+            or nameof(UninstallViewModel.NameSortLabel))
         {
             UpdateSortVisuals();
         }
@@ -59,12 +61,36 @@ public sealed partial class UninstallPage : Page
 
     private async void UninstallButton_Click(object sender, RoutedEventArgs e)
     {
-        var appName = ViewModel.SelectedApplication?.Name ?? "所选软件";
+        var selected = ViewModel.Applications.Where(row => row.IsSelected).ToArray();
+        if (selected.Length == 0)
+        {
+            return;
+        }
+
+        // Prefer explicit row selection as the uninstall target (Mole: Remove N).
+        if (selected.Length == 1)
+        {
+            ViewModel.SelectedApplicationRow = selected[0];
+        }
+        else if (ViewModel.SelectedApplication is null ||
+                 selected.All(row => row.Application.Id != ViewModel.SelectedApplication.Id))
+        {
+            ViewModel.SelectedApplicationRow = selected[0];
+        }
+
+        var names = string.Join("、", selected.Take(3).Select(row => row.Name));
+        if (selected.Length > 3)
+        {
+            names += $" 等 {selected.Length} 个";
+        }
+
         var dialog = new ContentDialog
         {
             XamlRoot = XamlRoot,
-            Title = "启动卸载程序",
-            Content = $"即将启动 {appName} 注册的 Windows 卸载程序。请先完成厂商卸载流程，再预览残留。",
+            Title = selected.Length == 1 ? "启动卸载程序" : $"移除 {selected.Length} 个软件",
+            Content = selected.Length == 1
+                ? $"即将启动 {names} 注册的 Windows 卸载程序。请先完成厂商卸载流程，再预览残留。"
+                : $"将依次引导卸载：{names}。当前版本每次启动一个厂商卸载程序，并保持可恢复策略。",
             PrimaryButtonText = "启动",
             CloseButtonText = "取消",
             DefaultButton = ContentDialogButton.Close
@@ -101,8 +127,8 @@ public sealed partial class UninstallPage : Page
         var dialog = new ContentDialog
         {
             XamlRoot = XamlRoot,
-            Title = "功能正在接入",
-            Content = "安全的非交互 Windows 软件更新源尚未完成；当前页面不会静默安装或更新软件。",
+            Title = "没有可用更新",
+            Content = "WinMoe 不会从未知通道静默安装软件更新。当前仅展示只读空态；未来只会接入可审计的安全更新源。",
             CloseButtonText = "知道了",
             DefaultButton = ContentDialogButton.Close
         };
@@ -112,9 +138,9 @@ public sealed partial class UninstallPage : Page
 
     private void UpdateAppsSurface()
     {
-        SetSegmentButton(UninstallTabButton, ViewModel.IsUninstallTab);
-        SetSegmentButton(UpdatesTabButton, ViewModel.IsUpdatesTab);
-        SetSegmentButton(StartupTabButton, ViewModel.IsStartupTab);
+        SetNavSegment(UninstallTabButton, ViewModel.IsUninstallTab);
+        SetNavSegment(UpdatesTabButton, ViewModel.IsUpdatesTab);
+        SetNavSegment(StartupTabButton, ViewModel.IsStartupTab);
 
         UninstallContent.Visibility = ViewModel.IsUninstallTab ? Visibility.Visible : Visibility.Collapsed;
         UpdatesContent.Visibility = ViewModel.IsUpdatesTab ? Visibility.Visible : Visibility.Collapsed;
@@ -125,21 +151,26 @@ public sealed partial class UninstallPage : Page
 
     private void UpdateSortVisuals()
     {
-        SetSortButton(NameSortButton, "name");
-        SetSortButton(SizeSortButton, "size");
-        SetSortButton(SourceSortButton, "source");
+        SetTextLink(NameSortButton, string.Equals(ViewModel.SortKey, "name", StringComparison.OrdinalIgnoreCase));
+        SetTextLink(SizeSortButton, string.Equals(ViewModel.SortKey, "size", StringComparison.OrdinalIgnoreCase));
+        SetTextLink(
+            SourceSortButton,
+            string.Equals(ViewModel.SortKey, "lastused", StringComparison.OrdinalIgnoreCase) ||
+            string.Equals(ViewModel.SortKey, "source", StringComparison.OrdinalIgnoreCase));
     }
 
-    private void SetSortButton(Button button, string key)
-    {
-        var isSelected = string.Equals(ViewModel.SortKey, key, StringComparison.OrdinalIgnoreCase);
-        SetSegmentButton(button, isSelected);
-    }
-
-    private static void SetSegmentButton(Button button, bool isSelected)
+    private static void SetNavSegment(Button button, bool isSelected)
     {
         button.Style = (Style)Application.Current.Resources[
             isSelected ? "WinMoeTopNavButtonSelectedStyle" : "WinMoeTopNavButtonStyle"];
         WinMoeButtonVisualState.ApplyNavigationState(button, isSelected);
     }
+
+    private static void SetTextLink(Button button, bool isSelected)
+    {
+        button.Style = (Style)Application.Current.Resources[
+            isSelected ? "WinMoeTextLinkActiveStyle" : "WinMoeTextLinkStyle"];
+        WinMoeButtonVisualState.ApplyNavigationState(button, isSelected);
+    }
 }
+

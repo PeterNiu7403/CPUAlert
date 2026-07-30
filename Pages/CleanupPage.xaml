@@ -5,109 +5,269 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:models="using:WinMoe.Models"
+    xmlns:viewModels="using:WinMoe.ViewModels"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    Background="{StaticResource WinMoeBackgroundGreenBrush}"
+    Background="{StaticResource WinMoeBackgroundCleanBrush}"
     Loaded="CleanupPage_Loaded"
     mc:Ignorable="d">
 
-    <ScrollViewer>
-        <Grid MinHeight="760" Padding="24,28,24,24" RowSpacing="28">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="480" />
-                <RowDefinition Height="Auto" />
-                <RowDefinition Height="220" />
-            </Grid.RowDefinitions>
+    <Grid>
+        <ScrollViewer VerticalScrollBarVisibility="Auto">
+            <Grid MinHeight="640" Padding="24,8,24,24">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*" MinHeight="380" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
 
-            <StackPanel
-                HorizontalAlignment="Center"
-                VerticalAlignment="Center"
-                Spacing="24">
-                <Border Width="360" Height="225" CornerRadius="28">
-                    <Image
-                        Source="ms-appx:///Assets/Hero/clean.png"
-                        Stretch="UniformToFill" />
-                </Border>
-
-                <StackPanel HorizontalAlignment="Center" Spacing="10">
-                    <TextBlock
-                        HorizontalAlignment="Center"
-                        FontFamily="{StaticResource WinMoeSerifFont}"
-                        FontSize="42"
-                        FontWeight="SemiBold"
-                        Text="清理" />
-                    <TextBlock
-                        HorizontalAlignment="Center"
-                        FontFamily="{StaticResource WinMoeSerifFont}"
-                        FontSize="20"
-                        FontStyle="Italic"
-                        Foreground="{StaticResource WinMoeMutedBrush}"
-                        Text="让空间重新呼吸" />
-                    <TextBlock
-                        HorizontalAlignment="Center"
-                        FontFamily="{StaticResource WinMoeMonoFont}"
-                        FontSize="16"
-                        FontWeight="Bold"
-                        Foreground="{StaticResource WinMoeGoldBrush}"
-                        Text="{Binding PendingMessage}" />
-                </StackPanel>
-
-                <StackPanel HorizontalAlignment="Center" Orientation="Horizontal" Spacing="16">
-                    <Button
-                        Click="CleanButton_Click"
-                        Content="执行清理（安全合约完成后开放）"
-                        IsEnabled="False"
-                        Style="{StaticResource WinMoePillButtonStyle}" />
-                    <Button
-                        Command="{Binding ScanCommand}"
-                        Content="扫描并预览"
-                        IsEnabled="{Binding CanPreview}"
-                        Style="{StaticResource WinMoeSecondaryPillButtonStyle}" />
-                    <ProgressRing
-                        Width="28"
-                        Height="28"
-                        IsActive="{Binding IsBusy}" />
-                </StackPanel>
-
-                <TextBlock
+                <StackPanel
                     HorizontalAlignment="Center"
-                    FontFamily="{StaticResource WinMoeMonoFont}"
-                    Foreground="{StaticResource WinMoeDimBrush}"
-                    Text="{Binding Summary}" />
-            </StackPanel>
+                    VerticalAlignment="Center"
+                    Spacing="18">
+                    <Grid
+                        Width="280"
+                        Height="280"
+                        HorizontalAlignment="Center">
+                        <Ellipse Width="280" Height="280" Opacity="0.35">
+                            <Ellipse.Fill>
+                                <RadialGradientBrush>
+                                    <GradientStop Color="#335AA8F0" Offset="0.55" />
+                                    <GradientStop Color="#000B1424" Offset="1" />
+                                </RadialGradientBrush>
+                            </Ellipse.Fill>
+                        </Ellipse>
+                        <Ellipse x:Name="PlanetVisual" Width="260" Height="260">
+                            <Ellipse.RenderTransform>
+                                <RotateTransform />
+                            </Ellipse.RenderTransform>
+                            <Ellipse.Fill>
+                                <ImageBrush
+                                    ImageSource="ms-appx:///Assets/Hero/clean.png"
+                                    Stretch="UniformToFill" />
+                            </Ellipse.Fill>
+                        </Ellipse>
+                    </Grid>
 
-            <Border Grid.Row="1" Style="{StaticResource WinMoeCardBorderStyle}">
-                <Grid RowSpacing="12">
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="280" />
-                    </Grid.RowDefinitions>
-                    <TextBlock Foreground="{StaticResource WinMoeBlueBrush}" Style="{StaticResource WinMoeLabelTextStyle}" Text="可清理项目预览" />
-                    <ListView Grid.Row="1" ItemsSource="{Binding PreviewItems}">
-                        <ListView.ItemTemplate>
-                            <DataTemplate x:DataType="models:CleanupPreviewItem">
-                                <Grid MinHeight="52" ColumnSpacing="14">
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="160" />
-                                        <ColumnDefinition Width="96" />
-                                        <ColumnDefinition Width="*" />
-                                    </Grid.ColumnDefinitions>
-                                    <TextBlock FontWeight="SemiBold" Text="{x:Bind Category}" TextTrimming="CharacterEllipsis" />
-                                    <TextBlock Grid.Column="1" FontFamily="{StaticResource WinMoeMonoFont}" Foreground="{StaticResource WinMoeMutedBrush}" Text="{x:Bind SizeText}" />
-                                    <TextBlock Grid.Column="2" FontFamily="{StaticResource WinMoeMonoFont}" Foreground="{StaticResource WinMoeDimBrush}" Text="{x:Bind Path}" TextTrimming="CharacterEllipsis" />
-                                </Grid>
-                            </DataTemplate>
-                        </ListView.ItemTemplate>
-                    </ListView>
-                </Grid>
-            </Border>
+                    <StackPanel HorizontalAlignment="Center" Spacing="6">
+                        <TextBlock
+                            MinHeight="56"
+                            Style="{StaticResource WinMoeHeroMetricStyle}"
+                            Text="{Binding HeroMetric}" />
+                        <TextBlock
+                            HorizontalAlignment="Center"
+                            MaxWidth="380"
+                            FontFamily="{StaticResource WinMoeTextFont}"
+                            FontSize="13"
+                            Foreground="{StaticResource WinMoeDimBrush}"
+                            Text="{Binding HeroSubtitle}"
+                            TextAlignment="Center"
+                            TextWrapping="WrapWholeWords" />
+                    </StackPanel>
 
-            <TextBox
-                Grid.Row="2"
-                AcceptsReturn="True"
-                FontFamily="{StaticResource WinMoeMonoFont}"
-                IsReadOnly="True"
-                Text="{Binding OutputText, Mode=OneWay}"
-                TextWrapping="Wrap" />
-        </Grid>
-    </ScrollViewer>
+                    <StackPanel
+                        HorizontalAlignment="Center"
+                        Orientation="Horizontal"
+                        Spacing="10">
+                        <Button
+                            x:Name="ScanButton"
+                            MinWidth="160"
+                            Command="{Binding ScanCommand}"
+                            Content="{Binding PrimaryActionLabel}"
+                            IsEnabled="{Binding CanPreview}"
+                            Style="{StaticResource WinMoeGhostPillButtonStyle}" />
+                        <Button
+                            x:Name="ReturnButton"
+                            MinWidth="160"
+                            Command="{Binding ReturnToIdleCommand}"
+                            Content="返回"
+                            Style="{StaticResource WinMoeGhostPillButtonStyle}"
+                            Visibility="Collapsed" />
+                        <Button
+                            MinWidth="140"
+                            Click="CleanButton_Click"
+                            Content="清理所选"
+                            IsEnabled="{Binding CanClean}"
+                            Style="{StaticResource WinMoePillButtonStyle}"
+                            Visibility="{Binding CleanButtonVisibility}" />
+                        <ProgressRing
+                            Width="20"
+                            Height="20"
+                            VerticalAlignment="Center"
+                            IsActive="{Binding IsBusy}"
+                            Visibility="{Binding ProgressVisibility}" />
+                    </StackPanel>
+                </StackPanel>
+
+                <Border
+                    Grid.Row="1"
+                    Margin="0,8,0,0"
+                    MaxWidth="880"
+                    HorizontalAlignment="Stretch"
+                    Background="#99101A30"
+                    BorderBrush="#334A6A8A"
+                    BorderThickness="1"
+                    CornerRadius="16"
+                    Padding="14,12"
+                    Visibility="{Binding ReviewPanelVisibility}">
+                    <Grid RowSpacing="10">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="280" />
+                        </Grid.RowDefinitions>
+
+                        <Grid ColumnSpacing="10">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <TextBlock
+                                VerticalAlignment="Center"
+                                FontSize="12"
+                                FontWeight="SemiBold"
+                                Foreground="{StaticResource WinMoeBlueBrush}"
+                                Text="清理预览 · 按分类" />
+                            <Button
+                                Grid.Column="1"
+                                Command="{Binding SelectAllPreviewCommand}"
+                                Content="全选"
+                                FontSize="12"
+                                Style="{StaticResource WinMoeTextLinkActiveStyle}" />
+                            <Button
+                                Grid.Column="2"
+                                Command="{Binding ClearPreviewSelectionCommand}"
+                                Content="清除"
+                                FontSize="12"
+                                Style="{StaticResource WinMoeTextLinkStyle}" />
+                            <TextBlock
+                                Grid.Column="3"
+                                VerticalAlignment="Center"
+                                FontFamily="{StaticResource WinMoeMonoFont}"
+                                FontSize="12"
+                                Foreground="{StaticResource WinMoeDimBrush}"
+                                Text="{Binding SelectionSummary}" />
+                        </Grid>
+
+                        <TextBlock
+                            Grid.Row="1"
+                            FontSize="12"
+                            Foreground="{StaticResource WinMoeMutedBrush}"
+                            Text="{Binding PendingMessage}"
+                            TextWrapping="WrapWholeWords" />
+
+                        <!-- Mole-style category tree: section header + nested paths -->
+                        <ScrollViewer
+                            Grid.Row="2"
+                            VerticalScrollBarVisibility="Auto"
+                            HorizontalScrollBarVisibility="Disabled">
+                            <ItemsControl ItemsSource="{Binding CategoryGroups}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate x:DataType="viewModels:CleanupCategoryGroupViewModel">
+                                        <Border
+                                            Margin="0,0,0,8"
+                                            Padding="0,2,0,4"
+                                            BorderBrush="#223A4F70"
+                                            BorderThickness="0,0,0,1">
+                                            <StackPanel Spacing="2">
+                                                <Grid MinHeight="36" ColumnSpacing="8">
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="28" />
+                                                        <ColumnDefinition Width="28" />
+                                                        <ColumnDefinition Width="*" />
+                                                        <ColumnDefinition Width="Auto" />
+                                                        <ColumnDefinition Width="88" />
+                                                    </Grid.ColumnDefinitions>
+                                                    <Button
+                                                        Width="28"
+                                                        Height="28"
+                                                        Padding="0"
+                                                        Background="Transparent"
+                                                        BorderThickness="0"
+                                                        Click="CategoryExpand_Click"
+                                                        Tag="{x:Bind}">
+                                                        <FontIcon
+                                                            FontSize="11"
+                                                            Foreground="{StaticResource WinMoeDimBrush}"
+                                                            Glyph="{x:Bind ChevronGlyph, Mode=OneWay}" />
+                                                    </Button>
+                                                    <CheckBox
+                                                        Grid.Column="1"
+                                                        VerticalAlignment="Center"
+                                                        IsChecked="{x:Bind IsGroupSelected, Mode=OneWay}"
+                                                        IsThreeState="True"
+                                                        Click="CategoryCheck_Click"
+                                                        Tag="{x:Bind}" />
+                                                    <TextBlock
+                                                        Grid.Column="2"
+                                                        VerticalAlignment="Center"
+                                                        FontSize="13"
+                                                        FontWeight="SemiBold"
+                                                        Foreground="{StaticResource WinMoeTextBrush}"
+                                                        Text="{x:Bind Category}"
+                                                        TextTrimming="CharacterEllipsis" />
+                                                    <TextBlock
+                                                        Grid.Column="3"
+                                                        VerticalAlignment="Center"
+                                                        Margin="0,0,8,0"
+                                                        FontFamily="{StaticResource WinMoeMonoFont}"
+                                                        FontSize="11"
+                                                        Foreground="{StaticResource WinMoeDimBrush}"
+                                                        Text="{x:Bind CountText}" />
+                                                    <TextBlock
+                                                        Grid.Column="4"
+                                                        VerticalAlignment="Center"
+                                                        HorizontalAlignment="Right"
+                                                        FontFamily="{StaticResource WinMoeMonoFont}"
+                                                        FontSize="12"
+                                                        Foreground="{StaticResource WinMoeMutedBrush}"
+                                                        Text="{x:Bind SizeText, Mode=OneWay}" />
+                                                </Grid>
+
+                                                <ItemsControl
+                                                    Margin="36,0,0,6"
+                                                    ItemsSource="{x:Bind Items}"
+                                                    Visibility="{x:Bind ChildrenVisibility, Mode=OneWay}">
+                                                    <ItemsControl.ItemTemplate>
+                                                        <DataTemplate x:DataType="models:CleanupPreviewItem">
+                                                            <Grid MinHeight="30" Padding="0,1" ColumnSpacing="10">
+                                                                <Grid.ColumnDefinitions>
+                                                                    <ColumnDefinition Width="28" />
+                                                                    <ColumnDefinition Width="72" />
+                                                                    <ColumnDefinition Width="*" />
+                                                                </Grid.ColumnDefinitions>
+                                                                <CheckBox
+                                                                    VerticalAlignment="Center"
+                                                                    IsChecked="{x:Bind IsSelected, Mode=TwoWay}" />
+                                                                <TextBlock
+                                                                    Grid.Column="1"
+                                                                    VerticalAlignment="Center"
+                                                                    FontFamily="{StaticResource WinMoeMonoFont}"
+                                                                    FontSize="11"
+                                                                    Foreground="{StaticResource WinMoeMutedBrush}"
+                                                                    Text="{x:Bind SizeText}" />
+                                                                <TextBlock
+                                                                    Grid.Column="2"
+                                                                    VerticalAlignment="Center"
+                                                                    FontFamily="{StaticResource WinMoeMonoFont}"
+                                                                    FontSize="11"
+                                                                    Foreground="{StaticResource WinMoeDimBrush}"
+                                                                    Text="{x:Bind Path}"
+                                                                    TextTrimming="CharacterEllipsis"
+                                                                    ToolTipService.ToolTip="{x:Bind Path}" />
+                                                            </Grid>
+                                                        </DataTemplate>
+                                                    </ItemsControl.ItemTemplate>
+                                                </ItemsControl>
+                                            </StackPanel>
+                                        </Border>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </ScrollViewer>
+                    </Grid>
+                </Border>
+            </Grid>
+        </ScrollViewer>
+    </Grid>
 </Page>

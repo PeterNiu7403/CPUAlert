@@ -10,4 +10,13 @@ public sealed record TrayHudStatus(
     string NetworkText,
     string ActivityTitle,
     string ActivityDetail,
-    IReadOnlyList<ProcessTelemetry> TopProcesses);
+    IReadOnlyList<ProcessTelemetry> TopProcesses,
+    string LifetimeCleanedText = "—",
+    string LifetimeUninstalledText = "—",
+    string LifetimeOptimizedText = "—",
+    string DeviceChipText = "Windows",
+    string GpuText = "—",
+    string FanText = "—",
+    string MemoryDetailText = "",
+    string DiskDetailText = "",
+    string NetworkDetailText = "");

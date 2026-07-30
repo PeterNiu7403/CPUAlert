@@ -7,879 +7,796 @@
     xmlns:models="using:WinMoe.Models"
     xmlns:viewModels="using:WinMoe.ViewModels"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    Background="#17130D"
+    Background="{StaticResource WinMoeBackgroundStatusBrush}"
     Loaded="DashboardPage_Loaded"
     Unloaded="DashboardPage_Unloaded"
     mc:Ignorable="d">
 
     <Page.Resources>
         <Style x:Key="StatusCardStyle" TargetType="Border">
-            <Setter Property="Padding" Value="26" />
-            <Setter Property="CornerRadius" Value="22" />
-            <Setter Property="Background" Value="#1F1E1A" />
-            <Setter Property="BorderBrush" Value="#3A3832" />
-            <Setter Property="BorderThickness" Value="1.5" />
+            <Setter Property="Padding" Value="14" />
+            <Setter Property="CornerRadius" Value="14" />
+            <Setter Property="Background" Value="{StaticResource WinMoePanelBrush}" />
+            <Setter Property="BorderBrush" Value="{StaticResource WinMoeStrokeSoftBrush}" />
+            <Setter Property="BorderThickness" Value="1" />
         </Style>
 
         <Style x:Key="StatusHeaderTextStyle" TargetType="TextBlock" BasedOn="{StaticResource WinMoeLabelTextStyle}">
-            <Setter Property="FontSize" Value="16" />
-            <Setter Property="CharacterSpacing" Value="120" />
+            <Setter Property="FontSize" Value="11" />
+            <Setter Property="CharacterSpacing" Value="40" />
             <Setter Property="VerticalAlignment" Value="Center" />
-            <Setter Property="LineHeight" Value="20" />
-            <Setter Property="LineStackingStrategy" Value="BlockLineHeight" />
         </Style>
 
         <Style x:Key="StatusHeaderRowStyle" TargetType="StackPanel">
             <Setter Property="Orientation" Value="Horizontal" />
-            <Setter Property="Spacing" Value="8" />
-            <Setter Property="MinHeight" Value="22" />
+            <Setter Property="Spacing" Value="5" />
+            <Setter Property="MinHeight" Value="16" />
             <Setter Property="VerticalAlignment" Value="Center" />
         </Style>
 
         <Style x:Key="StatusHeaderIconStyle" TargetType="FontIcon">
-            <Setter Property="Width" Value="18" />
-            <Setter Property="Height" Value="18" />
+            <Setter Property="Width" Value="12" />
+            <Setter Property="Height" Value="12" />
+            <Setter Property="FontSize" Value="11" />
             <Setter Property="VerticalAlignment" Value="Center" />
         </Style>
 
         <Style x:Key="StatusFooterTextStyle" TargetType="TextBlock">
-            <Setter Property="FontFamily" Value="{StaticResource WinMoeMonoFont}" />
-            <Setter Property="FontSize" Value="17" />
-            <Setter Property="FontWeight" Value="Bold" />
+            <Setter Property="FontFamily" Value="{StaticResource WinMoeTextFont}" />
+            <Setter Property="FontSize" Value="11" />
+            <Setter Property="FontWeight" Value="Normal" />
             <Setter Property="Foreground" Value="{StaticResource WinMoeDimBrush}" />
             <Setter Property="TextTrimming" Value="CharacterEllipsis" />
         </Style>
 
         <Style x:Key="StatusBadgeStyle" TargetType="Border">
-            <Setter Property="Padding" Value="12,5" />
-            <Setter Property="CornerRadius" Value="14" />
-            <Setter Property="Background" Value="#3B3934" />
+            <Setter Property="Padding" Value="7,2" />
+            <Setter Property="CornerRadius" Value="9" />
+            <Setter Property="Background" Value="#332E26" />
         </Style>
 
-        <Style x:Key="StatusTabButtonStyle" TargetType="Button" BasedOn="{StaticResource WinMoeTopNavButtonStyle}">
-            <Setter Property="MinHeight" Value="48" />
-            <Setter Property="Padding" Value="22,8" />
-            <Setter Property="FontSize" Value="24" />
-        </Style>
-
-        <Style x:Key="StatusTabButtonSelectedStyle" TargetType="Button" BasedOn="{StaticResource WinMoeTopNavButtonSelectedStyle}">
-            <Setter Property="MinHeight" Value="48" />
-            <Setter Property="Padding" Value="22,8" />
-            <Setter Property="FontSize" Value="24" />
+        <Style x:Key="StatusMetricStyle" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="38" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="Foreground" Value="{StaticResource WinMoeTextBrush}" />
         </Style>
     </Page.Resources>
 
-    <Grid RowSpacing="0">
-        <Grid.RowDefinitions>
-            <RowDefinition Height="98" />
-            <RowDefinition Height="*" />
-        </Grid.RowDefinitions>
-
-        <Grid>
+    <ScrollViewer Padding="0" VerticalScrollBarVisibility="Auto">
+        <Grid Padding="16,6,16,16" ColumnSpacing="10" RowSpacing="10">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="152" />
+                <RowDefinition Height="152" />
+                <RowDefinition Height="*" MinHeight="260" />
+            </Grid.RowDefinitions>
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*" />
-                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="*" />
             </Grid.ColumnDefinitions>
 
-            <Border
-                Margin="26,16,0,16"
-                Padding="6"
-                HorizontalAlignment="Left"
-                VerticalAlignment="Center"
-                Background="#191713"
-                BorderBrush="#332F29"
-                BorderThickness="2"
-                CornerRadius="30">
-                <StackPanel Orientation="Horizontal" Spacing="12">
-                    <Button
-                        x:Name="StatusOverviewButton"
-                        Content="概览"
-                        Style="{StaticResource StatusTabButtonSelectedStyle}" />
-                    <Button
-                        x:Name="StatusHistoryButton"
-                        Click="StatusSecondaryNav_Click"
-                        Content="历史"
-                        Style="{StaticResource StatusTabButtonStyle}"
-                        Tag="history" />
-                    <Button
-                        x:Name="StatusActivityButton"
-                        Click="StatusSecondaryNav_Click"
-                        Content="活动"
-                        Style="{StaticResource StatusTabButtonStyle}"
-                        Tag="activity" />
-                </StackPanel>
-            </Border>
-
-            <Border
-                Grid.Column="1"
-                Margin="0,20,28,20"
-                Padding="18,9"
-                VerticalAlignment="Center"
-                Background="#332511"
-                BorderBrush="#78591F"
-                BorderThickness="1.5"
-                CornerRadius="24">
-                <StackPanel Orientation="Horizontal" Spacing="10">
-                    <FontIcon
-                        VerticalAlignment="Center"
-                        FontSize="15"
-                        Foreground="{StaticResource WinMoeGoldBrush}"
-                        Glyph="&#xE945;" />
-                    <TextBlock
-                        VerticalAlignment="Center"
-                        FontFamily="{StaticResource WinMoeMonoFont}"
-                        FontSize="20"
-                        FontWeight="Bold"
-                        Foreground="{StaticResource WinMoeGoldBrush}"
-                        Text="诊断" />
-                </StackPanel>
-            </Border>
-
-            <Border
-                VerticalAlignment="Bottom"
-                BorderBrush="#332F29"
-                BorderThickness="0,0,0,1" />
-        </Grid>
-
-        <ScrollViewer
-            Grid.Row="1"
-            Padding="0"
-            VerticalScrollBarVisibility="Auto">
-            <Grid Padding="26,10,26,28" ColumnSpacing="26" RowSpacing="26">
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="306" />
-                    <RowDefinition Height="306" />
-                    <RowDefinition Height="252" />
-                    <RowDefinition Height="360" />
-                </Grid.RowDefinitions>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="*" />
-                </Grid.ColumnDefinitions>
-
-                <Border Style="{StaticResource StatusCardStyle}">
-                    <Grid RowSpacing="18">
+            <!-- Row 0: HEALTH | CPU | GPU | MEMORY -->
+            <Border Style="{StaticResource StatusCardStyle}">
+                <Grid ColumnSpacing="10">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="84" />
+                    </Grid.ColumnDefinitions>
+                    <Grid RowSpacing="4">
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto" />
                             <RowDefinition Height="*" />
                             <RowDefinition Height="Auto" />
                         </Grid.RowDefinitions>
-                        <Image
-                            Grid.RowSpan="3"
-                            HorizontalAlignment="Stretch"
-                            VerticalAlignment="Stretch"
-                            Opacity="0.12"
-                            Source="ms-appx:///Assets/Hero/status.png"
-                            Stretch="UniformToFill" />
-                        <Grid ColumnSpacing="12">
+                        <Grid ColumnSpacing="6">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*" />
                                 <ColumnDefinition Width="Auto" />
                             </Grid.ColumnDefinitions>
                             <StackPanel Style="{StaticResource StatusHeaderRowStyle}">
                                 <FontIcon
-                                    FontSize="15"
                                     Foreground="{StaticResource WinMoeGoldBrush}"
-                                    Style="{StaticResource StatusHeaderIconStyle}"
-                                    Glyph="&#xE9D2;" />
+                                    Glyph="&#xE9D2;"
+                                    Style="{StaticResource StatusHeaderIconStyle}" />
                                 <TextBlock
                                     Foreground="{StaticResource WinMoeGoldBrush}"
                                     Style="{StaticResource StatusHeaderTextStyle}"
-                                    Text="健康度" />
+                                    Text="健康" />
                             </StackPanel>
                             <TextBlock
                                 Grid.Column="1"
-                                MaxWidth="190"
+                                MaxWidth="120"
                                 Style="{StaticResource StatusFooterTextStyle}"
                                 Text="{Binding DeviceSummary}" />
                         </Grid>
-                        <Grid Grid.Row="1" ColumnSpacing="18">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*" />
-                                <ColumnDefinition Width="126" />
-                            </Grid.ColumnDefinitions>
-                            <StackPanel VerticalAlignment="Center" Spacing="8">
-                                <StackPanel Orientation="Horizontal" Spacing="10">
-                                    <TextBlock
-                                        FontSize="56"
-                                        FontWeight="SemiBold"
-                                        Foreground="{StaticResource WinMoeTextBrush}"
-                                        Text="{Binding HealthScore}" />
-                                    <TextBlock
-                                        VerticalAlignment="Center"
-                                        FontSize="20"
-                                        FontWeight="Bold"
-                                        Foreground="{StaticResource WinMoeGreenBrush}"
-                                        Text="{Binding HealthStatusText}" />
-                                </StackPanel>
+                        <StackPanel Grid.Row="1" VerticalAlignment="Center" Spacing="2">
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <TextBlock Style="{StaticResource StatusMetricStyle}" Text="{Binding HealthScore}" />
                                 <TextBlock
-                                    FontSize="22"
-                                    FontWeight="SemiBold"
-                                    Foreground="{StaticResource WinMoeMutedBrush}"
-                                    Text="{Binding HealthReason}" />
-                            </StackPanel>
-                            <Grid Grid.Column="1" Width="116" Height="116" VerticalAlignment="Center">
-                                <Ellipse
-                                    Stroke="#434B43"
-                                    StrokeThickness="10" />
-                                <Ellipse
-                                    Stroke="{StaticResource WinMoeGreenBrush}"
-                                    StrokeThickness="10" />
-                                <TextBlock
-                                    HorizontalAlignment="Center"
                                     VerticalAlignment="Center"
-                                    FontSize="28"
-                                    FontWeight="Bold"
-                                    Foreground="{StaticResource WinMoeTextBrush}"
-                                    Text="{Binding HealthScore}" />
-                            </Grid>
-                        </Grid>
+                                    FontSize="14"
+                                    FontWeight="SemiBold"
+                                    Foreground="{StaticResource WinMoeGreenBrush}"
+                                    Text="{Binding HealthStatusText}" />
+                            </StackPanel>
+                            <TextBlock
+                                FontSize="13"
+                                Foreground="{StaticResource WinMoeMutedBrush}"
+                                Text="{Binding HealthReason}"
+                                TextTrimming="CharacterEllipsis" />
+                        </StackPanel>
                         <TextBlock
                             Grid.Row="2"
                             Style="{StaticResource StatusFooterTextStyle}"
                             Text="{Binding HealthFooter}" />
                     </Grid>
-                </Border>
-
-                <Border Grid.Column="1" Style="{StaticResource StatusCardStyle}">
-                    <Grid RowSpacing="16">
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto" />
-                            <RowDefinition Height="Auto" />
-                            <RowDefinition Height="*" />
-                            <RowDefinition Height="Auto" />
-                        </Grid.RowDefinitions>
-                        <Grid ColumnSpacing="12">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*" />
-                                <ColumnDefinition Width="Auto" />
-                            </Grid.ColumnDefinitions>
-                            <StackPanel Style="{StaticResource StatusHeaderRowStyle}">
-                                <FontIcon
-                                    FontSize="14"
-                                    Foreground="{StaticResource WinMoeGreenBrush}"
-                                    Style="{StaticResource StatusHeaderIconStyle}"
-                                    Glyph="&#xE950;" />
-                                <TextBlock
-                                    Foreground="{StaticResource WinMoeGreenBrush}"
-                                    Style="{StaticResource StatusHeaderTextStyle}"
-                                    Text="CPU" />
-                            </StackPanel>
-                            <Border Grid.Column="1" Style="{StaticResource StatusBadgeStyle}" Background="#4A3324">
-                                <TextBlock
-                                    FontFamily="{StaticResource WinMoeMonoFont}"
-                                    FontSize="17"
-                                    FontWeight="Bold"
-                                    Foreground="{StaticResource WinMoeOrangeBrush}"
-                                    Text="--°C" />
-                            </Border>
-                        </Grid>
-                        <TextBlock
-                            Grid.Row="1"
-                            FontSize="56"
-                            FontWeight="SemiBold"
-                            Foreground="{StaticResource WinMoeTextBrush}"
-                            Text="{Binding CpuUsageText}" />
-                        <ItemsControl
-                            Grid.Row="2"
-                            Margin="0,0,0,4"
-                            VerticalAlignment="Bottom"
-                            ItemsSource="{Binding CpuBars}">
-                            <ItemsControl.ItemsPanel>
-                                <ItemsPanelTemplate>
-                                    <StackPanel VerticalAlignment="Bottom" Orientation="Horizontal" Spacing="6" />
-                                </ItemsPanelTemplate>
-                            </ItemsControl.ItemsPanel>
-                            <ItemsControl.ItemTemplate>
-                                <DataTemplate x:DataType="viewModels:DashboardBarSample">
-                                    <Border
-                                        Width="9"
-                                        Height="{x:Bind Height}"
-                                        VerticalAlignment="Bottom"
-                                        Background="{StaticResource WinMoeGreenBrush}"
-                                        CornerRadius="3" />
-                                </DataTemplate>
-                            </ItemsControl.ItemTemplate>
-                        </ItemsControl>
-                        <TextBlock
-                            Grid.Row="3"
-                            Style="{StaticResource StatusFooterTextStyle}"
-                            Text="{Binding CpuFooter}" />
+                    <Grid Grid.Column="1" VerticalAlignment="Center">
+                        <Ellipse Width="76" Height="76">
+                            <Ellipse.Fill>
+                                <ImageBrush
+                                    ImageSource="ms-appx:///Assets/Hero/status.png"
+                                    Stretch="UniformToFill" />
+                            </Ellipse.Fill>
+                        </Ellipse>
                     </Grid>
-                </Border>
+                </Grid>
+            </Border>
 
-                <Border Grid.Column="2" Style="{StaticResource StatusCardStyle}">
-                    <Grid RowSpacing="16">
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto" />
-                            <RowDefinition Height="Auto" />
-                            <RowDefinition Height="*" />
-                            <RowDefinition Height="Auto" />
-                        </Grid.RowDefinitions>
-                        <Grid ColumnSpacing="12">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*" />
-                                <ColumnDefinition Width="Auto" />
-                            </Grid.ColumnDefinitions>
-                            <StackPanel Style="{StaticResource StatusHeaderRowStyle}">
-                                <FontIcon
-                                    FontSize="14"
-                                    Foreground="{StaticResource WinMoeGoldBrush}"
-                                    Style="{StaticResource StatusHeaderIconStyle}"
-                                    Glyph="&#xE964;" />
-                                <TextBlock
-                                    Foreground="{StaticResource WinMoeGoldBrush}"
-                                    Style="{StaticResource StatusHeaderTextStyle}"
-                                    Text="MEMORY" />
-                            </StackPanel>
-                            <Border Grid.Column="1" Style="{StaticResource StatusBadgeStyle}">
-                                <TextBlock
-                                    FontFamily="{StaticResource WinMoeMonoFont}"
-                                    FontSize="17"
-                                    FontWeight="Bold"
-                                    Foreground="{StaticResource WinMoeMutedBrush}"
-                                    Text="{Binding MemoryStateBadge}" />
-                            </Border>
-                        </Grid>
-                        <TextBlock
-                            Grid.Row="1"
-                            FontSize="56"
-                            FontWeight="SemiBold"
-                            Foreground="{StaticResource WinMoeTextBrush}"
-                            Text="{Binding MemoryUsageText}" />
-                        <Grid Grid.Row="2" MinHeight="86">
-                            <Rectangle Opacity="0.22">
-                                <Rectangle.Fill>
-                                    <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
-                                        <GradientStop Color="#E7B34D" Offset="0" />
-                                        <GradientStop Color="#1D1C18" Offset="1" />
-                                    </LinearGradientBrush>
-                                </Rectangle.Fill>
-                            </Rectangle>
-                            <Viewbox Stretch="Fill">
-                                <Canvas Width="100" Height="100">
-                                    <Polyline
-                                        Points="{Binding MemoryStatusChart.Points}"
-                                        Stroke="{StaticResource WinMoeGoldBrush}"
-                                        StrokeEndLineCap="Round"
-                                        StrokeLineJoin="Round"
-                                        StrokeStartLineCap="Round"
-                                        StrokeThickness="3" />
-                                </Canvas>
-                            </Viewbox>
-                        </Grid>
-                        <TextBlock
-                            Grid.Row="3"
-                            Style="{StaticResource StatusFooterTextStyle}"
-                            Text="{Binding MemorySummary}" />
-                    </Grid>
-                </Border>
-
-                <Border Grid.Column="3" Style="{StaticResource StatusCardStyle}">
-                    <Grid RowSpacing="16">
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto" />
-                            <RowDefinition Height="Auto" />
-                            <RowDefinition Height="*" />
-                            <RowDefinition Height="Auto" />
-                        </Grid.RowDefinitions>
-                        <Grid ColumnSpacing="12">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*" />
-                                <ColumnDefinition Width="Auto" />
-                            </Grid.ColumnDefinitions>
-                            <StackPanel Style="{StaticResource StatusHeaderRowStyle}">
-                                <FontIcon
-                                    FontSize="14"
-                                    Foreground="{StaticResource WinMoeOrangeBrush}"
-                                    Style="{StaticResource StatusHeaderIconStyle}"
-                                    Glyph="&#xE7F8;" />
-                                <TextBlock
-                                    Foreground="{StaticResource WinMoeOrangeBrush}"
-                                    Style="{StaticResource StatusHeaderTextStyle}"
-                                    Text="GPU" />
-                            </StackPanel>
-                            <Border Grid.Column="1" Style="{StaticResource StatusBadgeStyle}" Background="#4A3324">
-                                <TextBlock
-                                    FontFamily="{StaticResource WinMoeMonoFont}"
-                                    FontSize="17"
-                                    FontWeight="Bold"
-                                    Foreground="{StaticResource WinMoeOrangeBrush}"
-                                    Text="--°C" />
-                            </Border>
-                        </Grid>
-                        <TextBlock
-                            Grid.Row="1"
-                            FontSize="56"
-                            FontWeight="SemiBold"
-                            Foreground="{StaticResource WinMoeTextBrush}"
-                            Text="{Binding GpuMetricText}" />
-                        <Grid Grid.Row="2" MinHeight="86">
-                            <Viewbox Stretch="Fill">
-                                <Canvas Width="100" Height="100">
-                                    <Polyline
-                                        Points="{Binding GpuStatusChart.Points}"
-                                        Stroke="{StaticResource WinMoeOrangeBrush}"
-                                        StrokeEndLineCap="Round"
-                                        StrokeLineJoin="Round"
-                                        StrokeStartLineCap="Round"
-                                        StrokeThickness="3" />
-                                </Canvas>
-                            </Viewbox>
-                        </Grid>
-                        <TextBlock
-                            Grid.Row="3"
-                            Style="{StaticResource StatusFooterTextStyle}"
-                            Text="{Binding GpuFooter}" />
-                    </Grid>
-                </Border>
-
-                <Border
-                    Grid.Row="1"
-                    Grid.ColumnSpan="1"
-                    Style="{StaticResource StatusCardStyle}">
-                    <Grid RowSpacing="16">
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto" />
-                            <RowDefinition Height="Auto" />
-                            <RowDefinition Height="Auto" />
-                            <RowDefinition Height="*" />
-                            <RowDefinition Height="Auto" />
-                        </Grid.RowDefinitions>
-                        <Grid ColumnSpacing="12">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*" />
-                                <ColumnDefinition Width="Auto" />
-                            </Grid.ColumnDefinitions>
-                            <StackPanel Style="{StaticResource StatusHeaderRowStyle}">
-                                <FontIcon
-                                    FontSize="14"
-                                    Foreground="{StaticResource WinMoeBlueBrush}"
-                                    Style="{StaticResource StatusHeaderIconStyle}"
-                                    Glyph="&#xEDA2;" />
-                                <TextBlock
-                                    Foreground="{StaticResource WinMoeBlueBrush}"
-                                    Style="{StaticResource StatusHeaderTextStyle}"
-                                    Text="DISK" />
-                            </StackPanel>
-                            <Border Grid.Column="1" Style="{StaticResource StatusBadgeStyle}">
-                                <TextBlock
-                                    FontFamily="{StaticResource WinMoeMonoFont}"
-                                    FontSize="17"
-                                    FontWeight="Bold"
-                                    Foreground="{StaticResource WinMoeMutedBrush}"
-                                    Text="{Binding DiskTotalBadge}" />
-                            </Border>
-                        </Grid>
-                        <StackPanel Grid.Row="1" Orientation="Horizontal" Spacing="8">
-                            <TextBlock
-                                FontSize="56"
-                                FontWeight="SemiBold"
-                                Foreground="{StaticResource WinMoeTextBrush}"
-                                Text="{Binding DiskFreeAmountText}" />
-                            <TextBlock
-                                VerticalAlignment="Center"
-                                FontSize="20"
-                                FontWeight="SemiBold"
-                                Foreground="{StaticResource WinMoeMutedBrush}"
-                                Text="{Binding DiskFreeUnitText}" />
-                        </StackPanel>
-                        <ProgressBar
-                            Grid.Row="2"
-                            Height="12"
-                            Foreground="{StaticResource WinMoeRedBrush}"
-                            Maximum="100"
-                            Value="{Binding DiskUsagePercent}" />
-                        <StackPanel Grid.Row="4" Spacing="14">
-                            <TextBlock Style="{StaticResource StatusFooterTextStyle}" Text="{Binding DiskFooter}" />
-                            <TextBlock Style="{StaticResource StatusFooterTextStyle}" Text="剩余时间：不可用" />
-                        </StackPanel>
-                    </Grid>
-                </Border>
-
-                <Border
-                    Grid.Row="1"
-                    Grid.Column="1"
-                    Grid.ColumnSpan="2"
-                    Style="{StaticResource StatusCardStyle}">
-                    <Grid RowSpacing="16">
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto" />
-                            <RowDefinition Height="Auto" />
-                            <RowDefinition Height="*" />
-                            <RowDefinition Height="Auto" />
-                        </Grid.RowDefinitions>
-                        <Grid ColumnSpacing="12">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*" />
-                                <ColumnDefinition Width="Auto" />
-                            </Grid.ColumnDefinitions>
-                            <StackPanel Style="{StaticResource StatusHeaderRowStyle}">
-                                <FontIcon
-                                    FontSize="14"
-                                    Foreground="{StaticResource WinMoeGreenBrush}"
-                                    Style="{StaticResource StatusHeaderIconStyle}"
-                                    Glyph="&#xE774;" />
-                                <TextBlock
-                                    Foreground="{StaticResource WinMoeGreenBrush}"
-                                    Style="{StaticResource StatusHeaderTextStyle}"
-                                    Text="NETWORK" />
-                            </StackPanel>
-                            <Border Grid.Column="1" Style="{StaticResource StatusBadgeStyle}" Background="#263547">
-                                <TextBlock
-                                    FontFamily="{StaticResource WinMoeMonoFont}"
-                                    FontSize="17"
-                                    FontWeight="Bold"
-                                    Foreground="{StaticResource WinMoeBlueBrush}"
-                                    Text="{Binding NetworkBadge}" />
-                            </Border>
-                        </Grid>
-                        <StackPanel
-                            Grid.Row="1"
-                            Orientation="Horizontal"
-                            Spacing="8">
-                            <TextBlock
-                                VerticalAlignment="Bottom"
-                                FontSize="52"
-                                FontWeight="SemiBold"
-                                Foreground="{StaticResource WinMoeTextBrush}"
-                                Text="{Binding NetworkRateValueText}" />
-                            <TextBlock
-                                VerticalAlignment="Center"
-                                FontSize="22"
-                                FontWeight="SemiBold"
-                                Foreground="{StaticResource WinMoeMutedBrush}"
-                                Text="{Binding NetworkRateUnitText}" />
-                        </StackPanel>
-                        <Grid
-                            Grid.Row="2"
-                            Height="82"
-                            Margin="0,-4,0,-2"
-                            VerticalAlignment="Center">
-                            <Viewbox
-                                HorizontalAlignment="Stretch"
-                                VerticalAlignment="Stretch"
-                                Stretch="Fill">
-                                <Canvas Width="520" Height="80">
-                                    <Polyline
-                                        Points="0,68 520,68"
-                                        Stroke="#393732"
-                                        StrokeEndLineCap="Round"
-                                        StrokeStartLineCap="Round"
-                                        StrokeThickness="1" />
-                                    <Polyline
-                                        Points="{Binding NetworkDownloadChart.Points}"
-                                        Stroke="{StaticResource WinMoeGreenBrush}"
-                                        StrokeEndLineCap="Round"
-                                        StrokeLineJoin="Round"
-                                        StrokeStartLineCap="Round"
-                                        StrokeThickness="1.5" />
-                                    <Polyline
-                                        Points="{Binding NetworkUploadChart.Points}"
-                                        Stroke="{StaticResource WinMoeBlueBrush}"
-                                        StrokeEndLineCap="Round"
-                                        StrokeLineJoin="Round"
-                                        StrokeStartLineCap="Round"
-                                        StrokeThickness="1.5" />
-                                </Canvas>
-                            </Viewbox>
-                        </Grid>
-                        <TextBlock
-                            Grid.Row="3"
-                            Style="{StaticResource StatusFooterTextStyle}"
-                            Text="{Binding NetworkFooter}" />
-                    </Grid>
-                </Border>
-
-                <Border
-                    Grid.Row="1"
-                    Grid.Column="3"
-                    Style="{StaticResource StatusCardStyle}">
-                    <Grid RowSpacing="16">
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto" />
-                            <RowDefinition Height="Auto" />
-                            <RowDefinition Height="*" />
-                            <RowDefinition Height="Auto" />
-                        </Grid.RowDefinitions>
-                        <Grid ColumnSpacing="12">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*" />
-                                <ColumnDefinition Width="Auto" />
-                            </Grid.ColumnDefinitions>
-                            <StackPanel Style="{StaticResource StatusHeaderRowStyle}">
-                                <FontIcon
-                                    FontSize="18"
-                                    Foreground="{StaticResource WinMoeMutedBrush}"
-                                    Style="{StaticResource StatusHeaderIconStyle}"
-                                    Glyph="&#xE7F8;" />
-                                <TextBlock
-                                    Foreground="{StaticResource WinMoeMutedBrush}"
-                                    Style="{StaticResource StatusHeaderTextStyle}"
-                                    Text="FAN" />
-                            </StackPanel>
-                            <Border Grid.Column="1" Style="{StaticResource StatusBadgeStyle}">
-                                <TextBlock
-                                    FontFamily="{StaticResource WinMoeMonoFont}"
-                                    FontSize="17"
-                                    FontWeight="Bold"
-                                    Foreground="{StaticResource WinMoeMutedBrush}"
-                                    Text="{Binding FanBadge}" />
-                            </Border>
-                        </Grid>
-                        <StackPanel Grid.Row="1" Orientation="Horizontal" Spacing="8">
-                            <TextBlock
-                                FontSize="56"
-                                FontWeight="SemiBold"
-                                Foreground="{StaticResource WinMoeTextBrush}"
-                                Text="{Binding FanMetricText}" />
-                            <TextBlock
-                                VerticalAlignment="Center"
-                                FontSize="20"
-                                FontWeight="SemiBold"
-                                Foreground="{StaticResource WinMoeMutedBrush}"
-                                Text="RPM" />
-                        </StackPanel>
-                        <Grid Grid.Row="2" MinHeight="112">
-                            <Viewbox Stretch="Fill">
-                                <Canvas Width="100" Height="100">
-                                    <Polyline
-                                        Points="{Binding FanStatusChart.Points}"
-                                        Stroke="{StaticResource WinMoeMutedBrush}"
-                                        StrokeEndLineCap="Round"
-                                        StrokeLineJoin="Round"
-                                        StrokeStartLineCap="Round"
-                                        StrokeThickness="3" />
-                                </Canvas>
-                            </Viewbox>
-                        </Grid>
-                        <TextBlock
-                            Grid.Row="3"
-                            Style="{StaticResource StatusFooterTextStyle}"
-                            Text="{Binding FanFooter}" />
-                    </Grid>
-                </Border>
-
-                <Border
-                    Grid.Row="2"
-                    Grid.ColumnSpan="4"
-                    Style="{StaticResource StatusCardStyle}">
-                    <Grid ColumnSpacing="20">
+            <Border Grid.Column="1" Style="{StaticResource StatusCardStyle}">
+                <Grid RowSpacing="6">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+                    <Grid ColumnSpacing="8">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="180" />
+                            <ColumnDefinition Width="Auto" />
                         </Grid.ColumnDefinitions>
-                        <Grid RowSpacing="14">
-                            <Grid.RowDefinitions>
-                                <RowDefinition Height="Auto" />
-                                <RowDefinition Height="*" />
-                            </Grid.RowDefinitions>
+                        <StackPanel Style="{StaticResource StatusHeaderRowStyle}">
+                            <FontIcon
+                                Foreground="{StaticResource WinMoeGreenBrush}"
+                                Glyph="&#xE950;"
+                                Style="{StaticResource StatusHeaderIconStyle}" />
+                            <TextBlock
+                                Foreground="{StaticResource WinMoeGreenBrush}"
+                                Style="{StaticResource StatusHeaderTextStyle}"
+                                Text="CPU" />
+                        </StackPanel>
+                        <Border Grid.Column="1" Style="{StaticResource StatusBadgeStyle}" Background="#3A2A1C">
+                            <TextBlock
+                                FontFamily="{StaticResource WinMoeMonoFont}"
+                                FontSize="11"
+                                FontWeight="SemiBold"
+                                Foreground="{StaticResource WinMoeOrangeBrush}"
+                                Text="--°C" />
+                        </Border>
+                    </Grid>
+                    <TextBlock Grid.Row="1" Style="{StaticResource StatusMetricStyle}" Text="{Binding CpuUsageText}" />
+                    <ItemsControl
+                        Grid.Row="2"
+                        VerticalAlignment="Bottom"
+                        ItemsSource="{Binding CpuBars}">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <StackPanel
+                                    VerticalAlignment="Bottom"
+                                    Orientation="Horizontal"
+                                    Spacing="2" />
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate x:DataType="viewModels:DashboardBarSample">
+                                <Border
+                                    Width="4"
+                                    Height="{x:Bind Height}"
+                                    VerticalAlignment="Bottom"
+                                    Background="{StaticResource WinMoeGreenBrush}"
+                                    CornerRadius="1.5" />
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                    <TextBlock
+                        Grid.Row="3"
+                        Style="{StaticResource StatusFooterTextStyle}"
+                        Text="{Binding CpuFooter}" />
+                </Grid>
+            </Border>
+
+            <Border Grid.Column="2" Style="{StaticResource StatusCardStyle}">
+                <Grid RowSpacing="6">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+                    <Grid ColumnSpacing="8">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Style="{StaticResource StatusHeaderRowStyle}">
+                            <FontIcon
+                                Foreground="{StaticResource WinMoeOrangeBrush}"
+                                Glyph="&#xE7F8;"
+                                Style="{StaticResource StatusHeaderIconStyle}" />
+                            <TextBlock
+                                Foreground="{StaticResource WinMoeOrangeBrush}"
+                                Style="{StaticResource StatusHeaderTextStyle}"
+                                Text="GPU" />
+                        </StackPanel>
+                        <Border Grid.Column="1" Style="{StaticResource StatusBadgeStyle}" Background="#3A2A1C">
+                            <TextBlock
+                                FontFamily="{StaticResource WinMoeMonoFont}"
+                                FontSize="11"
+                                FontWeight="SemiBold"
+                                Foreground="{StaticResource WinMoeOrangeBrush}"
+                                Text="--°C" />
+                        </Border>
+                    </Grid>
+                    <TextBlock Grid.Row="1" Style="{StaticResource StatusMetricStyle}" Text="{Binding GpuMetricText}" />
+                    <Grid Grid.Row="2" MinHeight="48">
+                        <Viewbox Stretch="Fill">
+                            <Canvas Width="100" Height="48">
+                                <Polyline
+                                    Points="{Binding GpuStatusChart.Points}"
+                                    Stroke="{StaticResource WinMoeOrangeBrush}"
+                                    StrokeEndLineCap="Round"
+                                    StrokeLineJoin="Round"
+                                    StrokeStartLineCap="Round"
+                                    StrokeThickness="2" />
+                            </Canvas>
+                        </Viewbox>
+                    </Grid>
+                    <TextBlock
+                        Grid.Row="3"
+                        Style="{StaticResource StatusFooterTextStyle}"
+                        Text="{Binding GpuFooter}" />
+                </Grid>
+            </Border>
+
+            <Border Grid.Column="3" Style="{StaticResource StatusCardStyle}">
+                <Grid RowSpacing="6">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+                    <Grid ColumnSpacing="8">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Style="{StaticResource StatusHeaderRowStyle}">
+                            <FontIcon
+                                Foreground="{StaticResource WinMoeGoldBrush}"
+                                Glyph="&#xE964;"
+                                Style="{StaticResource StatusHeaderIconStyle}" />
+                            <TextBlock
+                                Foreground="{StaticResource WinMoeGoldBrush}"
+                                Style="{StaticResource StatusHeaderTextStyle}"
+                                Text="内存" />
+                        </StackPanel>
+                        <Border Grid.Column="1" Style="{StaticResource StatusBadgeStyle}">
+                            <TextBlock
+                                FontFamily="{StaticResource WinMoeMonoFont}"
+                                FontSize="11"
+                                FontWeight="SemiBold"
+                                Foreground="{StaticResource WinMoeMutedBrush}"
+                                Text="{Binding MemoryStateBadge}" />
+                        </Border>
+                    </Grid>
+                    <TextBlock Grid.Row="1" Style="{StaticResource StatusMetricStyle}" Text="{Binding MemoryUsageText}" />
+                    <Grid Grid.Row="2" MinHeight="48">
+                        <Viewbox Stretch="Fill">
+                            <Canvas Width="100" Height="48">
+                                <Polyline
+                                    Points="{Binding MemoryStatusChart.Points}"
+                                    Stroke="{StaticResource WinMoeGoldBrush}"
+                                    StrokeEndLineCap="Round"
+                                    StrokeLineJoin="Round"
+                                    StrokeStartLineCap="Round"
+                                    StrokeThickness="2" />
+                            </Canvas>
+                        </Viewbox>
+                    </Grid>
+                    <TextBlock
+                        Grid.Row="3"
+                        Style="{StaticResource StatusFooterTextStyle}"
+                        Text="{Binding MemorySummary}" />
+                </Grid>
+            </Border>
+
+            <!-- Row 1: BATTERY | DISK | NETWORK | FAN -->
+            <Border Grid.Row="1" Style="{StaticResource StatusCardStyle}">
+                <Grid ColumnSpacing="10">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <Grid RowSpacing="6">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="*" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
                             <StackPanel Style="{StaticResource StatusHeaderRowStyle}">
                                 <FontIcon
-                                    FontSize="14"
-                                    Foreground="{StaticResource WinMoeGoldBrush}"
-                                    Style="{StaticResource StatusHeaderIconStyle}"
-                                    Glyph="&#xEBA0;" />
+                                    Foreground="{StaticResource WinMoeGreenBrush}"
+                                    Glyph="&#xEBA0;"
+                                    Style="{StaticResource StatusHeaderIconStyle}" />
                                 <TextBlock
-                                    Foreground="{StaticResource WinMoeGoldBrush}"
+                                    Foreground="{StaticResource WinMoeGreenBrush}"
                                     Style="{StaticResource StatusHeaderTextStyle}"
-                                    Text="BATTERY" />
+                                    Text="电池" />
                             </StackPanel>
-                            <StackPanel Grid.Row="1" VerticalAlignment="Center" Spacing="8">
-                                <StackPanel Orientation="Horizontal" Spacing="8">
-                                    <TextBlock
-                                        FontSize="56"
-                                        FontWeight="SemiBold"
-                                        Foreground="{StaticResource WinMoeTextBrush}"
-                                        Text="{Binding BatteryMetricText}" />
-                                    <TextBlock
-                                        VerticalAlignment="Center"
-                                        FontSize="20"
-                                        FontWeight="SemiBold"
-                                        Foreground="{StaticResource WinMoeMutedBrush}"
-                                        Text="{Binding BatteryStateText}" />
-                                </StackPanel>
-                                <TextBlock Style="{StaticResource StatusFooterTextStyle}" Text="{Binding BatteryFooter}" />
-                            </StackPanel>
-                        </Grid>
-                        <Grid Grid.Column="1">
                             <Border
-                                Padding="12,5"
-                                HorizontalAlignment="Center"
-                                VerticalAlignment="Top"
+                                Grid.Column="1"
+                                Padding="8,2"
                                 Background="#263D2B"
-                                CornerRadius="14">
+                                CornerRadius="10">
                                 <TextBlock
                                     FontFamily="{StaticResource WinMoeMonoFont}"
-                                    FontSize="17"
-                                    FontWeight="Bold"
+                                    FontSize="10"
+                                    FontWeight="SemiBold"
                                     Foreground="{StaticResource WinMoeGreenBrush}"
                                     Text="{Binding BatteryHealthBadge}" />
                             </Border>
-                            <Grid
-                                Width="96"
-                                Height="96"
-                                HorizontalAlignment="Center"
-                                VerticalAlignment="Center">
-                                <Ellipse Stroke="#443F35" StrokeThickness="8" />
-                                <Ellipse Stroke="{StaticResource WinMoeGoldBrush}" StrokeThickness="8" />
-                                <FontIcon
-                                    HorizontalAlignment="Center"
-                                    VerticalAlignment="Center"
-                                    FontSize="28"
+                        </Grid>
+                        <StackPanel Grid.Row="1" VerticalAlignment="Center" Spacing="2">
+                            <StackPanel Orientation="Horizontal" Spacing="6">
+                                <TextBlock Style="{StaticResource StatusMetricStyle}" Text="{Binding BatteryMetricText}" />
+                                <TextBlock
+                                    VerticalAlignment="Bottom"
+                                    Margin="0,0,0,8"
+                                    FontSize="16"
                                     Foreground="{StaticResource WinMoeMutedBrush}"
-                                    Glyph="&#xE7F4;" />
-                            </Grid>
-                            <TextBlock
-                                HorizontalAlignment="Center"
-                                VerticalAlignment="Bottom"
-                                FontFamily="{StaticResource WinMoeMonoFont}"
-                                FontSize="16"
-                                FontWeight="Bold"
-                                Foreground="{StaticResource WinMoeMutedBrush}"
-                                Text="{Binding BatteryPercentText}" />
-                        </Grid>
+                                    Text="%" />
+                                <TextBlock
+                                    VerticalAlignment="Center"
+                                    FontSize="12"
+                                    Foreground="{StaticResource WinMoeMutedBrush}"
+                                    Text="{Binding BatteryStateText}" />
+                            </StackPanel>
+                        </StackPanel>
+                        <TextBlock
+                            Grid.Row="2"
+                            Style="{StaticResource StatusFooterTextStyle}"
+                            Text="{Binding BatteryFooter}" />
                     </Grid>
-                </Border>
+                    <!-- Mole-style charge ring -->
+                    <Grid
+                        Grid.Column="1"
+                        Width="56"
+                        Height="56"
+                        VerticalAlignment="Center">
+                        <Ellipse
+                            Width="52"
+                            Height="52"
+                            Stroke="#2A2824"
+                            StrokeThickness="4" />
+                        <Ellipse
+                            Width="52"
+                            Height="52"
+                            Stroke="{StaticResource WinMoeGreenBrush}"
+                            StrokeDashArray="{Binding BatteryRingDash}"
+                            StrokeThickness="4"
+                            RenderTransformOrigin="0.5,0.5">
+                            <Ellipse.RenderTransform>
+                                <RotateTransform Angle="-90" />
+                            </Ellipse.RenderTransform>
+                        </Ellipse>
+                        <FontIcon
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center"
+                            FontSize="14"
+                            Foreground="{StaticResource WinMoeGreenBrush}"
+                            Glyph="&#xE83D;" />
+                    </Grid>
+                </Grid>
+            </Border>
 
-                <Border
-                    Grid.Row="3"
-                    Grid.ColumnSpan="4"
-                    Padding="0"
-                    Style="{StaticResource StatusCardStyle}">
-                    <Grid>
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="60" />
-                            <RowDefinition Height="*" />
-                        </Grid.RowDefinitions>
-                        <Grid Padding="26,0" ColumnSpacing="16">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*" />
-                                <ColumnDefinition Width="130" />
-                                <ColumnDefinition Width="160" />
-                                <ColumnDefinition Width="100" />
-                                <ColumnDefinition Width="150" />
-                            </Grid.ColumnDefinitions>
+            <Border Grid.Row="1" Grid.Column="1" Style="{StaticResource StatusCardStyle}">
+                <Grid RowSpacing="6">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+                    <Grid ColumnSpacing="8">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Style="{StaticResource StatusHeaderRowStyle}">
+                            <FontIcon
+                                Foreground="{StaticResource WinMoeBlueBrush}"
+                                Glyph="&#xEDA2;"
+                                Style="{StaticResource StatusHeaderIconStyle}" />
                             <TextBlock
-                                VerticalAlignment="Center"
+                                Foreground="{StaticResource WinMoeBlueBrush}"
                                 Style="{StaticResource StatusHeaderTextStyle}"
-                                Text="{Binding TopProcessesTitle}" />
+                                Text="磁盘" />
+                        </StackPanel>
+                        <Border Grid.Column="1" Style="{StaticResource StatusBadgeStyle}">
                             <TextBlock
-                                Grid.Column="1"
-                                VerticalAlignment="Center"
-                                Style="{StaticResource StatusHeaderTextStyle}"
-                                Text="PID" />
-                            <TextBlock
-                                Grid.Column="2"
-                                VerticalAlignment="Center"
-                                Foreground="{StaticResource WinMoeGoldBrush}"
-                                Style="{StaticResource StatusHeaderTextStyle}"
-                                Text="CPU" />
-                            <TextBlock
-                                Grid.Column="3"
-                                VerticalAlignment="Center"
-                                Style="{StaticResource StatusHeaderTextStyle}"
-                                Text="PWR" />
-                            <TextBlock
-                                Grid.Column="4"
-                                VerticalAlignment="Center"
-                                Style="{StaticResource StatusHeaderTextStyle}"
-                                Text="MEM" />
-                        </Grid>
-                        <Border
-                            Grid.Row="0"
-                            VerticalAlignment="Bottom"
-                            BorderBrush="#33312C"
-                            BorderThickness="0,0,0,1" />
-                        <ListView
-                            Grid.Row="1"
-                            IsItemClickEnabled="False"
-                            ItemsSource="{Binding TopProcesses}"
-                            SelectionMode="None">
-                            <ListView.ItemTemplate>
-                                <DataTemplate x:DataType="models:ProcessTelemetry">
-                                    <Grid MinHeight="48" Padding="26,0" ColumnSpacing="16">
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="*" />
-                                            <ColumnDefinition Width="130" />
-                                            <ColumnDefinition Width="160" />
-                                            <ColumnDefinition Width="100" />
-                                            <ColumnDefinition Width="150" />
-                                        </Grid.ColumnDefinitions>
-                                        <StackPanel Orientation="Horizontal" Spacing="14">
-                                            <Border
-                                                Width="28"
-                                                Height="28"
-                                                VerticalAlignment="Center"
-                                                Background="#343331"
-                                                CornerRadius="6">
-                                                <FontIcon
-                                                    FontSize="12"
-                                                    Foreground="{StaticResource WinMoeDimBrush}"
-                                                    Glyph="&#xE756;" />
-                                            </Border>
-                                            <TextBlock
-                                                VerticalAlignment="Center"
-                                                FontSize="20"
-                                                FontWeight="SemiBold"
-                                                Foreground="{StaticResource WinMoeTextBrush}"
-                                                Text="{x:Bind Name}"
-                                                TextTrimming="CharacterEllipsis" />
-                                        </StackPanel>
-                                        <TextBlock
-                                            Grid.Column="1"
-                                            VerticalAlignment="Center"
-                                            FontFamily="{StaticResource WinMoeMonoFont}"
-                                            FontSize="19"
-                                            FontWeight="Bold"
-                                            Foreground="{StaticResource WinMoeDimBrush}"
-                                            Text="{x:Bind ProcessId}" />
-                                        <StackPanel
-                                            Grid.Column="2"
-                                            VerticalAlignment="Center"
-                                            Orientation="Horizontal"
-                                            Spacing="14">
-                                            <Grid Width="88" Height="8" VerticalAlignment="Center">
-                                                <Border Background="#343331" CornerRadius="4" />
-                                                <Border
-                                                    Width="{x:Bind CpuBarWidth}"
-                                                    HorizontalAlignment="Left"
-                                                    Background="{StaticResource WinMoeGoldBrush}"
-                                                    CornerRadius="4" />
-                                            </Grid>
-                                            <TextBlock
-                                                Width="58"
-                                                FontFamily="{StaticResource WinMoeMonoFont}"
-                                                FontSize="19"
-                                                FontWeight="Bold"
-                                                Foreground="{StaticResource WinMoeGoldBrush}"
-                                                Text="{x:Bind CpuUsageText}" />
-                                        </StackPanel>
-                                        <TextBlock
-                                            Grid.Column="3"
-                                            VerticalAlignment="Center"
-                                            FontFamily="{StaticResource WinMoeMonoFont}"
-                                            FontSize="19"
-                                            FontWeight="Bold"
-                                            Foreground="{StaticResource WinMoeDimBrush}"
-                                            Text="{x:Bind PowerImpactText}" />
-                                        <TextBlock
-                                            Grid.Column="4"
-                                            VerticalAlignment="Center"
-                                            FontFamily="{StaticResource WinMoeMonoFont}"
-                                            FontSize="19"
-                                            FontWeight="Bold"
-                                            Foreground="{StaticResource WinMoeMutedBrush}"
-                                            Text="{x:Bind WorkingSetText}" />
-                                    </Grid>
-                                </DataTemplate>
-                            </ListView.ItemTemplate>
-                        </ListView>
+                                FontFamily="{StaticResource WinMoeMonoFont}"
+                                FontSize="11"
+                                FontWeight="SemiBold"
+                                Foreground="{StaticResource WinMoeMutedBrush}"
+                                Text="{Binding DiskTotalBadge}" />
+                        </Border>
                     </Grid>
-                </Border>
-            </Grid>
-        </ScrollViewer>
-    </Grid>
+                    <StackPanel Grid.Row="1" Orientation="Horizontal" Spacing="4">
+                        <TextBlock Style="{StaticResource StatusMetricStyle}" Text="{Binding DiskFreeAmountText}" />
+                        <TextBlock
+                            VerticalAlignment="Center"
+                            FontSize="13"
+                            Foreground="{StaticResource WinMoeMutedBrush}"
+                            Text="{Binding DiskFreeUnitText}" />
+                    </StackPanel>
+                    <ProgressBar
+                        Grid.Row="2"
+                        Height="8"
+                        Foreground="{StaticResource WinMoeBlueBrush}"
+                        Maximum="100"
+                        Value="{Binding DiskUsagePercent}" />
+                    <TextBlock
+                        Grid.Row="4"
+                        Style="{StaticResource StatusFooterTextStyle}"
+                        Text="{Binding DiskFooter}" />
+                </Grid>
+            </Border>
+
+            <Border Grid.Row="1" Grid.Column="2" Style="{StaticResource StatusCardStyle}">
+                <Grid RowSpacing="6">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+                    <Grid ColumnSpacing="8">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Style="{StaticResource StatusHeaderRowStyle}">
+                            <FontIcon
+                                Foreground="{StaticResource WinMoeBlueBrush}"
+                                Glyph="&#xE774;"
+                                Style="{StaticResource StatusHeaderIconStyle}" />
+                            <TextBlock
+                                Foreground="{StaticResource WinMoeBlueBrush}"
+                                Style="{StaticResource StatusHeaderTextStyle}"
+                                Text="网络" />
+                        </StackPanel>
+                        <Border Grid.Column="1" Style="{StaticResource StatusBadgeStyle}" Background="#1E2A38">
+                            <TextBlock
+                                FontFamily="{StaticResource WinMoeMonoFont}"
+                                FontSize="11"
+                                FontWeight="SemiBold"
+                                Foreground="{StaticResource WinMoeBlueBrush}"
+                                Text="{Binding NetworkBadge}" />
+                        </Border>
+                    </Grid>
+                    <StackPanel Grid.Row="1" Orientation="Horizontal" Spacing="4">
+                        <TextBlock Style="{StaticResource StatusMetricStyle}" Text="{Binding NetworkRateValueText}" />
+                        <TextBlock
+                            VerticalAlignment="Center"
+                            FontSize="13"
+                            Foreground="{StaticResource WinMoeMutedBrush}"
+                            Text="{Binding NetworkRateUnitText}" />
+                    </StackPanel>
+                    <Grid Grid.Row="2" MinHeight="40">
+                        <Viewbox Stretch="Fill">
+                            <Canvas Width="200" Height="48">
+                                <Polyline
+                                    Points="{Binding NetworkDownloadChart.Points}"
+                                    Stroke="{StaticResource WinMoeGreenBrush}"
+                                    StrokeEndLineCap="Round"
+                                    StrokeLineJoin="Round"
+                                    StrokeStartLineCap="Round"
+                                    StrokeThickness="1.5" />
+                                <Polyline
+                                    Points="{Binding NetworkUploadChart.Points}"
+                                    Stroke="{StaticResource WinMoeBlueBrush}"
+                                    StrokeEndLineCap="Round"
+                                    StrokeLineJoin="Round"
+                                    StrokeStartLineCap="Round"
+                                    StrokeThickness="1.5" />
+                            </Canvas>
+                        </Viewbox>
+                    </Grid>
+                    <TextBlock
+                        Grid.Row="3"
+                        Style="{StaticResource StatusFooterTextStyle}"
+                        Text="{Binding NetworkFooter}" />
+                </Grid>
+            </Border>
+
+            <Border Grid.Row="1" Grid.Column="3" Style="{StaticResource StatusCardStyle}">
+                <Grid RowSpacing="6">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+                    <Grid ColumnSpacing="8">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Style="{StaticResource StatusHeaderRowStyle}">
+                            <FontIcon
+                                Foreground="{StaticResource WinMoeMutedBrush}"
+                                Glyph="&#xE7F8;"
+                                Style="{StaticResource StatusHeaderIconStyle}" />
+                            <TextBlock
+                                Foreground="{StaticResource WinMoeMutedBrush}"
+                                Style="{StaticResource StatusHeaderTextStyle}"
+                                Text="风扇" />
+                        </StackPanel>
+                        <Border Grid.Column="1" Style="{StaticResource StatusBadgeStyle}">
+                            <TextBlock
+                                FontFamily="{StaticResource WinMoeMonoFont}"
+                                FontSize="11"
+                                FontWeight="SemiBold"
+                                Foreground="{StaticResource WinMoeMutedBrush}"
+                                Text="{Binding FanBadge}" />
+                        </Border>
+                    </Grid>
+                    <StackPanel Grid.Row="1" Orientation="Horizontal" Spacing="4">
+                        <TextBlock Style="{StaticResource StatusMetricStyle}" Text="{Binding FanMetricText}" />
+                        <TextBlock
+                            VerticalAlignment="Center"
+                            FontSize="12"
+                            Foreground="{StaticResource WinMoeDimBrush}"
+                            Text="RPM" />
+                    </StackPanel>
+                    <!-- Mole Auto / Cool / Max segments — display-only on Windows (no SMC). -->
+                    <StackPanel
+                        Grid.Row="2"
+                        VerticalAlignment="Center"
+                        Orientation="Horizontal"
+                        Spacing="4">
+                        <Border
+                            Padding="10,5"
+                            Background="#3A3428"
+                            BorderBrush="{StaticResource WinMoeGoldBrush}"
+                            BorderThickness="1"
+                            CornerRadius="12"
+                            Opacity="0.95">
+                            <TextBlock
+                                FontSize="11"
+                                FontWeight="SemiBold"
+                                Foreground="{StaticResource WinMoeGoldBrush}"
+                                Text="自动" />
+                        </Border>
+                        <Border
+                            Padding="10,5"
+                            Background="Transparent"
+                            BorderBrush="#2A2824"
+                            BorderThickness="1"
+                            CornerRadius="12"
+                            Opacity="0.55">
+                            <TextBlock
+                                FontSize="11"
+                                Foreground="{StaticResource WinMoeDimBrush}"
+                                Text="降温" />
+                        </Border>
+                        <Border
+                            Padding="10,5"
+                            Background="Transparent"
+                            BorderBrush="#2A2824"
+                            BorderThickness="1"
+                            CornerRadius="12"
+                            Opacity="0.55">
+                            <TextBlock
+                                FontSize="11"
+                                Foreground="{StaticResource WinMoeDimBrush}"
+                                Text="强冷" />
+                        </Border>
+                    </StackPanel>
+                    <TextBlock
+                        Grid.Row="3"
+                        Style="{StaticResource StatusFooterTextStyle}"
+                        Text="{Binding FanFooter}" />
+                </Grid>
+            </Border>
+
+            <!-- Process table -->
+            <Border
+                Grid.Row="2"
+                Grid.ColumnSpan="4"
+                Padding="0"
+                Background="{StaticResource WinMoePanelProcessBrush}"
+                BorderBrush="{StaticResource WinMoeStrokeSoftBrush}"
+                BorderThickness="1"
+                CornerRadius="14">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="32" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+                    <Grid Padding="12,0" ColumnSpacing="8">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="56" />
+                            <ColumnDefinition Width="96" />
+                            <ColumnDefinition Width="48" />
+                            <ColumnDefinition Width="64" />
+                            <ColumnDefinition Width="32" />
+                        </Grid.ColumnDefinitions>
+                        <TextBlock
+                            VerticalAlignment="Center"
+                            Style="{StaticResource StatusHeaderTextStyle}"
+                            Text="{Binding TopProcessesTitle}" />
+                        <TextBlock
+                            Grid.Column="1"
+                            VerticalAlignment="Center"
+                            HorizontalAlignment="Right"
+                            Style="{StaticResource StatusHeaderTextStyle}"
+                            Text="PID" />
+                        <TextBlock
+                            Grid.Column="2"
+                            VerticalAlignment="Center"
+                            HorizontalAlignment="Right"
+                            Foreground="{StaticResource WinMoeGoldBrush}"
+                            Style="{StaticResource StatusHeaderTextStyle}"
+                            Text="CPU" />
+                        <TextBlock
+                            Grid.Column="3"
+                            VerticalAlignment="Center"
+                            HorizontalAlignment="Right"
+                            Style="{StaticResource StatusHeaderTextStyle}"
+                            Text="能耗" />
+                        <TextBlock
+                            Grid.Column="4"
+                            VerticalAlignment="Center"
+                            HorizontalAlignment="Right"
+                            Style="{StaticResource StatusHeaderTextStyle}"
+                            Text="内存" />
+                    </Grid>
+                    <Border
+                        Grid.Row="0"
+                        VerticalAlignment="Bottom"
+                        BorderBrush="#2A2824"
+                        BorderThickness="0,0,0,1" />
+                    <ListView
+                        Grid.Row="1"
+                        IsItemClickEnabled="False"
+                        ItemsSource="{Binding TopProcesses}"
+                        SelectionMode="None">
+                        <ListView.ItemContainerStyle>
+                            <Style TargetType="ListViewItem">
+                                <Setter Property="Padding" Value="0" />
+                                <Setter Property="Margin" Value="0" />
+                                <Setter Property="MinHeight" Value="30" />
+                                <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+                                <Setter Property="Background" Value="Transparent" />
+                            </Style>
+                        </ListView.ItemContainerStyle>
+                        <ListView.ItemTemplate>
+                            <DataTemplate x:DataType="models:ProcessTelemetry">
+                                <Grid MinHeight="30" Padding="12,0" ColumnSpacing="8">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="56" />
+                                        <ColumnDefinition Width="96" />
+                                        <ColumnDefinition Width="48" />
+                                        <ColumnDefinition Width="64" />
+                                        <ColumnDefinition Width="32" />
+                                    </Grid.ColumnDefinitions>
+                                    <StackPanel Orientation="Horizontal" Spacing="6">
+                                        <Border
+                                            Width="18"
+                                            Height="18"
+                                            VerticalAlignment="Center"
+                                            Background="#2A2824"
+                                            CornerRadius="4">
+                                            <TextBlock
+                                                HorizontalAlignment="Center"
+                                                VerticalAlignment="Center"
+                                                FontSize="9"
+                                                FontWeight="SemiBold"
+                                                Foreground="{StaticResource WinMoeDimBrush}"
+                                                Text="{x:Bind Initials}" />
+                                        </Border>
+                                        <TextBlock
+                                            Width="12"
+                                            VerticalAlignment="Center"
+                                            FontSize="10"
+                                            Foreground="{StaticResource WinMoeGoldBrush}"
+                                            Text="{x:Bind PinGlyph}" />
+                                        <TextBlock
+                                            VerticalAlignment="Center"
+                                            FontSize="12"
+                                            FontWeight="SemiBold"
+                                            Text="{x:Bind Name}"
+                                            TextTrimming="CharacterEllipsis" />
+                                    </StackPanel>
+                                    <TextBlock
+                                        Grid.Column="1"
+                                        VerticalAlignment="Center"
+                                        HorizontalAlignment="Right"
+                                        FontFamily="{StaticResource WinMoeMonoFont}"
+                                        FontSize="11"
+                                        Foreground="{StaticResource WinMoeDimBrush}"
+                                        Text="{x:Bind ProcessId}" />
+                                    <StackPanel
+                                        Grid.Column="2"
+                                        VerticalAlignment="Center"
+                                        HorizontalAlignment="Right"
+                                        Orientation="Horizontal"
+                                        Spacing="5">
+                                        <Grid Width="40" Height="4" VerticalAlignment="Center">
+                                            <Border Background="#2E2C28" CornerRadius="2" />
+                                            <Border
+                                                Width="{x:Bind CpuBarWidth}"
+                                                HorizontalAlignment="Left"
+                                                Background="{StaticResource WinMoeGoldBrush}"
+                                                CornerRadius="2" />
+                                        </Grid>
+                                        <TextBlock
+                                            MinWidth="32"
+                                            FontFamily="{StaticResource WinMoeMonoFont}"
+                                            FontSize="11"
+                                            FontWeight="SemiBold"
+                                            Foreground="{StaticResource WinMoeGoldBrush}"
+                                            Text="{x:Bind CpuUsageText}" />
+                                    </StackPanel>
+                                    <TextBlock
+                                        Grid.Column="3"
+                                        VerticalAlignment="Center"
+                                        HorizontalAlignment="Right"
+                                        FontFamily="{StaticResource WinMoeMonoFont}"
+                                        FontSize="11"
+                                        Foreground="{StaticResource WinMoeDimBrush}"
+                                        Text="{x:Bind PowerImpactText}" />
+                                    <TextBlock
+                                        Grid.Column="4"
+                                        VerticalAlignment="Center"
+                                        HorizontalAlignment="Right"
+                                        FontFamily="{StaticResource WinMoeMonoFont}"
+                                        FontSize="11"
+                                        Foreground="{StaticResource WinMoeMutedBrush}"
+                                        Text="{x:Bind WorkingSetText}" />
+                                    <Button
+                                        Grid.Column="5"
+                                        Width="26"
+                                        Height="26"
+                                        Padding="0"
+                                        VerticalAlignment="Center"
+                                        Background="Transparent"
+                                        BorderThickness="0"
+                                        Click="ProcessMenuButton_Click"
+                                        CornerRadius="13"
+                                        Tag="{x:Bind}">
+                                        <FontIcon
+                                            FontSize="11"
+                                            Foreground="{StaticResource WinMoeDimBrush}"
+                                            Glyph="&#xE712;" />
+                                    </Button>
+                                </Grid>
+                            </DataTemplate>
+                        </ListView.ItemTemplate>
+                    </ListView>
+                </Grid>
+            </Border>
+        </Grid>
+    </ScrollViewer>
 </Page>
