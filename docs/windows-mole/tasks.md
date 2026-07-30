@@ -7,9 +7,9 @@
 | 指标 | 数值 |
 |---|---:|
 | 总任务数 | 8 |
-| 已完成 | 5 (62.5%) |
-| 待执行 | 3 (37.5%) |
-| 最后更新 | 2026-07-30 12:23 CST |
+| 已完成 | 6 (75%) |
+| 待执行 | 2 (25%) |
+| 最后更新 | 2026-07-30 12:32 CST |
 
 ## 任务
 
@@ -51,8 +51,12 @@
     磁盘根目录和 Windows 目录均被拒绝
   - _需求参考：RQ-3_
 
-- [ ] **6. 完成构建、静态校验和 Windows CI**
-  - restore、build、test、publish dry-run
+- [x] **6. 完成构建、静态校验和 Windows CI**
+  - 完成时间：2026-07-30 12:32 CST
+  - 产出：`scripts/validate-source.ps1`、`.github/workflows/windows-ci.yml`
+  - 验收：Windows runner 上的源码安全门禁、restore、WinUI/XAML build、
+    完整测试、publish dry-run 和测试产物上传全部通过
+  - 证据：GitHub Actions run `30514003553`
   - _需求参考：RQ-5_
 
 - [ ] **7. 在 Windows 真机完成视觉和交互验收**
@@ -67,4 +71,4 @@
 
 **架构：** WinUI 3 + MVVM + Windows 服务层 + Mole 安全引擎适配器。
 **当前批次：** P0 工程、视觉与可验证构建。
-**下一任务：** 任务 6，构建、静态校验和 Windows CI。
+**下一任务：** 任务 7，Windows 真机视觉与交互验收。
