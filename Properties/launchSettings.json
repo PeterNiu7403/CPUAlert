@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "MoleWindows (Package)": {
+      "commandName": "MsixPackage"
+    },
+    "MoleWindows (Unpackaged)": {
+      "commandName": "Project"
+    }
+  }
+}

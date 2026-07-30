@@ -1,0 +1,171 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <Color x:Key="MoleWindowsColorBackground">#121217</Color>
+    <Color x:Key="MoleWindowsColorBackgroundGreen">#151A2B</Color>
+    <Color x:Key="MoleWindowsColorBackgroundBlue">#2D2017</Color>
+    <Color x:Key="MoleWindowsColorBackgroundBrown">#2A261F</Color>
+    <Color x:Key="MoleWindowsColorBackgroundPurple">#221F18</Color>
+    <Color x:Key="MoleWindowsColorBackgroundSoftware">#211819</Color>
+    <Color x:Key="MoleWindowsColorPanel">#1D1D22</Color>
+    <Color x:Key="MoleWindowsColorPanelWarm">#221C16</Color>
+    <Color x:Key="MoleWindowsColorStroke">#343238</Color>
+    <Color x:Key="MoleWindowsColorText">#F3ECDD</Color>
+    <Color x:Key="MoleWindowsColorMuted">#B5AEA2</Color>
+    <Color x:Key="MoleWindowsColorDim">#807A72</Color>
+    <Color x:Key="MoleWindowsColorAccent">#D9A066</Color>
+    <Color x:Key="MoleWindowsColorOnAccent">#241B12</Color>
+    <Color x:Key="MoleWindowsColorGreen">#57D58E</Color>
+    <Color x:Key="MoleWindowsColorGold">#E6A93C</Color>
+    <Color x:Key="MoleWindowsColorOrange">#F2894E</Color>
+    <Color x:Key="MoleWindowsColorBlue">#5AA8F0</Color>
+    <Color x:Key="MoleWindowsColorRed">#F0604E</Color>
+    <Color x:Key="MoleWindowsColorPurple">#8E84F0</Color>
+
+    <SolidColorBrush x:Key="MoleWindowsBackgroundBrush" Color="{StaticResource MoleWindowsColorBackground}" />
+    <SolidColorBrush x:Key="MoleWindowsBackgroundGreenBrush" Color="{StaticResource MoleWindowsColorBackgroundGreen}" />
+    <SolidColorBrush x:Key="MoleWindowsBackgroundBlueBrush" Color="{StaticResource MoleWindowsColorBackgroundBlue}" />
+    <SolidColorBrush x:Key="MoleWindowsBackgroundBrownBrush" Color="{StaticResource MoleWindowsColorBackgroundBrown}" />
+    <SolidColorBrush x:Key="MoleWindowsBackgroundPurpleBrush" Color="{StaticResource MoleWindowsColorBackgroundPurple}" />
+    <SolidColorBrush x:Key="MoleWindowsBackgroundSoftwareBrush" Color="{StaticResource MoleWindowsColorBackgroundSoftware}" />
+    <SolidColorBrush x:Key="MoleWindowsPanelBrush" Color="{StaticResource MoleWindowsColorPanel}" />
+    <SolidColorBrush x:Key="MoleWindowsPanelWarmBrush" Color="{StaticResource MoleWindowsColorPanelWarm}" />
+    <SolidColorBrush x:Key="MoleWindowsStrokeBrush" Color="{StaticResource MoleWindowsColorStroke}" />
+    <SolidColorBrush x:Key="MoleWindowsTextBrush" Color="{StaticResource MoleWindowsColorText}" />
+    <SolidColorBrush x:Key="MoleWindowsMutedBrush" Color="{StaticResource MoleWindowsColorMuted}" />
+    <SolidColorBrush x:Key="MoleWindowsDimBrush" Color="{StaticResource MoleWindowsColorDim}" />
+    <SolidColorBrush x:Key="MoleWindowsAccentBrush" Color="{StaticResource MoleWindowsColorAccent}" />
+    <SolidColorBrush x:Key="MoleWindowsOnAccentBrush" Color="{StaticResource MoleWindowsColorOnAccent}" />
+    <SolidColorBrush x:Key="MoleWindowsGreenBrush" Color="{StaticResource MoleWindowsColorGreen}" />
+    <SolidColorBrush x:Key="MoleWindowsGoldBrush" Color="{StaticResource MoleWindowsColorGold}" />
+    <SolidColorBrush x:Key="MoleWindowsOrangeBrush" Color="{StaticResource MoleWindowsColorOrange}" />
+    <SolidColorBrush x:Key="MoleWindowsBlueBrush" Color="{StaticResource MoleWindowsColorBlue}" />
+    <SolidColorBrush x:Key="MoleWindowsRedBrush" Color="{StaticResource MoleWindowsColorRed}" />
+    <SolidColorBrush x:Key="MoleWindowsPurpleBrush" Color="{StaticResource MoleWindowsColorPurple}" />
+    <SolidColorBrush x:Key="MoleWindowsWhitePillBrush" Color="#FFFDF8" />
+
+    <FontFamily x:Key="MoleWindowsTextFont">Segoe UI Variable Text, Microsoft YaHei UI</FontFamily>
+    <FontFamily x:Key="MoleWindowsMonoFont">Cascadia Mono, Consolas</FontFamily>
+    <FontFamily x:Key="MoleWindowsSerifFont">Segoe UI Variable Display, Microsoft YaHei UI</FontFamily>
+
+    <Style x:Key="TitleTextBlockStyle" TargetType="TextBlock">
+        <Setter Property="FontFamily" Value="{StaticResource MoleWindowsSerifFont}" />
+        <Setter Property="FontSize" Value="42" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="Foreground" Value="{StaticResource MoleWindowsTextBrush}" />
+    </Style>
+
+    <Style x:Key="SubtitleTextBlockStyle" TargetType="TextBlock">
+        <Setter Property="FontFamily" Value="{StaticResource MoleWindowsMonoFont}" />
+        <Setter Property="FontSize" Value="16" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="Foreground" Value="{StaticResource MoleWindowsMutedBrush}" />
+    </Style>
+
+    <Style x:Key="MoleWindowsLabelTextStyle" TargetType="TextBlock">
+        <Setter Property="FontFamily" Value="{StaticResource MoleWindowsMonoFont}" />
+        <Setter Property="FontSize" Value="15" />
+        <Setter Property="FontWeight" Value="Bold" />
+        <Setter Property="CharacterSpacing" Value="80" />
+        <Setter Property="Foreground" Value="{StaticResource MoleWindowsMutedBrush}" />
+    </Style>
+
+    <Style x:Key="MoleWindowsMetricTextStyle" TargetType="TextBlock">
+        <Setter Property="FontSize" Value="34" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="Foreground" Value="{StaticResource MoleWindowsTextBrush}" />
+    </Style>
+
+    <Style x:Key="MoleWindowsCardBorderStyle" TargetType="Border">
+        <Setter Property="Padding" Value="20" />
+        <Setter Property="CornerRadius" Value="20" />
+        <Setter Property="Background" Value="{StaticResource MoleWindowsPanelBrush}" />
+        <Setter Property="BorderBrush" Value="{StaticResource MoleWindowsStrokeBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+    </Style>
+
+    <Style x:Key="MoleWindowsPillButtonStyle" TargetType="Button">
+        <Setter Property="MinHeight" Value="44" />
+        <Setter Property="Padding" Value="24,8" />
+        <Setter Property="CornerRadius" Value="22" />
+        <Setter Property="FontFamily" Value="{StaticResource MoleWindowsMonoFont}" />
+        <Setter Property="FontSize" Value="16" />
+        <Setter Property="FontWeight" Value="Bold" />
+        <Setter Property="Background" Value="{StaticResource MoleWindowsWhitePillBrush}" />
+        <Setter Property="Foreground" Value="Black" />
+        <Setter Property="BorderBrush" Value="{StaticResource MoleWindowsWhitePillBrush}" />
+    </Style>
+
+    <Style x:Key="MoleWindowsSecondaryPillButtonStyle" TargetType="Button" BasedOn="{StaticResource MoleWindowsPillButtonStyle}">
+        <Setter Property="Background" Value="{StaticResource MoleWindowsPanelBrush}" />
+        <Setter Property="Foreground" Value="{StaticResource MoleWindowsTextBrush}" />
+        <Setter Property="BorderBrush" Value="{StaticResource MoleWindowsStrokeBrush}" />
+    </Style>
+
+    <Style x:Key="MoleWindowsTopNavButtonStyle" TargetType="Button">
+        <Setter Property="MinHeight" Value="42" />
+        <Setter Property="Padding" Value="18,6" />
+        <Setter Property="CornerRadius" Value="22" />
+        <Setter Property="FontFamily" Value="{StaticResource MoleWindowsTextFont}" />
+        <Setter Property="FontSize" Value="16" />
+        <Setter Property="FontWeight" Value="Bold" />
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="Foreground" Value="{StaticResource MoleWindowsMutedBrush}" />
+        <Setter Property="BorderBrush" Value="Transparent" />
+    </Style>
+
+    <Style x:Key="MoleWindowsTopNavButtonSelectedStyle" TargetType="Button" BasedOn="{StaticResource MoleWindowsTopNavButtonStyle}">
+        <Setter Property="Background" Value="{StaticResource MoleWindowsWhitePillBrush}" />
+        <Setter Property="Foreground" Value="Black" />
+    </Style>
+
+    <Style x:Key="MoleWindowsIconButtonStyle" TargetType="Button">
+        <Setter Property="Width" Value="42" />
+        <Setter Property="Height" Value="42" />
+        <Setter Property="Padding" Value="0" />
+        <Setter Property="CornerRadius" Value="21" />
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="Foreground" Value="{StaticResource MoleWindowsMutedBrush}" />
+        <Setter Property="BorderBrush" Value="Transparent" />
+    </Style>
+
+    <Style x:Key="MoleWindowsIconButtonSelectedStyle" TargetType="Button" BasedOn="{StaticResource MoleWindowsIconButtonStyle}">
+        <Setter Property="Background" Value="{StaticResource MoleWindowsWhitePillBrush}" />
+        <Setter Property="Foreground" Value="Black" />
+    </Style>
+
+    <Style TargetType="Page">
+        <Setter Property="Background" Value="{StaticResource MoleWindowsBackgroundBrush}" />
+    </Style>
+
+    <Style TargetType="TextBlock">
+        <Setter Property="Foreground" Value="{StaticResource MoleWindowsTextBrush}" />
+    </Style>
+
+    <Style TargetType="TextBox">
+        <Setter Property="Background" Value="#141412" />
+        <Setter Property="Foreground" Value="{StaticResource MoleWindowsTextBrush}" />
+        <Setter Property="BorderBrush" Value="{StaticResource MoleWindowsStrokeBrush}" />
+        <Setter Property="FontFamily" Value="{StaticResource MoleWindowsMonoFont}" />
+    </Style>
+
+    <Style TargetType="ListView">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="Foreground" Value="{StaticResource MoleWindowsTextBrush}" />
+    </Style>
+
+    <Style TargetType="TreeView">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="Foreground" Value="{StaticResource MoleWindowsTextBrush}" />
+    </Style>
+
+    <Style TargetType="ProgressBar">
+        <Setter Property="Foreground" Value="{StaticResource MoleWindowsGreenBrush}" />
+        <Setter Property="Background" Value="#343331" />
+        <Setter Property="MinHeight" Value="8" />
+        <Setter Property="CornerRadius" Value="5" />
+    </Style>
+</ResourceDictionary>

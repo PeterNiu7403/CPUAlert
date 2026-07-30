@@ -1,0 +1,51 @@
+name: windows-ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: windows-ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-test:
+    runs-on: windows-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+
+      - name: Setup .NET 8
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Validate source and safety gates
+        shell: pwsh
+        run: .\scripts\validate-source.ps1
+
+      - name: Restore
+        run: dotnet restore .\MoleWindows.sln
+
+      - name: Build app
+        run: dotnet build .\MoleWindows.csproj -c Release -p:Platform=x64 -nr:false -v:minimal
+
+      - name: Test
+        run: dotnet test .\Tests\MoleWindows.Tests\MoleWindows.Tests.csproj -c Release -nr:false -v:minimal --logger "trx;LogFileName=mole-windows-tests.trx" --results-directory .\artifacts\test-results
+
+      - name: Publish dry run
+        run: dotnet publish .\MoleWindows.csproj -c Release -p:Platform=x64 -r win-x64 --self-contained false -o .\artifacts\ci-publish -nr:false -v:minimal
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mole-windows-test-results
+          path: artifacts/test-results
+          if-no-files-found: ignore

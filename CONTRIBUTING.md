@@ -1,65 +1,25 @@
-# Contributing to CPUAlert
+# Contributing to MoleWindows
 
-Thank you for helping improve CPUAlert. Contributions should preserve the project's privacy, safety, and metric-honesty guarantees.
+Thanks for helping make MoleWindows usable on Windows. This branch should stay easy to review, safe to run, and honest about Mole Windows limitations.
 
-Participation in the project is governed by our [Code of Conduct](CODE_OF_CONDUCT.md).
+## Development Rules
 
-## Before you start
+- Keep UI, ViewModel, and service boundaries clear. UI code should handle WinUI events; ViewModels should hold state and commands; services should own Windows/Mole integration.
+- Prefer Mole Windows when it exposes a safe, non-interactive command. Use native Windows fallback only when Mole lacks JSON output or background-safe behavior.
+- Keep destructive operations preview-first and confirmation-gated.
+- Preserve local-only agent access: HTTP must bind to loopback and MCP destructive actions must remain opt-in.
+- Use English for code names, comments, scripts, workflow text, and docs.
 
-- Search existing issues before opening a new one.
-- Use a focused issue for behavior changes that affect permissions, process termination, private GPU APIs, or the privileged helper.
-- Do not include process names, usernames, signing identities, Team IDs, benchmark traces, crash reports, or other machine-specific data unless it has been redacted.
-- Security-sensitive reports belong in GitHub private vulnerability reporting; see [SECURITY.md](SECURITY.md).
+## Pull Request Checklist
 
-## Development setup
+- `dotnet build .\MoleWindows.csproj -p:Platform=x64 -nr:false -v:minimal`
+- `dotnet build .\Tests\MoleWindows.Tests\MoleWindows.Tests.csproj -nr:false -v:minimal`
+- `dotnet test .\Tests\MoleWindows.Tests\MoleWindows.Tests.csproj --no-build -v:minimal`
+- If UI or startup behavior changed, run at least one `run-local.ps1` smoke route. Add `-ScreenshotPath artifacts\ui-smoke\<route>.png` when the change affects layout, navigation, charts, or autoscan result surfaces.
+- Update `docs/windows-mole/design.md` and immediately update
+  `docs/windows-mole/tasks.md` when changing engine boundaries, release gates,
+  or known gaps.
 
-CPUAlert requires an Apple silicon Mac, macOS 15 or later, and full Xcode. Create an ignored `Config/Local.xcconfig` containing your own development Team ID:
+## Branch Readiness
 
-```xcconfig
-CPU_ALERT_DEVELOPMENT_TEAM = YOUR_TEAM_ID
-```
-
-Build and run the unit tests:
-
-```bash
-export DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer
-
-xcodebuild build \
-  -project CPUAlert.xcodeproj \
-  -scheme CPUAlert \
-  -configuration Debug \
-  -destination 'platform=macOS,arch=arm64' \
-  -derivedDataPath build/DerivedData
-
-xcodebuild test \
-  -project CPUAlert.xcodeproj \
-  -scheme CPUAlert \
-  -destination 'platform=macOS,arch=arm64' \
-  -derivedDataPath build/DerivedData \
-  -only-testing:CPUAlertTests
-```
-
-UI tests use deterministic launch states. Run them when changing navigation, labels, localization, accessibility, group disclosure, settings, or menu behavior.
-
-## Project expectations
-
-- Keep CPU monitoring usable when GPU monitoring fails.
-- Describe estimated GPU values as estimates; do not present coalition attribution as a direct per-process hardware counter.
-- Keep rankings bounded and avoid retaining process history.
-- Do not introduce networking, telemetry, analytics, or upload behavior without explicit design discussion and prominent documentation.
-- Keep privileged operations fixed and narrowly scoped. Never add arbitrary command, path, executable, or environment execution to the helper.
-- Authenticate every root termination and preserve PID plus process-start-time validation.
-- Add or update tests for behavior changes.
-- Keep English and Simplified Chinese user-facing strings aligned.
-
-## Pull requests
-
-Create a focused branch, use clear commits, and explain:
-
-- what changed and why;
-- user-visible or security impact;
-- metric-semantics impact, if any;
-- tests and manual checks performed;
-- screenshots for visible UI changes.
-
-By contributing, you agree that your contribution is licensed under the repository's `GPL-3.0-or-later` license.
+A change is release-ready only when tests pass, the app can open a visible WinUI window, `/health` responds when HTTP is enabled, and release documentation remains accurate for a new contributor.

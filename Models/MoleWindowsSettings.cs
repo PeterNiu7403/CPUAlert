@@ -1,0 +1,39 @@
+namespace MoleWindows.Models;
+
+public sealed class MoleWindowsSettings
+{
+    public const int DefaultSamplingIntervalSeconds = 60;
+    public const int DefaultHistoryRetentionDays = 90;
+    public const int DefaultHttpServerPort = 9277;
+
+    public int SamplingIntervalSeconds { get; set; } = DefaultSamplingIntervalSeconds;
+
+    public int HistoryRetentionDays { get; set; } = DefaultHistoryRetentionDays;
+
+    public bool HttpServerEnabled { get; set; } = true;
+
+    public int HttpServerPort { get; set; } = DefaultHttpServerPort;
+
+    public bool TrayIconEnabled { get; set; } = true;
+
+    public bool McpDestructiveActionsEnabled { get; set; }
+
+    /// Share anonymous crash reports + usage analytics. Opt-out (on by default),
+    /// matching the macOS app; see Services/AppTelemetry.cs.
+    public bool TelemetryEnabled { get; set; } = true;
+
+    public static MoleWindowsSettings Normalize(MoleWindowsSettings? settings)
+    {
+        settings ??= new MoleWindowsSettings();
+        return new MoleWindowsSettings
+        {
+            SamplingIntervalSeconds = Math.Clamp(settings.SamplingIntervalSeconds, 5, 300),
+            HistoryRetentionDays = Math.Clamp(settings.HistoryRetentionDays, 1, 365),
+            HttpServerEnabled = settings.HttpServerEnabled,
+            HttpServerPort = Math.Clamp(settings.HttpServerPort, 1024, 65535),
+            TrayIconEnabled = settings.TrayIconEnabled,
+            McpDestructiveActionsEnabled = settings.McpDestructiveActionsEnabled,
+            TelemetryEnabled = settings.TelemetryEnabled
+        };
+    }
+}
