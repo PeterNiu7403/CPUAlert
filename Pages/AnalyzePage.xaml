@@ -45,6 +45,38 @@
                     Text="{Binding AnalyzeOverviewText}"
                     TextAlignment="Center"
                     TextWrapping="WrapWholeWords" />
+                <StackPanel
+                    HorizontalAlignment="Left"
+                    Margin="4,4,0,0"
+                    Spacing="4">
+                    <TextBlock
+                        FontSize="10"
+                        FontWeight="SemiBold"
+                        Foreground="{StaticResource WinMoeDimBrush}"
+                        Text="整盘扫描" />
+                    <ItemsControl ItemsSource="{Binding DriveRoots}">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <VariableSizedWrapGrid Orientation="Horizontal" />
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Button
+                                    MinWidth="0"
+                                    MinHeight="0"
+                                    Margin="0,0,6,4"
+                                    Padding="8,3"
+                                    Click="DriveChip_Click"
+                                    Content="{Binding}"
+                                    FontSize="11"
+                                    Style="{StaticResource WinMoeTextLinkStyle}"
+                                    Tag="{Binding}"
+                                    ToolTipService.ToolTip="分析该分区" />
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </StackPanel>
                 <TextBlock
                     HorizontalAlignment="Left"
                     Margin="4,4,0,0"
@@ -236,8 +268,8 @@
                                 Padding="10"
                                 Background="{x:Bind FillBrush}"
                                 BorderBrush="#1A130F"
-                                BorderThickness="2.5"
-                                CornerRadius="3"
+                                BorderThickness="1.5"
+                                CornerRadius="2"
                                 RightTapped="AnalyzeTarget_RightTapped"
                                 Tapped="TreemapTile_Tapped"
                                 Tag="{x:Bind Path}">

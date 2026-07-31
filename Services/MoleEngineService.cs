@@ -135,7 +135,16 @@ public sealed class MoleEngineService : IMoleEngineService
             return;
         }
 
-        var operation = arguments.Count > 0 ? arguments[0] : "version";
+        // Read-only probes must not flood the activity feed (the dashboard
+        // version-checks the engine on every refresh tick).
+        if (arguments.Count == 0 ||
+            string.Equals(arguments[0], "--version", StringComparison.OrdinalIgnoreCase) ||
+            string.Equals(arguments[0], "-v", StringComparison.OrdinalIgnoreCase))
+        {
+            return;
+        }
+
+        var operation = arguments[0];
         var entry = new OperationHistoryEntry(
             DateTimeOffset.UtcNow,
             source,
@@ -196,7 +205,8 @@ public sealed class MoleEngineService : IMoleEngineService
     private static string NormalizeHistoryLine(string line)
     {
         var withoutIconPlaceholders = Regex.Replace(line, "(^|\\s)[?\\uFFFD](?=\\s)", "$1");
-        return Regex.Replace(withoutIconPlaceholders, @"\s+", " ").Trim();
+        var sanitized = AppActivityFormatter.SanitizeEngineText(withoutIconPlaceholders);
+        return Regex.Replace(sanitized, @"\s+", " ").Trim();
     }
 
     private static MoleCommandResult BuildResult(

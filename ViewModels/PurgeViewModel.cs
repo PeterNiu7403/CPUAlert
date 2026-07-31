@@ -35,13 +35,13 @@ public partial class PurgeViewModel : ViewModelBase
     private bool canRemove;
 
     [ObservableProperty]
-    private string summary = "Ready to scan project artifacts";
+    private string summary = "准备扫描项目构建垃圾";
 
     [ObservableProperty]
-    private string selectedSummary = "0 projects";
+    private string selectedSummary = "0 个项目";
 
     [ObservableProperty]
-    private string engineSummary = "WinMoe purge is interactive; WinMoe previews project artifacts using the same Windows rules.";
+    private string engineSummary = "WinMoe 以与 Mole 相同的 Windows 规则预览项目构建垃圾（node_modules、bin、obj 等）。";
 
     public string OutputText => string.Join(Environment.NewLine, OutputLines);
 
@@ -50,20 +50,20 @@ public partial class PurgeViewModel : ViewModelBase
     {
         var startedAt = Stopwatch.GetTimestamp();
         var succeeded = false;
-        var historySummary = "Purge preview did not finish";
+        var historySummary = "项目清理预览未完成";
 
         IsBusy = true;
         CanRemove = false;
         ClearProjects();
         OutputLines.Clear();
         OnPropertyChanged(nameof(OutputText));
-        Summary = "Scanning project artifacts...";
+        Summary = "正在扫描项目构建垃圾…";
 
         try
         {
             var availability = _moleEngineService.GetAvailability();
             EngineSummary = availability.IsAvailable
-                ? $"Mole engine available at {availability.Path}; purge preview uses non-interactive Windows rules."
+                ? $"Mole 引擎可用（{availability.Path}）；项目清理预览使用 Windows 原生规则。"
                 : $"{availability.Message} Purge preview still uses local Windows artifact rules.";
 
             var projects = await _purgeArtifactService.PreviewAsync().ConfigureAwait(false);
@@ -110,13 +110,13 @@ public partial class PurgeViewModel : ViewModelBase
 
         var startedAt = Stopwatch.GetTimestamp();
         var succeeded = false;
-        var historySummary = "Purge removal did not finish";
+        var historySummary = "项目清理移除未完成";
 
         IsBusy = true;
         CanRemove = false;
         OutputLines.Clear();
         OnPropertyChanged(nameof(OutputText));
-        Summary = "Removing selected project artifacts...";
+        Summary = "正在移除所选构建垃圾…";
 
         try
         {
@@ -125,8 +125,8 @@ public partial class PurgeViewModel : ViewModelBase
             var failedCount = results.Count(result => !result.Succeeded);
             succeeded = failedCount == 0;
             historySummary = failedCount == 0
-                ? $"Removed {results.Count} artifacts, freed {SystemTelemetryFormatter.Bytes(removedBytes)}"
-                : $"Removed {results.Count - failedCount} artifacts; {failedCount} failed";
+                ? $"已移除 {results.Count} 项构建垃圾，释放 {SystemTelemetryFormatter.Bytes(removedBytes)}"
+                : $"已移除 {results.Count - failedCount} 项；{failedCount} 项失败";
 
             RunOnUiThread(() =>
             {
@@ -144,7 +144,7 @@ public partial class PurgeViewModel : ViewModelBase
         {
             await RecordHistoryAsync(
                 "purge-remove",
-                $"{selectedProjects.Count} selected projects",
+                $"{selectedProjects.Count} 个所选项目",
                 succeeded,
                 Stopwatch.GetElapsedTime(startedAt),
                 historySummary).ConfigureAwait(false);
@@ -211,7 +211,7 @@ public partial class PurgeViewModel : ViewModelBase
     {
         var selected = Projects.Where(project => project.IsSelected).ToList();
         var selectedBytes = selected.Sum(project => project.TotalSizeBytes);
-        SelectedSummary = $"{selected.Count} projects - {SystemTelemetryFormatter.Bytes(selectedBytes)}";
+        SelectedSummary = $"{selected.Count} 个项目 · {SystemTelemetryFormatter.Bytes(selectedBytes)}";
         CanRemove = selected.Count > 0 && !IsBusy;
     }
 
@@ -230,12 +230,12 @@ public partial class PurgeViewModel : ViewModelBase
     {
         if (projects.Count == 0)
         {
-            return "No cleanable project artifacts found";
+            return "未发现可清理的项目构建垃圾";
         }
 
         var totalBytes = projects.Sum(project => project.TotalSizeBytes);
         var totalArtifacts = projects.Sum(project => project.ArtifactCount);
-        return $"{projects.Count} projects - {totalArtifacts} artifacts - {SystemTelemetryFormatter.Bytes(totalBytes)}";
+        return $"{projects.Count} 个项目 · {totalArtifacts} 项垃圾 · {SystemTelemetryFormatter.Bytes(totalBytes)}";
     }
 
     private void AppendOutput(string line)

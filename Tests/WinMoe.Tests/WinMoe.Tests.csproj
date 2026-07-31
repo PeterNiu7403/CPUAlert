@@ -22,12 +22,43 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="System.Diagnostics.PerformanceCounter" Version="10.0.0" />
+    <PackageReference Include="System.Management" Version="10.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="..\..\Services\IHardwareSensorService.cs" Link="Production\Services\IHardwareSensorService.cs" />
+    <Compile Include="..\..\Services\IGpuAdapterService.cs" Link="Production\Services\IGpuAdapterService.cs" />
+    <Compile Include="..\..\Services\ICleanupScanService.cs" Link="Production\Services\ICleanupScanService.cs" />
+    <Compile Include="..\..\Services\CleanupScanService.cs" Link="Production\Services\CleanupScanService.cs" />
+    <Compile Include="..\..\Services\WindowsHardwareSensorService.cs" Link="Production\Services\WindowsHardwareSensorService.cs" />
+    <Compile Include="..\..\Services\ISensorProbe.cs" Link="Production\Services\ISensorProbe.cs" />
+    <Compile Include="..\..\Services\LenovoGameZoneSensorProbe.cs" Link="Production\Services\LenovoGameZoneSensorProbe.cs" />
+    <Compile Include="..\..\Services\NvidiaGpuSensorProbe.cs" Link="Production\Services\NvidiaGpuSensorProbe.cs" />
+    <Compile Include="..\..\Services\AmdGpuSensorProbe.cs" Link="Production\Services\AmdGpuSensorProbe.cs" />
+    <Compile Include="..\..\Services\IntelGpuSensorProbe.cs" Link="Production\Services\IntelGpuSensorProbe.cs" />
+    <Compile Include="..\..\Services\DellDcimSensorProbe.cs" Link="Production\Services\DellDcimSensorProbe.cs" />
+    <Compile Include="..\..\Services\ThermalZoneSensorProbe.cs" Link="Production\Services\ThermalZoneSensorProbe.cs" />
+    <Compile Include="..\..\Services\StorageTemperatureSensorProbe.cs" Link="Production\Services\StorageTemperatureSensorProbe.cs" />
+    <Compile Include="..\..\Services\HardwareSensorMerger.cs" Link="Production\Services\HardwareSensorMerger.cs" />
+    <Compile Include="..\..\Services\GpuTemperatureAttachment.cs" Link="Production\Services\GpuTemperatureAttachment.cs" />
+    <Compile Include="..\..\Services\WindowsGpuAdapterService.cs" Link="Production\Services\WindowsGpuAdapterService.cs" />
+    <Compile Include="..\..\Services\WindowsSystemTelemetryService.cs" Link="Production\Services\WindowsSystemTelemetryService.cs" />
+    <Compile Include="..\..\Services\BatteryDetailProbe.cs" Link="Production\Services\BatteryDetailProbe.cs" />
+    <Compile Include="..\..\Services\BatteryDetailFormatter.cs" Link="Production\Services\BatteryDetailFormatter.cs" />
+    <Compile Include="..\..\Services\DisplaySleepPreventionService.cs" Link="Production\Services\DisplaySleepPreventionService.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Compile Include="..\..\Models\CleanupPreviewItem.cs" Link="Production\Models\CleanupPreviewItem.cs" />
     <Compile Include="..\..\Models\WinMoeEnvelope.cs" Link="Production\Models\WinMoeEnvelope.cs" />
     <Compile Include="..\..\Models\WinMoeSettings.cs" Link="Production\Models\WinMoeSettings.cs" />
     <Compile Include="..\..\Models\DiskAnalysisOptions.cs" Link="Production\Models\DiskAnalysisOptions.cs" />
     <Compile Include="..\..\Models\DiskTreemapRect.cs" Link="Production\Models\DiskTreemapRect.cs" />
     <Compile Include="..\..\Models\DiskUsageNode.cs" Link="Production\Models\DiskUsageNode.cs" />
+    <Compile Include="..\..\Models\GpuAdapterTelemetry.cs" Link="Production\Models\GpuAdapterTelemetry.cs" />
+    <Compile Include="..\..\Models\DiskVolumeTelemetry.cs" Link="Production\Models\DiskVolumeTelemetry.cs" />
+    <Compile Include="..\..\Models\HardwareSensorSample.cs" Link="Production\Models\HardwareSensorSample.cs" />
     <Compile Include="..\..\Models\HistoryRangeDefinition.cs" Link="Production\Models\HistoryRangeDefinition.cs" />
     <Compile Include="..\..\Models\InstalledApplication.cs" Link="Production\Models\InstalledApplication.cs" />
     <Compile Include="..\..\Models\InstallerCleanupCandidate.cs" Link="Production\Models\InstallerCleanupCandidate.cs" />
@@ -86,6 +117,8 @@
     <Compile Include="..\..\Services\SystemMoleEngineProbe.cs" Link="Production\Services\SystemMoleEngineProbe.cs" />
     <Compile Include="..\..\Services\SystemTelemetrySamplerService.cs" Link="Production\Services\SystemTelemetrySamplerService.cs" />
     <Compile Include="..\..\Services\SystemTelemetryFormatter.cs" Link="Production\Services\SystemTelemetryFormatter.cs" />
+    <Compile Include="..\..\Services\SystemHealthEvaluator.cs" Link="Production\Services\SystemHealthEvaluator.cs" />
+    <Compile Include="..\..\Services\CpuModelNameResolver.cs" Link="Production\Services\CpuModelNameResolver.cs" />
     <Compile Include="..\..\Services\TrayHudStatusFormatter.cs" Link="Production\Services\TrayHudStatusFormatter.cs" />
     <Compile Include="..\..\Services\TrayIconTextFormatter.cs" Link="Production\Services\TrayIconTextFormatter.cs" />
     <Compile Include="..\..\Services\LifetimeStatsAggregator.cs" Link="Production\Services\LifetimeStatsAggregator.cs" />

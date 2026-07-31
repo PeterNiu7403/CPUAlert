@@ -25,7 +25,7 @@
             </Grid.ColumnDefinitions>
 
             <StackPanel VerticalAlignment="Center" Orientation="Horizontal" Spacing="18">
-                <TextBlock Style="{StaticResource TitleTextBlockStyle}" Text="Installers" />
+                <TextBlock Style="{StaticResource TitleTextBlockStyle}" Text="安装包清理" />
                 <TextBlock
                     VerticalAlignment="Center"
                     FontFamily="{StaticResource WinMoeMonoFont}"
@@ -42,7 +42,7 @@
                 Spacing="12">
                 <Button
                     Command="{Binding ScanCommand}"
-                    Content="Scan"
+                    Content="扫描"
                     Style="{StaticResource WinMoePillButtonStyle}" />
             </StackPanel>
         </Grid>
@@ -180,31 +180,31 @@
                     FontSize="18"
                     FontWeight="Bold"
                     Foreground="{StaticResource WinMoeMutedBrush}"
-                    Text="old Downloads installers" />
+                    Text="下载目录旧安装包" />
             </StackPanel>
 
             <Button
                 Grid.Column="1"
                 Margin="0,0,12,0"
                 Command="{Binding ClearSelectionCommand}"
-                Content="clear"
+                Content="清除"
                 Style="{StaticResource WinMoeSecondaryPillButtonStyle}" />
             <Button
                 Grid.Column="2"
                 Margin="0,0,12,0"
                 Command="{Binding SelectAllCommand}"
-                Content="select all"
+                Content="全选"
                 Style="{StaticResource WinMoeSecondaryPillButtonStyle}" />
             <Button
                 Grid.Column="3"
                 Margin="0,0,12,0"
                 Command="{Binding ScanCommand}"
-                Content="Preview"
+                Content="预览"
                 Style="{StaticResource WinMoeSecondaryPillButtonStyle}" />
             <Button
                 Grid.Column="4"
                 Click="RemoveButton_Click"
-                Content="Remove"
+                Content="移除"
                 IsEnabled="{Binding CanRemove}"
                 Style="{StaticResource WinMoePillButtonStyle}" />
         </Grid>

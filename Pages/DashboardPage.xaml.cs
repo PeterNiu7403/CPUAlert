@@ -1,6 +1,5 @@
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using WinMoe.Models;
 using WinMoe.Ui;
 using WinMoe.ViewModels;
 
@@ -48,10 +47,12 @@ public sealed partial class DashboardPage : Page
 
     private void ProcessMenuButton_Click(object sender, RoutedEventArgs e)
     {
-        if (sender is not Button button || button.Tag is not ProcessTelemetry process)
+        if (sender is not Button button || button.Tag is not ProcessRowViewModel row)
         {
             return;
         }
+
+        var process = row.Process;
 
         var flyout = new MenuFlyout();
         var pinItem = new MenuFlyoutItem

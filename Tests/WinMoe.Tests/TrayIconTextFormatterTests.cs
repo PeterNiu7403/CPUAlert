@@ -58,7 +58,7 @@ public sealed class TrayIconTextFormatterTests
             "GPU pending",
             []);
 
-        Assert.Equal("健康度 65 · 需关注", TrayIconTextFormatter.BuildHealthLine(snapshot));
+        Assert.Equal("健康度 100 · 各项指标正常", TrayIconTextFormatter.BuildHealthLine(snapshot));
         Assert.Equal("CPU 24%  内存 52%  磁盘 70%", TrayIconTextFormatter.BuildResourceLine(snapshot));
         Assert.Equal("网络 ↓ 2 KB/s / ↑ 1 KB/s", TrayIconTextFormatter.BuildNetworkLine(snapshot));
         Assert.Contains("最新采样", TrayIconTextFormatter.BuildSampleLine(snapshot));

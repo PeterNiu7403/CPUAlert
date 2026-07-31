@@ -23,6 +23,7 @@
             <RowDefinition Height="*" />
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
         <!-- Drag region for borderless HUD. -->
@@ -83,7 +84,7 @@
                     Margin="0,2,0,0">
                     <Ellipse.Fill>
                         <ImageBrush
-                            ImageSource="ms-appx:///Assets/Hero/status.png"
+                            ImageSource="ms-appx:///Assets/Hero/sun.png"
                             Stretch="UniformToFill" />
                     </Ellipse.Fill>
                 </Ellipse>
@@ -104,16 +105,34 @@
 
             <Border Padding="10,8" Background="#332E24" BorderBrush="#40392E" BorderThickness="1" CornerRadius="10">
                 <StackPanel Spacing="1">
-                    <TextBlock FontSize="10" Foreground="{StaticResource WinMoeGreenBrush}" Text="CPU" />
+                    <Grid>
+                        <TextBlock FontSize="10" Foreground="{StaticResource WinMoeGreenBrush}" Text="CPU" />
+                        <Border
+                            HorizontalAlignment="Right"
+                            Padding="5,1"
+                            Background="#40392E"
+                            CornerRadius="6">
+                            <TextBlock FontSize="9" Foreground="{StaticResource WinMoeGreenBrush}" Text="{Binding CpuTemperatureText}" />
+                        </Border>
+                    </Grid>
                     <TextBlock FontSize="20" FontWeight="SemiBold" Text="{Binding CpuText}" />
-                    <TextBlock FontSize="10" Foreground="{StaticResource WinMoeDimBrush}" Text="{Binding SampleText}" TextTrimming="CharacterEllipsis" />
+                    <TextBlock FontSize="10" Foreground="{StaticResource WinMoeDimBrush}" Text="{Binding CpuDetailText}" TextTrimming="CharacterEllipsis" />
                 </StackPanel>
             </Border>
             <Border Grid.Column="1" Padding="10,8" Background="#332E24" BorderBrush="#40392E" BorderThickness="1" CornerRadius="10">
                 <StackPanel Spacing="1">
-                    <TextBlock FontSize="10" Foreground="{StaticResource WinMoeGoldBrush}" Text="GPU" />
+                    <Grid>
+                        <TextBlock FontSize="10" Foreground="{StaticResource WinMoeGoldBrush}" Text="GPU" />
+                        <Border
+                            HorizontalAlignment="Right"
+                            Padding="5,1"
+                            Background="#40392E"
+                            CornerRadius="6">
+                            <TextBlock FontSize="9" Foreground="{StaticResource WinMoeGoldBrush}" Text="{Binding GpuTemperatureText}" />
+                        </Border>
+                    </Grid>
                     <TextBlock FontSize="18" FontWeight="SemiBold" Text="{Binding GpuText}" TextTrimming="CharacterEllipsis" />
-                    <TextBlock FontSize="10" Foreground="{StaticResource WinMoeDimBrush}" Text="Windows 采样" />
+                    <TextBlock FontSize="10" Foreground="{StaticResource WinMoeDimBrush}" Text="{Binding GpuDetailText}" TextTrimming="CharacterEllipsis" />
                 </StackPanel>
             </Border>
 
@@ -121,6 +140,12 @@
                 <StackPanel Spacing="1">
                     <TextBlock FontSize="10" Foreground="{StaticResource WinMoeGreenBrush}" Text="内存" />
                     <TextBlock FontSize="20" FontWeight="SemiBold" Text="{Binding MemoryText}" />
+                    <ProgressBar
+                        Height="4"
+                        MinHeight="4"
+                        Margin="0,3,0,2"
+                        CornerRadius="2"
+                        Value="{Binding MemoryUsagePercent}" />
                     <TextBlock FontSize="10" Foreground="{StaticResource WinMoeDimBrush}" Text="{Binding MemoryDetailText}" TextTrimming="CharacterEllipsis" />
                 </StackPanel>
             </Border>
@@ -128,6 +153,12 @@
                 <StackPanel Spacing="1">
                     <TextBlock FontSize="10" Foreground="{StaticResource WinMoeBlueBrush}" Text="磁盘" />
                     <TextBlock FontSize="20" FontWeight="SemiBold" Text="{Binding DiskText}" />
+                    <ProgressBar
+                        Height="4"
+                        MinHeight="4"
+                        Margin="0,3,0,2"
+                        CornerRadius="2"
+                        Value="{Binding DiskUsagePercent}" />
                     <TextBlock FontSize="10" Foreground="{StaticResource WinMoeDimBrush}" Text="{Binding DiskDetailText}" TextTrimming="CharacterEllipsis" />
                 </StackPanel>
             </Border>
@@ -143,14 +174,58 @@
                 <StackPanel Spacing="1">
                     <TextBlock FontSize="10" Foreground="{StaticResource WinMoeGoldBrush}" Text="风扇" />
                     <TextBlock FontSize="18" FontWeight="SemiBold" Text="{Binding FanText}" />
-                    <TextBlock FontSize="10" Foreground="{StaticResource WinMoeDimBrush}" Text="Windows 无 SMC" />
+                    <TextBlock
+                        FontSize="10"
+                        Foreground="{StaticResource WinMoeDimBrush}"
+                        Text="{Binding FanDetailText}"
+                        TextTrimming="CharacterEllipsis"
+                        ToolTipService.ToolTip="{Binding FanPeakToolTip}" />
                 </StackPanel>
             </Border>
         </Grid>
 
-        <!-- Top processes -->
+        <!-- Battery card (Mole HUD; hidden on battery-less desktops). -->
         <Border
             Grid.Row="3"
+            Padding="10,8"
+            Background="#332E24"
+            BorderBrush="#40392E"
+            BorderThickness="1"
+            CornerRadius="10"
+            Visibility="{Binding BatteryVisibility}">
+            <StackPanel Spacing="1">
+                <Grid>
+                    <TextBlock FontSize="10" Foreground="{StaticResource WinMoeGreenBrush}" Text="电池" />
+                    <Border
+                        HorizontalAlignment="Right"
+                        Padding="5,1"
+                        Background="#40392E"
+                        CornerRadius="6">
+                        <TextBlock FontSize="9" Foreground="{StaticResource WinMoeGreenBrush}" Text="{Binding BatteryHealthBadgeText}" />
+                    </Border>
+                </Grid>
+                <StackPanel Orientation="Horizontal" Spacing="6">
+                    <TextBlock FontSize="20" FontWeight="SemiBold" Text="{Binding BatteryText}" />
+                    <TextBlock
+                        VerticalAlignment="Center"
+                        FontSize="11"
+                        Foreground="{StaticResource WinMoeMutedBrush}"
+                        Text="{Binding BatteryDetailText}"
+                        TextTrimming="CharacterEllipsis" />
+                </StackPanel>
+                <ProgressBar
+                    Height="4"
+                    MinHeight="4"
+                    Margin="0,3,0,2"
+                    CornerRadius="2"
+                    Foreground="{StaticResource WinMoeGreenBrush}"
+                    Value="{Binding BatteryChargePercent}" />
+            </StackPanel>
+        </Border>
+
+        <!-- Top processes -->
+        <Border
+            Grid.Row="4"
             Padding="10,8"
             Background="#332E24"
             BorderBrush="#40392E"
@@ -173,9 +248,13 @@
                 </Grid>
                 <ListView
                     Grid.Row="1"
-                    MaxHeight="132"
                     ItemsSource="{Binding TopProcesses}"
                     SelectionMode="None">
+                    <!-- Rows are rebuilt every refresh; default entrance transitions
+                         would replay a fade each time (list strobes mid-capture). -->
+                    <ListView.ItemContainerTransitions>
+                        <TransitionCollection />
+                    </ListView.ItemContainerTransitions>
                     <ListView.ItemContainerStyle>
                         <Style TargetType="ListViewItem">
                             <Setter Property="Padding" Value="0" />
@@ -203,7 +282,7 @@
                                     HorizontalAlignment="Right"
                                     FontFamily="{StaticResource WinMoeMonoFont}"
                                     FontSize="10"
-                                    Foreground="{StaticResource WinMoeOrangeBrush}"
+                                    Foreground="{Binding CpuUsageBrush}"
                                     Text="{Binding CpuUsageText}" />
                                 <TextBlock
                                     Grid.Column="2"
@@ -219,8 +298,8 @@
             </Grid>
         </Border>
 
-        <!-- Spacer + recent activity line -->
-        <StackPanel Grid.Row="4" VerticalAlignment="Bottom" Spacing="4">
+        <!-- Recent engine-log line: hidden, Mole HUD has no such row. -->
+        <StackPanel Grid.Row="5" Spacing="4" Visibility="Collapsed">
             <TextBlock
                 FontSize="10"
                 Foreground="{StaticResource WinMoeDimBrush}"
@@ -235,7 +314,7 @@
         </StackPanel>
 
         <!-- Quiet shortcut strip -->
-        <Grid Grid.Row="5" ColumnSpacing="4">
+        <Grid Grid.Row="6" ColumnSpacing="4">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*" />
                 <ColumnDefinition Width="*" />
@@ -246,6 +325,7 @@
             <Button
                 HorizontalAlignment="Stretch"
                 MinHeight="32"
+                MinWidth="0"
                 Padding="4,4"
                 Click="NavigationButton_Click"
                 Content="清理"
@@ -256,6 +336,7 @@
                 Grid.Column="1"
                 HorizontalAlignment="Stretch"
                 MinHeight="32"
+                MinWidth="0"
                 Padding="4,4"
                 Click="NavigationButton_Click"
                 Content="软件"
@@ -266,6 +347,7 @@
                 Grid.Column="2"
                 HorizontalAlignment="Stretch"
                 MinHeight="32"
+                MinWidth="0"
                 Padding="4,4"
                 Click="NavigationButton_Click"
                 Content="优化"
@@ -276,6 +358,7 @@
                 Grid.Column="3"
                 HorizontalAlignment="Stretch"
                 MinHeight="32"
+                MinWidth="0"
                 Padding="4,4"
                 Click="NavigationButton_Click"
                 Content="分析"
@@ -286,6 +369,7 @@
                 Grid.Column="4"
                 HorizontalAlignment="Stretch"
                 MinHeight="32"
+                MinWidth="0"
                 Padding="4,4"
                 Click="NavigationButton_Click"
                 Content="状态"
@@ -296,7 +380,7 @@
 
         <!-- Lifetime stats -->
         <Border
-            Grid.Row="6"
+            Grid.Row="7"
             Padding="10,8"
             Background="#181610"
             BorderBrush="#2E2A22"

@@ -35,9 +35,16 @@ public partial class AnalyzeViewModel : ViewModelBase
         RootPath = string.IsNullOrWhiteSpace(startupRoot)
             ? Environment.GetFolderPath(Environment.SpecialFolder.UserProfile)
             : startupRoot;
+        foreach (var driveRoot in FixedDriveRoots())
+        {
+            DriveRoots.Add(driveRoot);
+        }
     }
 
     public ObservableCollection<DiskUsageNode> Nodes { get; } = new();
+
+    /// <summary>Ready fixed-volume roots ("C:\", "D:\"…) for whole-drive analysis.</summary>
+    public ObservableCollection<string> DriveRoots { get; } = new();
 
     public ObservableCollection<AnalyzeSidebarItemViewModel> SidebarItems { get; } = new();
 
@@ -416,6 +423,30 @@ public partial class AnalyzeViewModel : ViewModelBase
         }
 
         HeaderMetricsText = DiskVolumeStats.FormatHeaderMetrics(CurrentSizeMetric, volume);
+    }
+
+    private static IEnumerable<string> FixedDriveRoots()
+    {
+        foreach (var drive in DriveInfo.GetDrives())
+        {
+            string? root = null;
+            try
+            {
+                if (drive.DriveType == DriveType.Fixed && drive.IsReady)
+                {
+                    root = drive.RootDirectory.FullName;
+                }
+            }
+            catch
+            {
+                // A drive can vanish (USB/eject) between enumeration and query.
+            }
+
+            if (root is not null)
+            {
+                yield return root;
+            }
+        }
     }
 
     private static string BuildBreadcrumbText(string path) => DiskVolumeStats.BuildBreadcrumb(path);

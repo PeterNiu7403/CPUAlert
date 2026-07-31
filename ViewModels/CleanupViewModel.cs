@@ -20,7 +20,7 @@ public partial class CleanupViewModel : ViewModelBase
 {
     private static readonly TimeSpan PlanLifetime = TimeSpan.FromMinutes(15);
 
-    private readonly IMoleEngineService _moleEngineService;
+    private readonly ICleanupScanService _cleanupScanService;
     private readonly IOperationHistoryService _operationHistoryService;
     private readonly IOperationPlanValidator _planValidator;
     private readonly ISafeDeletionService _safeDeletionService;
@@ -34,12 +34,12 @@ public partial class CleanupViewModel : ViewModelBase
     private int _lastFailedCount;
 
     public CleanupViewModel(
-        IMoleEngineService moleEngineService,
+        ICleanupScanService cleanupScanService,
         IOperationHistoryService operationHistoryService,
         IOperationPlanValidator planValidator,
         ISafeDeletionService safeDeletionService)
     {
-        _moleEngineService = moleEngineService;
+        _cleanupScanService = cleanupScanService;
         _operationHistoryService = operationHistoryService;
         _planValidator = planValidator;
         _safeDeletionService = safeDeletionService;
@@ -137,38 +137,30 @@ public partial class CleanupViewModel : ViewModelBase
                 }
             });
 
-            var result = await _moleEngineService
-                .ExecuteAsync(["clean", "--dry-run"], line => AppendOutput(line))
+            var scanned = await Task.Run(() => _cleanupScanService.ScanAsync())
                 .ConfigureAwait(false);
             spinnerCts.Cancel();
-
-            var parsed = CleanPreviewParser.Parse(
-                string.Join(Environment.NewLine, new[] { result.StandardOutput, result.StandardError }));
 
             RunOnUiThread(() =>
             {
                 PreviewItems.Clear();
-                foreach (var item in parsed)
+                foreach (var item in scanned)
                 {
                     PreviewItems.Add(item);
                     TrackPreviewItem(item);
-                }
-
-                if (PreviewItems.Count == 0)
-                {
-                    SeedSafeUserTempPreview();
                 }
 
                 BuildActivePlanFromPreview();
                 EnterReview();
             });
         }
-        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or InvalidOperationException)
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or InvalidOperationException or OperationCanceledException)
         {
             RunOnUiThread(() =>
             {
-                SeedSafeUserTempPreview();
-                PendingMessage = ex.Message;
+                PendingMessage = ex is OperationCanceledException
+                    ? "扫描已取消"
+                    : $"扫描中断：{ex.Message}";
                 BuildActivePlanFromPreview();
                 EnterReview();
             });
@@ -457,54 +449,6 @@ public partial class CleanupViewModel : ViewModelBase
         OutputLines.Clear();
         OnPropertyChanged(nameof(OutputText));
         NotifySurface();
-    }
-
-    private void SeedSafeUserTempPreview()
-    {
-        PreviewItems.Clear();
-        var temp = Path.GetTempPath().TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
-        // Only advertise a bounded, user-scoped temp subfolder for demo apply — never Windows\.
-        var demo = Path.Combine(temp, "WinMoe-CleanPreview");
-        try
-        {
-            Directory.CreateDirectory(demo);
-            var marker = Path.Combine(demo, "preview-marker.txt");
-            if (!File.Exists(marker))
-            {
-                File.WriteAllText(marker, "WinMoe safe clean preview target. Safe to delete.");
-            }
-
-            var size = Directory.Exists(demo)
-                ? Directory.EnumerateFiles(demo, "*", SearchOption.AllDirectories).Sum(GetFileLengthSafe)
-                : 0L;
-            PreviewItems.Add(new CleanupPreviewItem(
-                "用户临时预览",
-                demo,
-                SystemTelemetryFormatter.Bytes(size),
-                size,
-                1));
-        }
-        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
-        {
-            PreviewItems.Add(new CleanupPreviewItem("用户临时预览", demo, "—", 0, null) { IsSelected = false });
-        }
-
-        foreach (var item in PreviewItems)
-        {
-            TrackPreviewItem(item);
-        }
-    }
-
-    private static long GetFileLengthSafe(string path)
-    {
-        try
-        {
-            return new FileInfo(path).Length;
-        }
-        catch
-        {
-            return 0;
-        }
     }
 
     private void BuildActivePlanFromPreview()

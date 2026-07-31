@@ -21,7 +21,9 @@ public sealed class LocalStartupDiagnosticsService : IStartupDiagnosticsService
 
     public void RecordException(string phase, Exception exception)
     {
-        Record(phase, $"{exception.GetType().Name}: {exception.Message}");
+        // Full ToString() keeps HResult, inner exceptions and the stack trace;
+        // FormatLine flattens newlines so the entry stays on a single log line.
+        Record(phase, exception.ToString());
     }
 
     public static string FormatLine(DateTimeOffset timestamp, string phase, string message)

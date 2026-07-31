@@ -81,12 +81,14 @@ public partial class UninstallViewModel : ViewModelBase
 
     public string SortSummary => $"按 {SortKey} {(SortDescending ? "降序" : "升序")}";
 
-    /// <summary>Mole sort links: Name ↕ / Size ↕ / Source ↕ with active arrow.</summary>
+    /// <summary>Mole sort links: Name ↕ / Size ↕ / Last Used ↕ / Installed ↕ with active arrow.</summary>
     public string NameSortLabel => FormatSortLabel("名称", "name");
 
     public string SizeSortLabel => FormatSortLabel("大小", "size");
 
     public string SourceSortLabel => FormatSortLabel("上次使用", "lastused");
+
+    public string InstalledSortLabel => FormatSortLabel("已安装", "installed");
 
     public string AppsCountText
     {
@@ -100,7 +102,7 @@ public partial class UninstallViewModel : ViewModelBase
 
             var bytes = selected.Sum(row => row.Application.SizeBytes);
             // Mole footer: "3 apps · 9.61 GB"
-            return $"{selected.Length} 个 · {SystemTelemetryFormatter.Bytes(bytes)}";
+            return $"已选 {selected.Length} 个 · {SystemTelemetryFormatter.Bytes(bytes)}";
         }
     }
 
@@ -198,10 +200,16 @@ public partial class UninstallViewModel : ViewModelBase
         }
         finally
         {
-            IsBusy = false;
-            PreviewLeftoversCommand.NotifyCanExecuteChanged();
-            LaunchUninstallerCommand.NotifyCanExecuteChanged();
-            RemoveSelectedLeftoversCommand.NotifyCanExecuteChanged();
+            // Continuation runs on a thread-pool thread after ConfigureAwait(false);
+            // IsBusy triggers OnIsBusyChanged -> NotifyCanExecuteChanged, which must
+            // be raised on the UI thread (RPC_E_WRONG_THREAD otherwise).
+            RunOnUiThread(() =>
+            {
+                IsBusy = false;
+                PreviewLeftoversCommand.NotifyCanExecuteChanged();
+                LaunchUninstallerCommand.NotifyCanExecuteChanged();
+                RemoveSelectedLeftoversCommand.NotifyCanExecuteChanged();
+            });
         }
     }
 
@@ -307,8 +315,8 @@ public partial class UninstallViewModel : ViewModelBase
             var leftoverCount = Leftovers.Count;
             var leftoverBytes = Leftovers.Sum(item => item.SizeBytes);
             row.SelectionHint = leftoverCount == 0
-                ? $"review · {row.SizeText}"
-                : $"{leftoverCount} 项 · {SystemTelemetryFormatter.Bytes(leftoverBytes)} review";
+                ? $"残留 · {row.SizeText}"
+                : $"{leftoverCount} 项 · {SystemTelemetryFormatter.Bytes(leftoverBytes)} 残留";
         }
     }
 
@@ -374,7 +382,10 @@ public partial class UninstallViewModel : ViewModelBase
             var started = 0;
             foreach (var app in queue)
             {
-                SelectedApplication = app;
+                // After the first Task.Delay(400).ConfigureAwait(false) below, later
+                // iterations run on a thread-pool thread; OnSelectedApplicationChanged
+                // clears Leftovers and touches commands, so marshal the assignment.
+                RunOnUiThread(() => SelectedApplication = app);
                 var result = await _installedApplicationService.LaunchUninstallerAsync(app);
                 AppendOutput(result.Succeeded
                     ? $"{app.Name}: {result.StandardOutput}"
@@ -416,9 +427,14 @@ public partial class UninstallViewModel : ViewModelBase
         }
         finally
         {
-            IsBusy = false;
-            LaunchUninstallerCommand.NotifyCanExecuteChanged();
-            RemoveSelectedLeftoversCommand.NotifyCanExecuteChanged();
+            // May resume on a thread-pool thread (Task.Delay / RecordAsync with
+            // ConfigureAwait(false)); marshal the busy reset and command notifies.
+            RunOnUiThread(() =>
+            {
+                IsBusy = false;
+                LaunchUninstallerCommand.NotifyCanExecuteChanged();
+                RemoveSelectedLeftoversCommand.NotifyCanExecuteChanged();
+            });
         }
     }
 
@@ -502,6 +518,7 @@ public partial class UninstallViewModel : ViewModelBase
         OnPropertyChanged(nameof(NameSortLabel));
         OnPropertyChanged(nameof(SizeSortLabel));
         OnPropertyChanged(nameof(SourceSortLabel));
+        OnPropertyChanged(nameof(InstalledSortLabel));
     }
 
     // SourceSortLabel is bound to "上次使用" / lastused for Mole parity.
@@ -552,6 +569,7 @@ public partial class UninstallViewModel : ViewModelBase
     {
         NotifySelectedApplicationState();
         NotifyLeftoverSelectionState();
+        OnPropertyChanged(nameof(CanRemoveSelectedApps));
         PreviewLeftoversCommand.NotifyCanExecuteChanged();
         LaunchUninstallerCommand.NotifyCanExecuteChanged();
         RemoveSelectedLeftoversCommand.NotifyCanExecuteChanged();
@@ -659,6 +677,12 @@ public partial class UninstallViewModel : ViewModelBase
                 ? apps.OrderByDescending(app => app.LastActivityUtc ?? DateTimeOffset.MinValue)
                     .ThenBy(app => app.Name, StringComparer.OrdinalIgnoreCase)
                 : apps.OrderBy(app => app.LastActivityUtc ?? DateTimeOffset.MaxValue)
+                    .ThenBy(app => app.Name, StringComparer.OrdinalIgnoreCase),
+            // InstallDateRaw is yyyyMMdd, so ordinal string order is chronological; empty = unknown/oldest.
+            "installed" => SortDescending
+                ? apps.OrderByDescending(app => app.InstallDateRaw, StringComparer.Ordinal)
+                    .ThenBy(app => app.Name, StringComparer.OrdinalIgnoreCase)
+                : apps.OrderBy(app => app.InstallDateRaw, StringComparer.Ordinal)
                     .ThenBy(app => app.Name, StringComparer.OrdinalIgnoreCase),
             _ => SortDescending
                 ? apps.OrderByDescending(app => app.SizeBytes).ThenBy(app => app.Name, StringComparer.OrdinalIgnoreCase)

@@ -23,6 +23,8 @@ public sealed class WindowsTrayIconService : ITrayIconService
     private const uint MfSeparator = 0x00000800;
     private const uint MfDisabled = 0x00000002;
     private const uint MfGrayed = 0x00000001;
+    private const uint MfPopup = 0x00000010;
+    private const uint MfChecked = 0x00000008;
     private const uint TpmRightButton = 0x0002;
     private const uint TpmReturnCommand = 0x0100;
     private const uint TpmNoNotify = 0x0080;
@@ -40,16 +42,25 @@ public sealed class WindowsTrayIconService : ITrayIconService
     private const int MenuClean = 1005;
     private const int MenuOptimize = 1006;
     private const int MenuSettings = 1007;
+    private const int MenuCleanScreen = 1010;
+    private const int MenuKeepAwake1H = 1011;
+    private const int MenuKeepAwake2H = 1012;
+    private const int MenuKeepAwake4H = 1013;
+    private const int MenuKeepAwake8H = 1014;
+    private const int MenuKeepAwakeIndefinite = 1015;
+    private const int MenuKeepAwakeStop = 1016;
     private const int MenuExit = 1099;
     private static readonly uint TaskbarCreatedMessage = RegisterWindowMessage("TaskbarCreated");
 
     private readonly ISystemTelemetrySamplerService _telemetrySamplerService;
     private readonly IOperationHistoryService _operationHistoryService;
     private readonly ShellViewModel _shellViewModel;
+    private readonly IDisplaySleepPreventionService _sleepPreventionService;
     private readonly SubclassProc _subclassProc;
     private Timer? _refreshTimer;
     private Window? _mainWindow;
     private TrayHudWindow? _trayHudWindow;
+    private CleanScreenWindow? _cleanScreenWindow;
     private IntPtr _windowHandle;
     private IntPtr _iconHandle;
     private bool _ownsIcon;
@@ -59,11 +70,13 @@ public sealed class WindowsTrayIconService : ITrayIconService
     public WindowsTrayIconService(
         ISystemTelemetrySamplerService telemetrySamplerService,
         IOperationHistoryService operationHistoryService,
-        ShellViewModel shellViewModel)
+        ShellViewModel shellViewModel,
+        IDisplaySleepPreventionService sleepPreventionService)
     {
         _telemetrySamplerService = telemetrySamplerService;
         _operationHistoryService = operationHistoryService;
         _shellViewModel = shellViewModel;
+        _sleepPreventionService = sleepPreventionService;
         _subclassProc = WindowSubclassProc;
     }
 
@@ -89,6 +102,11 @@ public sealed class WindowsTrayIconService : ITrayIconService
         ShowTrayHud(x, y);
     }
 
+    public void ShowCleanScreenForDiagnostics()
+    {
+        ShowCleanScreen();
+    }
+
     public void Dispose()
     {
         _refreshTimer?.Dispose();
@@ -102,6 +120,8 @@ public sealed class WindowsTrayIconService : ITrayIconService
         RemoveMessageHook();
         _trayHudWindow?.Close();
         _trayHudWindow = null;
+        _cleanScreenWindow?.Close();
+        _cleanScreenWindow = null;
         _isInitialized = false;
         _mainWindow = null;
         _windowHandle = IntPtr.Zero;
@@ -245,7 +265,50 @@ public sealed class WindowsTrayIconService : ITrayIconService
         AppendMenu(menuHandle, MfString, new UIntPtr(MenuOptimize), "优化");
         AppendMenu(menuHandle, MfString, new UIntPtr(MenuSettings), "设置");
         AppendMenu(menuHandle, MfSeparator, UIntPtr.Zero, null);
+        AppendMenu(menuHandle, MfString, new UIntPtr(MenuCleanScreen), "擦屏幕");
+        BuildKeepAwakeSubMenu(menuHandle);
+        AppendMenu(menuHandle, MfSeparator, UIntPtr.Zero, null);
         AppendMenu(menuHandle, MfString, new UIntPtr(MenuExit), "退出 WinMoe");
+    }
+
+    // Mole tray menu: 保持常亮 ▸ durations + stop. Checked item = current choice.
+    private void BuildKeepAwakeSubMenu(IntPtr menuHandle)
+    {
+        var subMenu = CreatePopupMenu();
+        if (subMenu == IntPtr.Zero)
+        {
+            return;
+        }
+
+        var active = _sleepPreventionService.IsActive;
+        var duration = _sleepPreventionService.ActiveDuration;
+        AppendDurationItem(subMenu, MenuKeepAwake1H, "1 小时", TimeSpan.FromHours(1), active, duration);
+        AppendDurationItem(subMenu, MenuKeepAwake2H, "2 小时", TimeSpan.FromHours(2), active, duration);
+        AppendDurationItem(subMenu, MenuKeepAwake4H, "4 小时", TimeSpan.FromHours(4), active, duration);
+        AppendDurationItem(subMenu, MenuKeepAwake8H, "8 小时", TimeSpan.FromHours(8), active, duration);
+        AppendMenu(
+            subMenu,
+            MfString | (active && duration is null ? MfChecked : 0u),
+            new UIntPtr(MenuKeepAwakeIndefinite),
+            "不限时");
+        AppendMenu(subMenu, MfSeparator, UIntPtr.Zero, null);
+        AppendMenu(
+            subMenu,
+            MfString | (active ? 0u : MfDisabled | MfGrayed),
+            new UIntPtr(MenuKeepAwakeStop),
+            "停止常亮");
+
+        var remaining = active
+            ? DisplaySleepPreventionService.FormatRemaining(_sleepPreventionService.Remaining) ?? "不限时"
+            : null;
+        var label = remaining is null ? "保持常亮" : $"保持常亮 · {remaining}";
+        AppendMenu(menuHandle, MfPopup, (UIntPtr)(long)subMenu, label);
+    }
+
+    private static void AppendDurationItem(IntPtr subMenu, int id, string text, TimeSpan duration, bool active, TimeSpan? activeDuration)
+    {
+        var isCurrent = active && activeDuration == duration;
+        AppendMenu(subMenu, MfString | (isCurrent ? MfChecked : 0u), new UIntPtr((uint)id), text);
     }
 
     private void ExecuteMenuCommand(int command)
@@ -275,6 +338,27 @@ public sealed class WindowsTrayIconService : ITrayIconService
                 break;
             case MenuSettings:
                 ShowAndNavigate("settings");
+                break;
+            case MenuCleanScreen:
+                ShowCleanScreen();
+                break;
+            case MenuKeepAwake1H:
+                _sleepPreventionService.PreventFor(TimeSpan.FromHours(1));
+                break;
+            case MenuKeepAwake2H:
+                _sleepPreventionService.PreventFor(TimeSpan.FromHours(2));
+                break;
+            case MenuKeepAwake4H:
+                _sleepPreventionService.PreventFor(TimeSpan.FromHours(4));
+                break;
+            case MenuKeepAwake8H:
+                _sleepPreventionService.PreventFor(TimeSpan.FromHours(8));
+                break;
+            case MenuKeepAwakeIndefinite:
+                _sleepPreventionService.PreventFor(null);
+                break;
+            case MenuKeepAwakeStop:
+                _sleepPreventionService.Stop();
                 break;
             case MenuExit:
                 CloseMainWindow();
@@ -316,6 +400,33 @@ public sealed class WindowsTrayIconService : ITrayIconService
             catch (Exception ex)
             {
                 WriteTrayDiagnostic($"Tray HUD show failed: {ex.GetType().Name}: {ex.Message}");
+            }
+        });
+    }
+
+    private void ShowCleanScreen()
+    {
+        var mainWindow = _mainWindow;
+        if (mainWindow is null)
+        {
+            return;
+        }
+
+        mainWindow.DispatcherQueue.TryEnqueue(() =>
+        {
+            try
+            {
+                if (_cleanScreenWindow is null)
+                {
+                    _cleanScreenWindow = new CleanScreenWindow();
+                    _cleanScreenWindow.Closed += (_, _) => _cleanScreenWindow = null;
+                }
+
+                _cleanScreenWindow.Activate();
+            }
+            catch (Exception ex)
+            {
+                WriteTrayDiagnostic($"Clean screen show failed: {ex.GetType().Name}: {ex.Message}");
             }
         });
     }

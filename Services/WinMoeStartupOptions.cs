@@ -3,7 +3,8 @@ namespace WinMoe.Services;
 public sealed record WinMoeStartupOptions(
     bool ShowTrayHudDiagnostic,
     bool DisableTray,
-    string? InitialRoute)
+    string? InitialRoute,
+    bool ShowCleanScreenDiagnostic = false)
 {
     public static WinMoeStartupOptions FromLaunchArguments(string? arguments)
     {
@@ -25,10 +26,15 @@ public sealed record WinMoeStartupOptions(
                               "WINMOE_DISABLE_TRAY",
                               "MOLEWINDOWS_DISABLE_TRAY")) ||
                           tokens.Contains("--no-tray", StringComparer.OrdinalIgnoreCase);
+        var showCleanScreen = IsEnabled(ReadEnvironment(
+                                  environment,
+                                  "WINMOE_SHOW_CLEAN_SCREEN",
+                                  "MOLEWINDOWS_SHOW_CLEAN_SCREEN")) ||
+                              tokens.Contains("--show-clean-screen", StringComparer.OrdinalIgnoreCase);
         var route = ReadOption(tokens, "--route") ??
                     ReadEnvironment(environment, "WINMOE_START_ROUTE", "MOLEWINDOWS_START_ROUTE");
 
-        return new WinMoeStartupOptions(showTrayHud, disableTray, NormalizeRoute(route));
+        return new WinMoeStartupOptions(showTrayHud, disableTray, NormalizeRoute(route), showCleanScreen);
     }
 
     private static bool IsEnabled(string? value)

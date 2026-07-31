@@ -34,16 +34,20 @@ public partial class App : Application
                 services.AddSingleton<IMoleEngineService, MoleEngineService>();
                 services.AddSingleton<ISafeDeletionService, RecycleBinDeletionService>();
                 services.AddSingleton<ISystemTelemetryService, WindowsSystemTelemetryService>();
+                services.AddSingleton<IHardwareSensorService, WindowsHardwareSensorService>();
+                services.AddSingleton<IGpuAdapterService, WindowsGpuAdapterService>();
                 services.AddSingleton<ISystemTelemetryHistoryService, JsonSystemTelemetryHistoryService>();
                 services.AddSingleton<SystemTelemetrySamplerService>();
                 services.AddSingleton<ISystemTelemetrySamplerService>(provider => provider.GetRequiredService<SystemTelemetrySamplerService>());
                 services.AddHostedService(provider => provider.GetRequiredService<SystemTelemetrySamplerService>());
                 services.AddSingleton<IDiskAnalyzerService, DiskAnalyzerService>();
+                services.AddSingleton<ICleanupScanService, CleanupScanService>();
                 services.AddSingleton<IPurgeArtifactService, PurgeArtifactService>();
                 services.AddSingleton<IInstallerCleanupService, InstallerCleanupService>();
                 services.AddSingleton<IInstalledApplicationService, WindowsInstalledApplicationService>();
                 services.AddSingleton<IWindowsStartupItemService, WindowsStartupItemService>();
                 services.AddSingleton<ITrayIconService, WindowsTrayIconService>();
+                services.AddSingleton<IDisplaySleepPreventionService, DisplaySleepPreventionService>();
                 services.AddSingleton<LocalMcpServerService>();
                 services.AddHostedService(provider => provider.GetRequiredService<LocalMcpServerService>());
                 services.Configure<HostOptions>(options =>
@@ -146,6 +150,11 @@ public partial class App : Application
                 _ = ShowTrayHudForDiagnosticsAsync(_window, trayIconService, diagnostics);
             }
 
+            if (startupOptions.ShowCleanScreenDiagnostic)
+            {
+                trayIconService.ShowCleanScreenForDiagnostics();
+            }
+
             if (!string.IsNullOrWhiteSpace(startupOptions.InitialRoute))
             {
                 _ = NavigateForDiagnosticsAsync(_window, startupOptions.InitialRoute, diagnostics);
@@ -232,7 +241,7 @@ public partial class App : Application
 
     private static bool ShouldInitializeTray(WinMoeSettings settings, WinMoeStartupOptions startupOptions)
     {
-        return (settings.TrayIconEnabled && !startupOptions.DisableTray) || startupOptions.ShowTrayHudDiagnostic;
+        return (settings.TrayIconEnabled && !startupOptions.DisableTray) || startupOptions.ShowTrayHudDiagnostic || startupOptions.ShowCleanScreenDiagnostic;
     }
 
     private static void InitializeTraySafely(

@@ -68,8 +68,16 @@ if ($project -notmatch 'Assets\\Hero\\\*\.png') {
 
 $cleanupPage = Get-Content -LiteralPath (Join-Path $root "Pages\CleanupPage.xaml") -Raw
 $optimizePage = Get-Content -LiteralPath (Join-Path $root "Pages\OptimizePage.xaml") -Raw
-if ($cleanupPage -notmatch 'IsEnabled="False"' -or $optimizePage -notmatch 'IsEnabled="False"') {
-    throw "P0 destructive cleanup/optimize controls must remain disabled."
+$cleanupViewModel = Get-Content -LiteralPath (Join-Path $root "ViewModels\CleanupViewModel.cs") -Raw
+# The clean apply flow is review-gated and must always pass through the
+# operation-plan validator + recycle-bin service (audited execution contract).
+if ($cleanupPage -notmatch 'IsEnabled="\{Binding CanClean\}"') {
+    throw "Clean apply button must stay gated by the review-state CanClean binding."
+}
+
+if ($cleanupViewModel -notmatch '_planValidator\.ValidateForApply' -or
+    $cleanupViewModel -notmatch '_safeDeletionService\.DeleteFileOrDirectory') {
+    throw "Clean apply must route through OperationPlanValidator and the recycle-bin deletion service."
 }
 
 Write-Host "Validated $($xmlFiles.Count) XML/XAML files, $($requiredAssets.Count) assets, legacy removal, and P0 safety gates."

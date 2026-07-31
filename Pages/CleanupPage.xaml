@@ -11,6 +11,35 @@
     Loaded="CleanupPage_Loaded"
     mc:Ignorable="d">
 
+    <!-- Mole-style checkboxes: transparent square with slate stroke when unchecked,
+         orange fill with a dark glyph when checked/indeterminate. -->
+    <Page.Resources>
+        <SolidColorBrush x:Key="CheckBoxCheckBackgroundFillUnchecked" Color="Transparent" />
+        <SolidColorBrush x:Key="CheckBoxCheckBackgroundFillUncheckedPointerOver" Color="Transparent" />
+        <SolidColorBrush x:Key="CheckBoxCheckBackgroundFillUncheckedPressed" Color="Transparent" />
+        <SolidColorBrush x:Key="CheckBoxCheckBackgroundStrokeUnchecked" Color="#4A6A8A" />
+        <SolidColorBrush x:Key="CheckBoxCheckBackgroundStrokeUncheckedPointerOver" Color="#4A6A8A" />
+        <SolidColorBrush x:Key="CheckBoxCheckBackgroundStrokeUncheckedPressed" Color="#4A6A8A" />
+        <SolidColorBrush x:Key="CheckBoxCheckBackgroundFillChecked" Color="#D9A066" />
+        <SolidColorBrush x:Key="CheckBoxCheckBackgroundFillCheckedPointerOver" Color="#D9A066" />
+        <SolidColorBrush x:Key="CheckBoxCheckBackgroundFillCheckedPressed" Color="#D9A066" />
+        <SolidColorBrush x:Key="CheckBoxCheckBackgroundStrokeChecked" Color="#D9A066" />
+        <SolidColorBrush x:Key="CheckBoxCheckBackgroundStrokeCheckedPointerOver" Color="#D9A066" />
+        <SolidColorBrush x:Key="CheckBoxCheckBackgroundStrokeCheckedPressed" Color="#D9A066" />
+        <SolidColorBrush x:Key="CheckBoxCheckGlyphForegroundChecked" Color="#241B12" />
+        <SolidColorBrush x:Key="CheckBoxCheckGlyphForegroundCheckedPointerOver" Color="#241B12" />
+        <SolidColorBrush x:Key="CheckBoxCheckGlyphForegroundCheckedPressed" Color="#241B12" />
+        <SolidColorBrush x:Key="CheckBoxCheckBackgroundFillIndeterminate" Color="#D9A066" />
+        <SolidColorBrush x:Key="CheckBoxCheckBackgroundFillIndeterminatePointerOver" Color="#D9A066" />
+        <SolidColorBrush x:Key="CheckBoxCheckBackgroundFillIndeterminatePressed" Color="#D9A066" />
+        <SolidColorBrush x:Key="CheckBoxCheckBackgroundStrokeIndeterminate" Color="#D9A066" />
+        <SolidColorBrush x:Key="CheckBoxCheckBackgroundStrokeIndeterminatePointerOver" Color="#D9A066" />
+        <SolidColorBrush x:Key="CheckBoxCheckBackgroundStrokeIndeterminatePressed" Color="#D9A066" />
+        <SolidColorBrush x:Key="CheckBoxCheckGlyphForegroundIndeterminate" Color="#241B12" />
+        <SolidColorBrush x:Key="CheckBoxCheckGlyphForegroundIndeterminatePointerOver" Color="#241B12" />
+        <SolidColorBrush x:Key="CheckBoxCheckGlyphForegroundIndeterminatePressed" Color="#241B12" />
+    </Page.Resources>
+
     <Grid>
         <ScrollViewer VerticalScrollBarVisibility="Auto">
             <Grid MinHeight="640" Padding="24,8,24,24">

@@ -40,7 +40,7 @@ public sealed partial class AnalyzePage : Page
         UpdateTreemapViewport();
         await ViewModel.ScanAsync();
         UpdateTreemapViewport();
-        _diagnostics.Record("analyze", $"Analyze scan finished: {ViewModel.Summary}");
+        _diagnostics.Record("analyze", $"Analyze autoscan finished: {ViewModel.Summary}");
     }
 
     private void AnalyzePage_SizeChanged(object sender, SizeChangedEventArgs e)
@@ -71,6 +71,15 @@ public sealed partial class AnalyzePage : Page
     {
         await ViewModel.GoUpAsync();
         UpdateTreemapViewport();
+    }
+
+    private async void DriveChip_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is Button { Tag: string path })
+        {
+            await ViewModel.DrillIntoPathAsync(path);
+            UpdateTreemapViewport();
+        }
     }
 
     private async void TreemapTile_Tapped(object sender, TappedRoutedEventArgs e)

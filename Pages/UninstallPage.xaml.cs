@@ -157,20 +157,42 @@ public sealed partial class UninstallPage : Page
             SourceSortButton,
             string.Equals(ViewModel.SortKey, "lastused", StringComparison.OrdinalIgnoreCase) ||
             string.Equals(ViewModel.SortKey, "source", StringComparison.OrdinalIgnoreCase));
+        SetTextLink(InstalledSortButton, string.Equals(ViewModel.SortKey, "installed", StringComparison.OrdinalIgnoreCase));
     }
 
-    private static void SetNavSegment(Button button, bool isSelected)
+    private void SetNavSegment(Button button, bool isSelected)
     {
-        button.Style = (Style)Application.Current.Resources[
-            isSelected ? "WinMoeTopNavButtonSelectedStyle" : "WinMoeTopNavButtonStyle"];
-        WinMoeButtonVisualState.ApplyNavigationState(button, isSelected);
+        // Mole apps sub-tabs: selected = warm brown pill (page resources), not the white top-nav pill.
+        button.Style = (Style)Resources[isSelected ? "AppsSubTabSelectedStyle" : "AppsSubTabStyle"];
+        if (isSelected)
+        {
+            WinMoeButtonVisualState.Freeze(button);
+        }
+        else
+        {
+            WinMoeButtonVisualState.ApplyCapsuleIdleHover(button);
+        }
     }
 
     private static void SetTextLink(Button button, bool isSelected)
     {
         button.Style = (Style)Application.Current.Resources[
             isSelected ? "WinMoeTextLinkActiveStyle" : "WinMoeTextLinkStyle"];
-        WinMoeButtonVisualState.ApplyNavigationState(button, isSelected);
+
+        // Mole: active sort link is quiet orange text, never a white pill.
+        // Clear local brushes left by earlier states so the style rules again.
+        button.ClearValue(Control.BackgroundProperty);
+        button.ClearValue(Control.ForegroundProperty);
+        button.ClearValue(Control.BorderBrushProperty);
+
+        if (isSelected)
+        {
+            WinMoeButtonVisualState.Freeze(button);
+        }
+        else
+        {
+            WinMoeButtonVisualState.ApplyCapsuleIdleHover(button);
+        }
     }
 }
 

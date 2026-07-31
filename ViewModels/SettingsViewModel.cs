@@ -44,7 +44,7 @@ public partial class SettingsViewModel : ViewModelBase
     private string mcpStdioCommand = "Assets\\Mcp\\winmoe-mcp-stdio.exe";
 
     [ObservableProperty]
-    private string engineInstallHint = "WinMoe ships Assets\\Mole\\mo.exe. You can also override with Assets\\mo.exe, Assets\\Mole\\mole.ps1, Assets\\Mole\\mo.cmd, or a PATH `mo` install.";
+    private string engineInstallHint = "WinMoe 内置 Assets\\Mole\\mo.exe 引擎；也可用 Assets\\mo.exe、Assets\\Mole\\mole.ps1、Assets\\Mole\\mo.cmd 或 PATH 中的 mo 覆盖。";
 
     [ObservableProperty]
     private string settingsPath = string.Empty;
@@ -56,10 +56,10 @@ public partial class SettingsViewModel : ViewModelBase
     private string activityHistoryPath = string.Empty;
 
     [ObservableProperty]
-    private string historySummary = "History has not been loaded";
+    private string historySummary = "尚未载入历史";
 
     [ObservableProperty]
-    private string settingsStatus = "Settings have not been saved in this session";
+    private string settingsStatus = "本次会话尚未保存设置";
 
     [ObservableProperty]
     private string samplingIntervalSeconds = string.Empty;
@@ -87,7 +87,7 @@ public partial class SettingsViewModel : ViewModelBase
     {
         var availability = _moleEngineService.GetAvailability();
         EngineStatus = availability.Message;
-        EnginePath = availability.Path ?? "Not resolved";
+        EnginePath = availability.Path ?? "未解析到引擎";
         EngineKind = availability.Kind.ToString();
 
         SettingsPath = _settingsService.SettingsFilePath;
@@ -117,7 +117,7 @@ public partial class SettingsViewModel : ViewModelBase
         RunOnUiThread(() =>
         {
             ApplySettings(saved);
-            SettingsStatus = "Settings saved. Sampling, tray, REST endpoints, MCP, and telemetry gates apply immediately.";
+            SettingsStatus = "设置已保存，采样、托盘、REST、MCP 与遥测开关立即生效。";
         });
     }
 
@@ -133,7 +133,7 @@ public partial class SettingsViewModel : ViewModelBase
                 HistoryEntries.Add(entry);
             }
 
-            HistorySummary = entries.Count == 0 ? "No history entries found" : $"Loaded {entries.Count} recent entries";
+            HistorySummary = entries.Count == 0 ? "未找到历史记录" : $"已载入 {entries.Count} 条最近记录";
         });
     }
 
@@ -147,8 +147,8 @@ public partial class SettingsViewModel : ViewModelBase
         McpDestructiveActionsEnabled = settings.McpDestructiveActionsEnabled;
         TelemetryEnabled = settings.TelemetryEnabled;
         McpEndpoint = settings.HttpServerEnabled
-            ? $"REST + MCP on http://127.0.0.1:{settings.HttpServerPort}"
-            : $"REST disabled; local MCP bridge remains on http://127.0.0.1:{settings.HttpServerPort}/mcp";
+            ? $"REST + MCP 服务 http://127.0.0.1:{settings.HttpServerPort}"
+            : $"REST 已关闭；本地 MCP 桥仍在 http://127.0.0.1:{settings.HttpServerPort}/mcp";
     }
 
     private static int ParseInt(string value, int fallback)

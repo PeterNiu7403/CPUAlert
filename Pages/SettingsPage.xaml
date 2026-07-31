@@ -5,6 +5,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:models="using:WinMoe.Models"
+    xmlns:services="using:WinMoe.Services"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     Background="{StaticResource WinMoeBackgroundBrush}"
     mc:Ignorable="d">
@@ -32,8 +33,8 @@
             <Setter Property="Foreground" Value="{StaticResource WinMoeMutedBrush}" />
             <Setter Property="FontFamily" Value="{StaticResource WinMoeMonoFont}" />
             <Setter Property="FontSize" Value="13" />
-            <Setter Property="OnContent" Value="On" />
-            <Setter Property="OffContent" Value="Off" />
+            <Setter Property="OnContent" Value="开" />
+            <Setter Property="OffContent" Value="关" />
         </Style>
     </Page.Resources>
 
@@ -55,7 +56,7 @@
                 </Grid.ColumnDefinitions>
 
                 <StackPanel Spacing="6">
-                    <TextBlock Style="{StaticResource TitleTextBlockStyle}" Text="Settings" />
+                    <TextBlock Style="{StaticResource TitleTextBlockStyle}" Text="设置" />
                     <TextBlock
                         FontFamily="{StaticResource WinMoeMonoFont}"
                         Foreground="{StaticResource WinMoeDimBrush}"
@@ -69,7 +70,7 @@
                     Style="{StaticResource WinMoeSecondaryPillButtonStyle}">
                     <StackPanel Orientation="Horizontal" Spacing="8">
                         <FontIcon FontSize="14" Glyph="&#xE72C;" />
-                        <TextBlock Text="Refresh" />
+                        <TextBlock Text="刷新" />
                     </StackPanel>
                 </Button>
 
@@ -84,7 +85,7 @@
                             Glyph="&#xE74E;" />
                         <TextBlock
                             Foreground="#111111"
-                            Text="Save" />
+                            Text="保存" />
                     </StackPanel>
                 </Button>
             </Grid>
@@ -113,16 +114,16 @@
                             Grid.ColumnSpan="2"
                             Foreground="{StaticResource WinMoeGreenBrush}"
                             Style="{StaticResource WinMoeLabelTextStyle}"
-                            Text="ENGINE" />
+                            Text="引擎" />
 
-                        <TextBlock Grid.Row="1" Foreground="{StaticResource WinMoeMutedBrush}" Text="Status" />
+                        <TextBlock Grid.Row="1" Foreground="{StaticResource WinMoeMutedBrush}" Text="状态" />
                         <TextBlock
                             Grid.Row="1"
                             Grid.Column="1"
                             Text="{Binding EngineStatus}"
                             TextWrapping="Wrap" />
 
-                        <TextBlock Grid.Row="2" Foreground="{StaticResource WinMoeMutedBrush}" Text="Kind" />
+                        <TextBlock Grid.Row="2" Foreground="{StaticResource WinMoeMutedBrush}" Text="类型" />
                         <TextBlock
                             Grid.Row="2"
                             Grid.Column="1"
@@ -130,7 +131,7 @@
                             Foreground="{StaticResource WinMoeGoldBrush}"
                             Text="{Binding EngineKind}" />
 
-                        <TextBlock Grid.Row="3" Foreground="{StaticResource WinMoeMutedBrush}" Text="Path" />
+                        <TextBlock Grid.Row="3" Foreground="{StaticResource WinMoeMutedBrush}" Text="路径" />
                         <TextBlock
                             Grid.Row="3"
                             Grid.Column="1"
@@ -139,7 +140,7 @@
                             Text="{Binding EnginePath}"
                             TextWrapping="Wrap" />
 
-                        <TextBlock Grid.Row="4" Foreground="{StaticResource WinMoeMutedBrush}" Text="Setup" />
+                        <TextBlock Grid.Row="4" Foreground="{StaticResource WinMoeMutedBrush}" Text="安装说明" />
                         <TextBlock
                             Grid.Row="4"
                             Grid.Column="1"
@@ -166,10 +167,10 @@
                             Grid.ColumnSpan="2"
                             Foreground="{StaticResource WinMoeBlueBrush}"
                             Style="{StaticResource WinMoeLabelTextStyle}"
-                            Text="AGENT" />
+                            Text="代理" />
 
                         <StackPanel Grid.Row="1" Spacing="8">
-                            <TextBlock Style="{StaticResource SettingsFieldLabelStyle}" Text="HTTP REST endpoints" />
+                            <TextBlock Style="{StaticResource SettingsFieldLabelStyle}" Text="HTTP REST 服务" />
                             <ToggleSwitch
                                 IsOn="{Binding HttpServerEnabled, Mode=TwoWay}"
                                 Style="{StaticResource SettingsToggleSwitchStyle}" />
@@ -178,7 +179,7 @@
                             Grid.Row="1"
                             Grid.Column="1"
                             Spacing="8">
-                            <TextBlock Style="{StaticResource SettingsFieldLabelStyle}" Text="Port" />
+                            <TextBlock Style="{StaticResource SettingsFieldLabelStyle}" Text="端口" />
                             <TextBox
                                 InputScope="Number"
                                 Style="{StaticResource SettingsInputTextBoxStyle}"
@@ -189,13 +190,13 @@
                             Grid.Row="2"
                             Grid.ColumnSpan="2"
                             Spacing="8">
-                            <TextBlock Style="{StaticResource SettingsFieldLabelStyle}" Text="MCP destructive actions" />
+                            <TextBlock Style="{StaticResource SettingsFieldLabelStyle}" Text="MCP 破坏性操作" />
                             <ToggleSwitch
                                 IsOn="{Binding McpDestructiveActionsEnabled, Mode=TwoWay}"
                                 Style="{StaticResource SettingsToggleSwitchStyle}" />
                         </StackPanel>
 
-                        <TextBlock Grid.Row="3" Foreground="{StaticResource WinMoeMutedBrush}" Text="Endpoint" />
+                        <TextBlock Grid.Row="3" Foreground="{StaticResource WinMoeMutedBrush}" Text="服务地址" />
                         <TextBlock
                             Grid.Row="3"
                             Grid.Column="1"
@@ -225,10 +226,10 @@
                         Grid.ColumnSpan="3"
                         Foreground="{StaticResource WinMoeGoldBrush}"
                         Style="{StaticResource WinMoeLabelTextStyle}"
-                        Text="BEHAVIOR" />
+                        Text="行为" />
 
                     <StackPanel Grid.Row="1" Spacing="8">
-                        <TextBlock Style="{StaticResource SettingsFieldLabelStyle}" Text="Sampling interval seconds" />
+                        <TextBlock Style="{StaticResource SettingsFieldLabelStyle}" Text="采样间隔（秒）" />
                         <TextBox
                             InputScope="Number"
                             Style="{StaticResource SettingsInputTextBoxStyle}"
@@ -239,7 +240,7 @@
                         Grid.Row="1"
                         Grid.Column="1"
                         Spacing="8">
-                        <TextBlock Style="{StaticResource SettingsFieldLabelStyle}" Text="History retention days" />
+                        <TextBlock Style="{StaticResource SettingsFieldLabelStyle}" Text="历史保留（天）" />
                         <TextBox
                             InputScope="Number"
                             Style="{StaticResource SettingsInputTextBoxStyle}"
@@ -250,7 +251,7 @@
                         Grid.Row="1"
                         Grid.Column="2"
                         Spacing="8">
-                        <TextBlock Style="{StaticResource SettingsFieldLabelStyle}" Text="Tray icon" />
+                        <TextBlock Style="{StaticResource SettingsFieldLabelStyle}" Text="托盘图标" />
                         <ToggleSwitch
                             IsOn="{Binding TrayIconEnabled, Mode=TwoWay}"
                             Style="{StaticResource SettingsToggleSwitchStyle}" />
@@ -259,7 +260,7 @@
                     <StackPanel
                         Grid.Row="2"
                         Spacing="8">
-                        <TextBlock Style="{StaticResource SettingsFieldLabelStyle}" Text="Share crash reports &amp; analytics" />
+                        <TextBlock Style="{StaticResource SettingsFieldLabelStyle}" Text="分享崩溃报告与匿名统计" />
                         <ToggleSwitch
                             IsOn="{Binding TelemetryEnabled, Mode=TwoWay}"
                             Style="{StaticResource SettingsToggleSwitchStyle}" />
@@ -270,7 +271,7 @@
                         Grid.ColumnSpan="3"
                         FontFamily="{StaticResource WinMoeMonoFont}"
                         Foreground="{StaticResource WinMoeDimBrush}"
-                        Text="Sampling, tray visibility, REST endpoint enablement, port, MCP destructive gates, and telemetry apply immediately. The loopback MCP bridge remains local-only. Telemetry is anonymous, opt-out, and only sends from signed release builds."
+                        Text="采样、托盘显示、REST 服务与端口、MCP 破坏性开关和遥测设置保存后立即生效。回环 MCP 桥仅监听本机。遥测为匿名、可关闭，且仅在正式签名版本中发送。"
                         TextWrapping="Wrap" />
                 </Grid>
             </Border>
@@ -292,9 +293,9 @@
                         Grid.ColumnSpan="2"
                         Foreground="{StaticResource WinMoePurpleBrush}"
                         Style="{StaticResource WinMoeLabelTextStyle}"
-                        Text="LOCAL FILES" />
+                        Text="本地文件" />
 
-                    <TextBlock Grid.Row="1" Foreground="{StaticResource WinMoeMutedBrush}" Text="Settings" />
+                    <TextBlock Grid.Row="1" Foreground="{StaticResource WinMoeMutedBrush}" Text="设置" />
                     <TextBlock
                         Grid.Row="1"
                         Grid.Column="1"
@@ -303,7 +304,7 @@
                         Text="{Binding SettingsPath}"
                         TextWrapping="Wrap" />
 
-                    <TextBlock Grid.Row="2" Foreground="{StaticResource WinMoeMutedBrush}" Text="Telemetry" />
+                    <TextBlock Grid.Row="2" Foreground="{StaticResource WinMoeMutedBrush}" Text="遥测历史" />
                     <TextBlock
                         Grid.Row="2"
                         Grid.Column="1"
@@ -312,7 +313,7 @@
                         Text="{Binding TelemetryHistoryPath}"
                         TextWrapping="Wrap" />
 
-                    <TextBlock Grid.Row="3" Foreground="{StaticResource WinMoeMutedBrush}" Text="Activity" />
+                    <TextBlock Grid.Row="3" Foreground="{StaticResource WinMoeMutedBrush}" Text="活动记录" />
                     <TextBlock
                         Grid.Row="3"
                         Grid.Column="1"
@@ -341,7 +342,7 @@
                             <TextBlock
                                 Foreground="{StaticResource WinMoeOrangeBrush}"
                                 Style="{StaticResource WinMoeLabelTextStyle}"
-                                Text="RECENT ACTIVITY" />
+                                Text="最近活动" />
                             <TextBlock
                                 FontFamily="{StaticResource WinMoeMonoFont}"
                                 Foreground="{StaticResource WinMoeDimBrush}"
@@ -354,7 +355,7 @@
                             Style="{StaticResource WinMoeSecondaryPillButtonStyle}">
                             <StackPanel Orientation="Horizontal" Spacing="8">
                                 <FontIcon FontSize="14" Glyph="&#xE81C;" />
-                                <TextBlock Text="Load activity" />
+                                <TextBlock Text="载入活动" />
                             </StackPanel>
                         </Button>
                     </Grid>
@@ -398,7 +399,7 @@
                                     <TextBlock
                                         Grid.Column="3"
                                         Foreground="{StaticResource WinMoeGoldBrush}"
-                                        Text="{x:Bind ResultText}" />
+                                        Text="{x:Bind services:AppActivityFormatter.FormatOperationResult(Succeeded)}" />
                                     <TextBlock
                                         Grid.Column="4"
                                         FontFamily="{StaticResource WinMoeMonoFont}"

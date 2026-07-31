@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Window
+    x:Class="WinMoe.Views.CleanScreenWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    Title="WinMoe 擦屏"
+    mc:Ignorable="d">
+
+    <Grid
+        Background="Black"
+        KeyDown="CleanScreenGrid_KeyDown"
+        PointerPressed="CleanScreenGrid_PointerPressed">
+        <TextBlock
+            x:Name="HintText"
+            HorizontalAlignment="Center"
+            VerticalAlignment="Bottom"
+            Margin="0,0,0,48"
+            FontSize="13"
+            Foreground="#66FFFFFF"
+            Text="擦屏模式 · 按 Esc 或点击任意处退出" />
+    </Grid>
+</Window>

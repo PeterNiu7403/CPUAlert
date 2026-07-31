@@ -35,7 +35,9 @@ public static class TrayHudStatusFormatter
             telemetry.FanText,
             telemetry.MemoryDetailText,
             telemetry.DiskDetailText,
-            telemetry.NetworkDetailText);
+            telemetry.NetworkDetailText,
+            telemetry.GpuDetailText,
+            telemetry.FanDetailText);
     }
 
     private static (
@@ -52,7 +54,9 @@ public static class TrayHudStatusFormatter
         string FanText,
         string MemoryDetailText,
         string DiskDetailText,
-        string NetworkDetailText) BuildTelemetry(SystemTelemetrySnapshot? snapshot)
+        string NetworkDetailText,
+        string GpuDetailText,
+        string FanDetailText) BuildTelemetry(SystemTelemetrySnapshot? snapshot)
     {
         var device = BuildDeviceChip(snapshot);
         if (snapshot is null)
@@ -71,55 +75,108 @@ public static class TrayHudStatusFormatter
                 "—",
                 "",
                 "",
+                "",
+                "",
                 "");
         }
 
-        var pressure = Math.Max(snapshot.CpuUsagePercent, Math.Max(snapshot.MemoryUsagePercent, snapshot.DiskUsagePercent));
-        var score = Math.Clamp(100 - (int)Math.Round(pressure / 2), 0, 100);
+        // Same check-based score as the dashboard (SystemHealthEvaluator).
+        var (score, healthLabel, _) = SystemHealthEvaluator.Evaluate(snapshot);
         var topProcesses = snapshot.TopProcesses
             .OrderByDescending(process => process.CpuUsagePercent)
             .ThenByDescending(process => process.WorkingSetBytes)
-            .Take(5)
+            .Take(12)
             .ToArray();
 
-        var freeDisk = Math.Max(0, snapshot.DiskTotalBytes - snapshot.DiskUsedBytes);
-        var gpu = string.IsNullOrWhiteSpace(snapshot.GpuStatus) ||
-                  string.Equals(snapshot.GpuStatus, "Unavailable", StringComparison.OrdinalIgnoreCase)
-            ? "—"
-            : snapshot.GpuStatus;
+        // Disk: aggregate every fixed volume (Mole shows whole-disk free/total).
+        double diskPercent;
+        long diskFree;
+        if (snapshot.AllDisksTotalBytes > 0)
+        {
+            diskPercent = SystemHealthEvaluator.AggregateDiskUsagePercent(snapshot);
+            diskFree = snapshot.AllDisksFreeBytes;
+        }
+        else
+        {
+            diskPercent = snapshot.DiskUsagePercent;
+            diskFree = Math.Max(0, snapshot.DiskTotalBytes - snapshot.DiskUsedBytes);
+        }
+
+        var (gpu, gpuDetail) = BuildGpuSurface(snapshot);
+        var (fan, fanDetail) = BuildFanSurface(snapshot);
 
         return (
             $"更新于 {snapshot.CapturedAt.ToLocalTime():HH:mm:ss}",
-            score.ToString(CultureInfo.InvariantCulture),
-            score >= 80 ? "各项指标正常" : score >= 60 ? "需关注" : "繁忙",
+            score,
+            healthLabel,
             SystemTelemetryFormatter.Percent(snapshot.CpuUsagePercent),
             SystemTelemetryFormatter.Percent(snapshot.MemoryUsagePercent),
-            SystemTelemetryFormatter.Percent(snapshot.DiskUsagePercent),
+            SystemTelemetryFormatter.Percent(diskPercent),
             SystemTelemetryFormatter.Rate(
                 snapshot.NetworkReceivedBytesPerSecond + snapshot.NetworkSentBytesPerSecond),
             topProcesses,
             device,
             gpu,
-            "—",
+            fan,
             SystemTelemetryFormatter.MemorySummary(snapshot),
-            $"可用 {SystemTelemetryFormatter.Bytes(freeDisk)}",
-            $"↓ {SystemTelemetryFormatter.Rate(snapshot.NetworkReceivedBytesPerSecond)}  ↑ {SystemTelemetryFormatter.Rate(snapshot.NetworkSentBytesPerSecond)}");
+            $"可用 {SystemTelemetryFormatter.Bytes(diskFree)}",
+            $"↓ {SystemTelemetryFormatter.Rate(snapshot.NetworkReceivedBytesPerSecond)}  ↑ {SystemTelemetryFormatter.Rate(snapshot.NetworkSentBytesPerSecond)}",
+            gpuDetail,
+            fanDetail);
+    }
+
+    private static (string Gpu, string Detail) BuildGpuSurface(SystemTelemetrySnapshot snapshot)
+    {
+        var discrete = snapshot.GpuAdapters.FirstOrDefault(adapter => adapter.Kind == GpuAdapterKind.Discrete);
+        var integrated = snapshot.GpuAdapters.FirstOrDefault(adapter => adapter.Kind == GpuAdapterKind.Integrated);
+        var primary = discrete ?? integrated ?? snapshot.GpuAdapters.FirstOrDefault();
+
+        if (primary is not null)
+        {
+            var detail = discrete is not null && integrated is not null
+                ? $"独显 {discrete.ShortName} · 集显 {integrated.Engine3DPercent:0.0}%"
+                : discrete is not null
+                    ? $"独显 {discrete.ShortName}"
+                    : $"集显 {primary.ShortName}";
+            if (primary.TemperatureCelsius is { } temperature)
+            {
+                detail = string.Create(CultureInfo.InvariantCulture, $"{detail} · {temperature:0}°C");
+            }
+
+            return (string.Create(CultureInfo.InvariantCulture, $"{primary.Engine3DPercent:0.0}%"), detail);
+        }
+
+        var fallback = string.IsNullOrWhiteSpace(snapshot.GpuStatus) ||
+                       string.Equals(snapshot.GpuStatus, "Unavailable", StringComparison.OrdinalIgnoreCase)
+            ? "—"
+            : snapshot.GpuStatus;
+        return (fallback, fallback == "—" ? "引擎计数不可用" : "Windows 采样");
+    }
+
+    private static (string Fan, string Detail) BuildFanSurface(SystemTelemetrySnapshot snapshot)
+    {
+        if (snapshot.Fans.Count == 0)
+        {
+            return ("—", "未暴露转速接口");
+        }
+
+        var maxRpm = snapshot.Fans.Max(fan => fan.Rpm);
+        var detail = string.Join(" · ", snapshot.Fans.Select(fan => $"{fan.Name} {fan.Rpm}"));
+        detail = snapshot.FanMaxRpm is { } peak && peak > 0
+            ? string.Create(CultureInfo.InvariantCulture, $"{detail} RPM · 负载 {(int)Math.Round(maxRpm * 100d / peak)}%")
+            : $"{detail} RPM";
+        return (maxRpm.ToString(CultureInfo.InvariantCulture), detail);
     }
 
     private static string BuildDeviceChip(SystemTelemetrySnapshot? snapshot)
     {
-        var machine = Environment.MachineName;
-        if (string.IsNullOrWhiteSpace(machine))
-        {
-            machine = "Windows";
-        }
-
         if (snapshot is null || snapshot.MemoryTotalBytes <= 0)
         {
-            return machine;
+            return CpuModelNameResolver.Get();
         }
 
-        return $"{machine} · {SystemTelemetryFormatter.Bytes(snapshot.MemoryTotalBytes)}";
+        // Mole device chip: "M5 Pro · 48 GB" → CPU model + RAM.
+        return $"{CpuModelNameResolver.Get()} · {SystemTelemetryFormatter.Bytes(snapshot.MemoryTotalBytes)}";
     }
 
     private static (string ActivityTitle, string ActivityDetail) BuildActivity(OperationHistoryEntry? activity)

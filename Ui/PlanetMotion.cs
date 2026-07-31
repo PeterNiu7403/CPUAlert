@@ -33,11 +33,14 @@ public static class PlanetMotion
 
         Stop(element);
 
+        // Always pin the origin to the element center: without this an Ellipse
+        // that declares its own RotateTransform in XAML rotates around its
+        // top-left corner, which reads as drifting instead of spinning in place.
+        element.RenderTransformOrigin = new Windows.Foundation.Point(0.5, 0.5);
         if (element.RenderTransform is not RotateTransform rotate)
         {
             rotate = new RotateTransform();
             element.RenderTransform = rotate;
-            element.RenderTransformOrigin = new Windows.Foundation.Point(0.5, 0.5);
         }
 
         var animation = new DoubleAnimation

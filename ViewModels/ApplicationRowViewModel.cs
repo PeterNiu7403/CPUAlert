@@ -88,7 +88,10 @@ public partial class ApplicationRowViewModel : ObservableObject
                 ? new Microsoft.UI.Xaml.Media.SolidColorBrush(Color.FromArgb(255, 122, 116, 108))
                 : new Microsoft.UI.Xaml.Media.SolidColorBrush(Color.FromArgb(255, 201, 160, 112));
 
-    public string ChevronText => IsExpanded ? "review ▴" : "review ▾";
+    public Visibility ActivitySeparatorVisibility =>
+        string.IsNullOrWhiteSpace(ActivityText) ? Visibility.Collapsed : Visibility.Visible;
+
+    public string ChevronText => IsExpanded ? "残留 ▴" : "残留 ▾";
 
     public Visibility DetailVisibility => IsExpanded ? Visibility.Visible : Visibility.Collapsed;
 
@@ -96,15 +99,21 @@ public partial class ApplicationRowViewModel : ObservableObject
 
     public Visibility IconVisibility => HasIcon ? Visibility.Visible : Visibility.Collapsed;
 
+    // Mole: unselected check is a quiet dark box; selected stays orange with a white tick.
     public SolidColorBrush CheckBackground => IsSelected
         ? new SolidColorBrush(Color.FromArgb(255, 224, 112, 64))
-        : new SolidColorBrush(Color.FromArgb(0, 0, 0, 0));
+        : new SolidColorBrush(Color.FromArgb(255, 42, 28, 26));
 
     public SolidColorBrush CheckBorder => IsSelected
         ? new SolidColorBrush(Color.FromArgb(255, 224, 112, 64))
-        : new SolidColorBrush(Color.FromArgb(255, 122, 116, 108));
+        : new SolidColorBrush(Color.FromArgb(255, 90, 68, 64));
 
     public Visibility CheckMarkVisibility => IsSelected ? Visibility.Visible : Visibility.Collapsed;
+
+    // Mole: row size text stays dim until the row is checked, then turns orange.
+    public SolidColorBrush RightSummaryBrush => IsSelected
+        ? new SolidColorBrush(Color.FromArgb(255, 224, 112, 64))
+        : new SolidColorBrush(Color.FromArgb(255, 122, 116, 108));
 
     [ObservableProperty]
     private bool isExpanded;
@@ -133,6 +142,7 @@ public partial class ApplicationRowViewModel : ObservableObject
     partial void OnIsSelectedChanged(bool value)
     {
         OnPropertyChanged(nameof(RightSummary));
+        OnPropertyChanged(nameof(RightSummaryBrush));
         OnPropertyChanged(nameof(CheckBackground));
         OnPropertyChanged(nameof(CheckBorder));
         OnPropertyChanged(nameof(CheckMarkVisibility));
@@ -147,6 +157,7 @@ public partial class ApplicationRowViewModel : ObservableObject
     {
         OnPropertyChanged(nameof(DetailLineWithActivity));
         OnPropertyChanged(nameof(ActivityBrush));
+        OnPropertyChanged(nameof(ActivitySeparatorVisibility));
     }
 
     partial void OnHasIconChanged(bool value)

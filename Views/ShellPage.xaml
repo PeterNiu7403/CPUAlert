@@ -55,6 +55,10 @@
                         CornerRadius="15"
                         Tag="status"
                         ToolTipService.ToolTip="WinMoe">
+                        <Button.Resources>
+                            <StaticResource x:Key="ButtonBackgroundPointerOver" ResourceKey="WinMoeGearHoverBrush" />
+                            <StaticResource x:Key="ButtonBackgroundPressed" ResourceKey="WinMoeGearPressedBrush" />
+                        </Button.Resources>
                         <Image
                             Width="24"
                             Height="24"
@@ -118,10 +122,16 @@
                 Background="Transparent"
                 BorderBrush="Transparent"
                 Click="TopNav_Click"
-                Opacity="0.35"
+                Opacity="0.5"
                 Style="{StaticResource WinMoeIconButtonStyle}"
                 Tag="settings"
                 ToolTipService.ToolTip="设置">
+                <Button.Resources>
+                    <!-- Dark-chrome hover/press so the quiet gear never flashes a white circle. -->
+                    <StaticResource x:Key="ButtonBackgroundPointerOver" ResourceKey="WinMoeGearHoverBrush" />
+                    <StaticResource x:Key="ButtonBackgroundPressed" ResourceKey="WinMoeGearPressedBrush" />
+                    <StaticResource x:Key="ButtonForegroundPointerOver" ResourceKey="WinMoeTextBrush" />
+                </Button.Resources>
                 <FontIcon FontSize="14" Glyph="&#xE712;" />
             </Button>
         </Grid>

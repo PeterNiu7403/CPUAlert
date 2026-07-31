@@ -24,9 +24,8 @@ public static class TrayIconTextFormatter
             return "健康度：等待采样";
         }
 
-        var pressure = Math.Max(snapshot.CpuUsagePercent, Math.Max(snapshot.MemoryUsagePercent, snapshot.DiskUsagePercent));
-        var score = Math.Clamp(100 - (int)Math.Round(pressure / 2), 0, 100);
-        var label = score >= 80 ? "良好" : score >= 60 ? "需关注" : "繁忙";
+        // Same check-based score as the dashboard and tray HUD.
+        var (score, label, _) = SystemHealthEvaluator.Evaluate(snapshot);
         return $"健康度 {score} · {label}";
     }
 
@@ -37,7 +36,8 @@ public static class TrayIconTextFormatter
             return "CPU --  内存 --  磁盘 --";
         }
 
-        return $"CPU {snapshot.CpuUsagePercent:0}%  内存 {snapshot.MemoryUsagePercent:0}%  磁盘 {snapshot.DiskUsagePercent:0}%";
+        var diskPercent = SystemHealthEvaluator.AggregateDiskUsagePercent(snapshot);
+        return $"CPU {snapshot.CpuUsagePercent:0}%  内存 {snapshot.MemoryUsagePercent:0}%  磁盘 {diskPercent:0}%";
     }
 
     public static string BuildNetworkLine(SystemTelemetrySnapshot? snapshot)

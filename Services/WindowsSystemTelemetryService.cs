@@ -10,6 +10,22 @@ public sealed class WindowsSystemTelemetryService : ISystemTelemetryService
 {
     private static readonly TimeSpan SampleWindow = TimeSpan.FromMilliseconds(350);
 
+    private readonly IHardwareSensorService _sensorService;
+    private readonly IGpuAdapterService _gpuAdapterService;
+
+    public WindowsSystemTelemetryService()
+        : this(new WindowsHardwareSensorService(), new WindowsGpuAdapterService())
+    {
+    }
+
+    public WindowsSystemTelemetryService(
+        IHardwareSensorService sensorService,
+        IGpuAdapterService gpuAdapterService)
+    {
+        _sensorService = sensorService;
+        _gpuAdapterService = gpuAdapterService;
+    }
+
     public async Task<SystemTelemetrySnapshot> CaptureAsync(CancellationToken cancellationToken = default)
     {
         var cpuBefore = GetTotalProcessorTime();
@@ -26,6 +42,13 @@ public sealed class WindowsSystemTelemetryService : ISystemTelemetryService
         var memory = GetMemory();
         var disk = GetSystemDisk();
         var battery = GetBattery();
+        // HasBattery=false means no probe at all; the probe caches static details once
+        // per process and re-reads the live charge/discharge rate on every call.
+        var batteryDetail = battery.HasBattery ? BatteryDetailProbe.Query() : null;
+        var sensors = _sensorService.Capture();
+        var gpuAdapters = GpuTemperatureAttachment.Attach(_gpuAdapterService.CaptureAdapters(), sensors);
+        var allDisks = AttachDriveTemperatures(GetFixedVolumes(), sensors);
+        var physicalDiskCount = GetPhysicalDiskCount();
 
         var cpuPercent = elapsed.TotalMilliseconds <= 0
             ? 0
@@ -53,8 +76,99 @@ public sealed class WindowsSystemTelemetryService : ISystemTelemetryService
             BatteryChargePercent = battery.ChargePercent,
             BatteryStatusText = battery.StatusText,
             BatteryHealthText = battery.HealthText,
-            BatteryEstimatedSecondsRemaining = battery.EstimatedSecondsRemaining
+            BatteryEstimatedSecondsRemaining = battery.EstimatedSecondsRemaining,
+            BatteryDesignCapacityMwh = batteryDetail?.DesignCapacityMwh,
+            BatteryFullChargeCapacityMwh = batteryDetail?.FullChargeCapacityMwh,
+            BatteryCycleCount = batteryDetail?.CycleCount,
+            BatteryRateMw = batteryDetail?.RateMw,
+            CpuTemperatureCelsius = sensors.CpuTemperatureCelsius,
+            GpuTemperatureCelsius = sensors.GpuTemperatureCelsius,
+            Fans = sensors.Fans,
+            FanMaxRpm = sensors.FanMaxRpm,
+            SensorSource = sensors.SourceName,
+            GpuAdapters = gpuAdapters,
+            PhysicalDiskCount = physicalDiskCount,
+            DiskVolumeCount = allDisks.Count,
+            AllDisksTotalBytes = allDisks.Sum(volume => volume.TotalBytes),
+            AllDisksFreeBytes = allDisks.Sum(volume => volume.FreeBytes),
+            Volumes = allDisks
         };
+    }
+
+    private static IReadOnlyList<DiskVolumeTelemetry> AttachDriveTemperatures(
+        IReadOnlyList<DiskVolumeTelemetry> volumes,
+        HardwareSensorSample sensors)
+    {
+        if (volumes.Count == 0 || sensors.DriveTemperatures.Count == 0)
+        {
+            return volumes;
+        }
+
+        var temperatureByLetter = new Dictionary<string, double>(StringComparer.OrdinalIgnoreCase);
+        foreach (var drive in sensors.DriveTemperatures)
+        {
+            var letter = drive.DriveName.TrimEnd('\\', '/');
+            temperatureByLetter.TryAdd(letter, drive.TemperatureCelsius);
+        }
+
+        return volumes
+            .Select(volume => temperatureByLetter.TryGetValue(volume.LetterText, out var celsius)
+                ? volume with { TemperatureCelsius = celsius }
+                : volume)
+            .ToArray();
+    }
+
+    private static IReadOnlyList<DiskVolumeTelemetry> GetFixedVolumes()
+    {
+        var volumes = new List<DiskVolumeTelemetry>();
+        foreach (var drive in DriveInfo.GetDrives())
+        {
+            try
+            {
+                if (drive.DriveType != DriveType.Fixed || !drive.IsReady || drive.TotalSize <= 0)
+                {
+                    continue;
+                }
+
+                volumes.Add(new DiskVolumeTelemetry(
+                    drive.RootDirectory.FullName,
+                    drive.VolumeLabel ?? string.Empty,
+                    drive.TotalSize,
+                    Math.Clamp(drive.AvailableFreeSpace, 0, drive.TotalSize)));
+            }
+            catch
+            {
+                // A drive can vanish (USB/eject) between enumeration and query.
+            }
+        }
+
+        return volumes;
+    }
+
+    private static int GetPhysicalDiskCount()
+    {
+        var count = 0;
+        for (var index = 0; index < 16; index++)
+        {
+            // Access=0 queries device presence only; works without elevation.
+            var handle = CreateFile(
+                $@"\\.\PhysicalDrive{index}",
+                0,
+                FileShareRead | FileShareWrite,
+                IntPtr.Zero,
+                OpenExisting,
+                0,
+                IntPtr.Zero);
+            if (handle == InvalidHandleValue)
+            {
+                continue;
+            }
+
+            CloseHandle(handle);
+            count++;
+        }
+
+        return count;
     }
 
     private static TimeSpan GetTotalProcessorTime()
@@ -255,16 +369,16 @@ public sealed class WindowsSystemTelemetryService : ISystemTelemetryService
         return processes
             .OrderByDescending(process => process.CpuUsagePercent)
             .ThenByDescending(process => process.WorkingSetBytes)
-            .Take(8)
+            .Take(50)
             .Concat(processes
                 .OrderByDescending(process => process.WorkingSetBytes)
                 .ThenByDescending(process => process.CpuUsagePercent)
-                .Take(8))
+                .Take(50))
             .GroupBy(process => process.ProcessId)
             .Select(group => group.First())
             .OrderByDescending(process => process.CpuUsagePercent)
             .ThenByDescending(process => process.WorkingSetBytes)
-            .Take(12)
+            .Take(50)
             .ToArray();
     }
 
@@ -418,6 +532,24 @@ public sealed class WindowsSystemTelemetryService : ISystemTelemetryService
 
     [DllImport("kernel32.dll", SetLastError = true)]
     private static extern bool GetSystemPowerStatus(out SystemPowerStatus lpSystemPowerStatus);
+
+    private static readonly IntPtr InvalidHandleValue = new(-1);
+    private const uint FileShareRead = 0x00000001;
+    private const uint FileShareWrite = 0x00000002;
+    private const uint OpenExisting = 3;
+
+    [DllImport("kernel32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
+    private static extern IntPtr CreateFile(
+        string lpFileName,
+        uint dwDesiredAccess,
+        uint dwShareMode,
+        IntPtr lpSecurityAttributes,
+        uint dwCreationDisposition,
+        uint dwFlagsAndAttributes,
+        IntPtr hTemplateFile);
+
+    [DllImport("kernel32.dll", SetLastError = true)]
+    private static extern bool CloseHandle(IntPtr hObject);
 
     [StructLayout(LayoutKind.Sequential)]
     private struct SystemPowerStatus

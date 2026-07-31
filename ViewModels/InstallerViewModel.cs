@@ -35,13 +35,13 @@ public partial class InstallerViewModel : ViewModelBase
     private bool canRemove;
 
     [ObservableProperty]
-    private string summary = "Ready to scan old installers";
+    private string summary = "准备扫描下载目录旧安装包";
 
     [ObservableProperty]
-    private string selectedSummary = "0 files";
+    private string selectedSummary = "0 个文件";
 
     [ObservableProperty]
-    private string engineSummary = "WinMoe has no dedicated installer command yet; this view mirrors Mole's old Downloads installer/archive rules.";
+    private string engineSummary = "WinMoe 以与 Mole 相同的规则识别下载目录中的旧安装包与镜像文件。";
 
     public string OutputText => string.Join(Environment.NewLine, OutputLines);
 
@@ -50,14 +50,14 @@ public partial class InstallerViewModel : ViewModelBase
     {
         var startedAt = Stopwatch.GetTimestamp();
         var succeeded = false;
-        var historySummary = "Installer preview did not finish";
+        var historySummary = "安装包预览未完成";
 
         IsBusy = true;
         CanRemove = false;
         ClearItems();
         OutputLines.Clear();
         OnPropertyChanged(nameof(OutputText));
-        Summary = "Scanning old installers...";
+        Summary = "正在扫描旧安装包…";
 
         try
         {
@@ -69,7 +69,7 @@ public partial class InstallerViewModel : ViewModelBase
             RunOnUiThread(() =>
             {
                 EngineSummary = availability.IsAvailable
-                    ? $"Mole engine available at {availability.Path}; installer preview uses Mole-compatible Downloads rules."
+                    ? $"Mole 引擎可用（{availability.Path}）；安装包预览使用与 Mole 兼容的下载目录规则。"
                     : $"{availability.Message} Installer preview uses local Windows Downloads rules.";
 
                 ClearItems();
@@ -110,13 +110,13 @@ public partial class InstallerViewModel : ViewModelBase
 
         var startedAt = Stopwatch.GetTimestamp();
         var succeeded = false;
-        var historySummary = "Installer removal did not finish";
+        var historySummary = "安装包移除未完成";
 
         IsBusy = true;
         CanRemove = false;
         OutputLines.Clear();
         OnPropertyChanged(nameof(OutputText));
-        Summary = "Removing selected installers...";
+        Summary = "正在移除所选安装包…";
 
         try
         {
@@ -125,8 +125,8 @@ public partial class InstallerViewModel : ViewModelBase
             var failedCount = results.Count(result => !result.Succeeded);
             succeeded = failedCount == 0;
             historySummary = failedCount == 0
-                ? $"Removed {results.Count} files, freed {SystemTelemetryFormatter.Bytes(removedBytes)}"
-                : $"Removed {results.Count - failedCount} files; {failedCount} failed";
+                ? $"已移除 {results.Count} 个文件，释放 {SystemTelemetryFormatter.Bytes(removedBytes)}"
+                : $"已移除 {results.Count - failedCount} 个文件；{failedCount} 个失败";
 
             RunOnUiThread(() =>
             {
@@ -191,7 +191,7 @@ public partial class InstallerViewModel : ViewModelBase
     {
         var selected = Items.Where(item => item.IsSelected).ToList();
         var selectedBytes = selected.Sum(item => item.SizeBytes);
-        SelectedSummary = $"{selected.Count} files - {SystemTelemetryFormatter.Bytes(selectedBytes)}";
+        SelectedSummary = $"{selected.Count} 个文件 · {SystemTelemetryFormatter.Bytes(selectedBytes)}";
         CanRemove = selected.Count > 0 && !IsBusy;
     }
 
@@ -214,7 +214,7 @@ public partial class InstallerViewModel : ViewModelBase
         }
 
         var totalBytes = items.Sum(item => item.SizeBytes);
-        return $"{items.Count} files - {SystemTelemetryFormatter.Bytes(totalBytes)}";
+        return $"{items.Count} 个文件 · {SystemTelemetryFormatter.Bytes(totalBytes)}";
     }
 
     private async Task RecordHistoryAsync(

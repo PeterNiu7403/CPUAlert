@@ -39,6 +39,14 @@
             <Setter Property="CornerRadius" Value="18" />
             <Setter Property="Background" Value="#463124" />
         </Style>
+
+        <!-- Mole apps sub-tabs: selected is a dark warm-brown pill with light text -->
+        <Style x:Key="AppsSubTabStyle" TargetType="Button" BasedOn="{StaticResource WinMoeTopNavButtonStyle}" />
+        <Style x:Key="AppsSubTabSelectedStyle" TargetType="Button" BasedOn="{StaticResource AppsSubTabStyle}">
+            <Setter Property="Background" Value="#463124" />
+            <Setter Property="Foreground" Value="{StaticResource WinMoeTextBrush}" />
+            <Setter Property="BorderBrush" Value="#463124" />
+        </Style>
     </Page.Resources>
 
     <Grid RowSpacing="0">
@@ -68,21 +76,21 @@
                         MinWidth="52"
                         Click="AppsTabButton_Click"
                         Content="卸载"
-                        Style="{StaticResource WinMoeTopNavButtonSelectedStyle}"
+                        Style="{StaticResource AppsSubTabSelectedStyle}"
                         Tag="uninstall" />
                     <Button
                         x:Name="UpdatesTabButton"
                         MinWidth="52"
                         Click="AppsTabButton_Click"
                         Content="更新"
-                        Style="{StaticResource WinMoeTopNavButtonStyle}"
+                        Style="{StaticResource AppsSubTabStyle}"
                         Tag="updates" />
                     <Button
                         x:Name="StartupTabButton"
                         MinWidth="60"
                         Click="AppsTabButton_Click"
                         Content="启动项"
-                        Style="{StaticResource WinMoeTopNavButtonStyle}"
+                        Style="{StaticResource AppsSubTabStyle}"
                         Tag="startup" />
                 </StackPanel>
             </Border>
@@ -111,6 +119,12 @@
                     Command="{Binding SortCommand}"
                     CommandParameter="lastused"
                     Content="{Binding SourceSortLabel}"
+                    Style="{StaticResource WinMoeTextLinkStyle}" />
+                <Button
+                    x:Name="InstalledSortButton"
+                    Command="{Binding SortCommand}"
+                    CommandParameter="installed"
+                    Content="{Binding InstalledSortLabel}"
                     Style="{StaticResource WinMoeTextLinkStyle}" />
                 <Button
                     Command="{Binding LoadCommand}"
@@ -203,10 +217,21 @@
                                                     Text="{x:Bind VersionText}"
                                                     TextTrimming="CharacterEllipsis" />
                                                 <TextBlock
+                                                    FontFamily="{StaticResource WinMoeTextFont}"
+                                                    FontSize="11"
+                                                    Foreground="{StaticResource WinMoeDimBrush}"
+                                                    Text="·" />
+                                                <TextBlock
                                                     FontFamily="{StaticResource WinMoeMonoFont}"
                                                     FontSize="11"
                                                     Foreground="{StaticResource WinMoeDimBrush}"
                                                     Text="{x:Bind SizeText}" />
+                                                <TextBlock
+                                                    FontFamily="{StaticResource WinMoeTextFont}"
+                                                    FontSize="11"
+                                                    Foreground="{StaticResource WinMoeDimBrush}"
+                                                    Text="·"
+                                                    Visibility="{x:Bind ActivitySeparatorVisibility, Mode=OneWay}" />
                                                 <TextBlock
                                                     FontFamily="{StaticResource WinMoeTextFont}"
                                                     FontSize="11"
@@ -224,7 +249,7 @@
                                             VerticalAlignment="Center"
                                             FontFamily="{StaticResource WinMoeMonoFont}"
                                             FontSize="11"
-                                            Foreground="{StaticResource WinMoeOrangeBrush}"
+                                            Foreground="{x:Bind RightSummaryBrush, Mode=OneWay}"
                                             Text="{x:Bind RightSummary, Mode=OneWay}"
                                             TextTrimming="CharacterEllipsis" />
 
@@ -562,7 +587,7 @@
                 VerticalAlignment="Center"
                 Click="UninstallButton_Click"
                 Content="{Binding RemoveButtonLabel}"
-                IsEnabled="{Binding CanLaunchUninstaller}"
+                IsEnabled="{Binding CanRemoveSelectedApps}"
                 Style="{StaticResource WinMoePillButtonStyle}" />
         </Grid>
     </Grid>

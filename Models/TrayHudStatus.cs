@@ -19,4 +19,8 @@ public sealed record TrayHudStatus(
     string FanText = "—",
     string MemoryDetailText = "",
     string DiskDetailText = "",
-    string NetworkDetailText = "");
+    string NetworkDetailText = "",
+    string GpuDetailText = "",
+    string FanDetailText = "",
+    double? CpuTemperatureCelsius = null,
+    double? GpuTemperatureCelsius = null);

@@ -1,4 +1,5 @@
 using System.Globalization;
+using System.Text.RegularExpressions;
 
 namespace WinMoe.Services;
 
@@ -52,6 +53,27 @@ public static class AppActivityFormatter
         var years = Math.Max(1, (int)Math.Round(age.TotalDays / 365d));
         return $"{years} 年前";
     }
+
+    /// <summary>
+    /// Collapses encoding-fallback artifacts in engine output: runs of U+FFFD
+    /// replacement characters and standalone "??" placeholder tokens (emoji that a
+    /// legacy console codepage could not encode) fold into a single em dash.
+    /// </summary>
+    public static string SanitizeEngineText(string? value)
+    {
+        if (string.IsNullOrEmpty(value))
+        {
+            return string.Empty;
+        }
+
+        var collapsed = ReplacementRunPattern.Replace(value, "—");
+        return QuestionPlaceholderPattern.Replace(collapsed, "$1—");
+    }
+
+    public static string FormatOperationResult(bool succeeded) => succeeded ? "成功" : "失败";
+
+    private static readonly Regex ReplacementRunPattern = new("\\uFFFD+", RegexOptions.Compiled);
+    private static readonly Regex QuestionPlaceholderPattern = new(@"(^|\s)\?{2,}(?=\s|$)", RegexOptions.Compiled);
 
     public static DateTimeOffset? TryParseInstallDate(string? installDateRaw)
     {

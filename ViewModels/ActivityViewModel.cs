@@ -33,7 +33,9 @@ public partial class ActivityViewModel : ViewModelBase
             Entries.Clear();
             foreach (var entry in entries)
             {
-                Entries.Add(entry);
+                // Older history rows may carry encoding-fallback artifacts ("??" icon
+                // placeholders) recorded before the runner enforced UTF-8 output.
+                Entries.Add(entry with { Summary = AppActivityFormatter.SanitizeEngineText(entry.Summary) });
             }
 
             Summary = entries.Count == 0 ? "尚无操作记录" : $"最近 {entries.Count} 次操作";

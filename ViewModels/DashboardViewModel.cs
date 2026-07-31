@@ -3,9 +3,11 @@ using System.Diagnostics;
 using System.Globalization;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Media;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.Foundation;
+using Windows.UI;
 using WinMoe.Models;
 using WinMoe.Services;
 
@@ -16,12 +18,18 @@ public partial class DashboardViewModel : ViewModelBase
     private const int CpuBarCount = 34;
     private const int NetworkPointCount = 48;
     private const double ChartWidth = 100;
-    private const double ChartHeight = 100;
-    private const double ChartPadding = 8;
-    private const double NetworkChartWidth = 520;
-    private const double NetworkChartHeight = 80;
-    private const double NetworkChartTopPadding = 10;
-    private const double NetworkChartBottomPadding = 12;
+    private const double ChartHeight = 48;
+    private const double ChartPadding = 4;
+    private const double NetworkChartWidth = 200;
+    private const double NetworkChartHeight = 48;
+    private const double NetworkChartTopPadding = 6;
+    private const double NetworkChartBottomPadding = 6;
+
+    // Badge colors mirror WinMoeTheme tokens (green/gold/red, muted when no sensor reading).
+    private static readonly SolidColorBrush TemperatureLowBrush = new(Color.FromArgb(0xFF, 0x5B, 0xD4, 0x8E));
+    private static readonly SolidColorBrush TemperatureMidBrush = new(Color.FromArgb(0xFF, 0xE0, 0xB0, 0x3C));
+    private static readonly SolidColorBrush TemperatureHighBrush = new(Color.FromArgb(0xFF, 0xF0, 0x60, 0x4E));
+    private static readonly SolidColorBrush TemperatureUnknownBrush = new(Color.FromArgb(0xFF, 0xA3, 0x9C, 0x92));
     private readonly IMoleEngineService _moleEngineService;
     private readonly ISystemTelemetrySamplerService _telemetrySamplerService;
     private readonly ISystemTelemetryHistoryService _systemTelemetryHistoryService;
@@ -63,9 +71,12 @@ public partial class DashboardViewModel : ViewModelBase
 
     public ObservableCollection<DashboardBarSample> CpuBars { get; } = new();
 
-    public ObservableCollection<ProcessTelemetry> TopProcesses { get; } = new();
+    public ObservableCollection<ProcessRowViewModel> TopProcesses { get; } = new();
 
     public ObservableCollection<OperationHistoryEntry> RecentActivity { get; } = new();
+
+    /// <summary>Per-volume partition rows under the aggregate disk card.</summary>
+    public ObservableCollection<DiskVolumeTelemetry> DiskVolumes { get; } = new();
 
     [ObservableProperty]
     private string engineStatus = "尚未检查";
@@ -122,16 +133,16 @@ public partial class DashboardViewModel : ViewModelBase
     private string deviceSummary = "Windows";
 
     [ObservableProperty]
-    private string healthFooter = "up 0d 0h";
+    private string healthFooter = "已运行 --";
 
     [ObservableProperty]
     private string cpuCoresBadge = $"{Environment.ProcessorCount} cores";
 
     [ObservableProperty]
-    private string cpuFooter = "load 0.00";
+    private string cpuFooter = "尚未采样";
 
     [ObservableProperty]
-    private string memoryStateBadge = "正常";
+    private string memoryStateBadge = "压力 —%";
 
     [ObservableProperty]
     private string diskTotalBadge = "-";
@@ -158,7 +169,22 @@ public partial class DashboardViewModel : ViewModelBase
     private string networkFooter = "尚未采样";
 
     [ObservableProperty]
-    private string networkBadge = "HTTP";
+    private string networkBadge = "-";
+
+    [ObservableProperty]
+    private string cpuTemperatureBadge = "—°C";
+
+    [ObservableProperty]
+    private SolidColorBrush cpuTemperatureBrush = TemperatureUnknownBrush;
+
+    [ObservableProperty]
+    private string gpuTemperatureBadge = "—°C";
+
+    [ObservableProperty]
+    private SolidColorBrush gpuTemperatureBrush = TemperatureUnknownBrush;
+
+    [ObservableProperty]
+    private string gpuAdapterFooter = "GPU 信息不可用";
 
     [ObservableProperty]
     private string networkAdapterText = "网络 · 不可用";
@@ -176,7 +202,10 @@ public partial class DashboardViewModel : ViewModelBase
     private string batteryStateText = "不可用";
 
     [ObservableProperty]
-    private string batteryFooter = "台式机或指标不可用";
+    private string batteryFooter = string.Empty;
+
+    [ObservableProperty]
+    private Visibility batteryFooterVisibility = Visibility.Collapsed;
 
     [ObservableProperty]
     private string batteryBadge = "Good";
@@ -233,24 +262,14 @@ public partial class DashboardViewModel : ViewModelBase
 
     public string OutputText => string.Join(Environment.NewLine, OutputLines);
 
-    public double HealthScoreValue => Math.Clamp(100 - Math.Round(Math.Max(DiskUsagePercent, Math.Max(MemoryUsagePercent, CpuUsagePercent)) / 2), 0, 100);
+    [ObservableProperty]
+    private string healthScore = "100";
 
-    public string HealthScore => HealthScoreValue.ToString("0", CultureInfo.InvariantCulture);
+    [ObservableProperty]
+    private string healthStatusText = "各项指标正常";
 
-    // Mole: "Excellent" / "All checks passed" — Chinese HUD uses 各项指标正常.
-    public string HealthStatusText => HealthScoreValue >= 80
-        ? "各项指标正常"
-        : HealthScoreValue >= 60
-            ? "需关注"
-            : "繁忙";
-
-    public string HealthReason => DiskUsagePercent > 90
-        ? "磁盘空间即将用尽"
-        : MemoryUsagePercent > 90
-            ? "内存压力偏高"
-            : CpuUsagePercent > 90
-                ? "CPU 负载偏高"
-                : "检查项均通过";
+    [ObservableProperty]
+    private string healthReason = "检查项均通过";
 
     [RelayCommand]
     public async Task RefreshAsync()
@@ -387,28 +406,16 @@ public partial class DashboardViewModel : ViewModelBase
     partial void OnCpuUsagePercentChanged(double value)
     {
         OnPropertyChanged(nameof(CpuUsageText));
-        OnPropertyChanged(nameof(HealthScoreValue));
-        OnPropertyChanged(nameof(HealthScore));
-        OnPropertyChanged(nameof(HealthStatusText));
-        OnPropertyChanged(nameof(HealthReason));
     }
 
     partial void OnMemoryUsagePercentChanged(double value)
     {
         OnPropertyChanged(nameof(MemoryUsageText));
-        OnPropertyChanged(nameof(HealthScoreValue));
-        OnPropertyChanged(nameof(HealthScore));
-        OnPropertyChanged(nameof(HealthStatusText));
-        OnPropertyChanged(nameof(HealthReason));
     }
 
     partial void OnDiskUsagePercentChanged(double value)
     {
         OnPropertyChanged(nameof(DiskUsageText));
-        OnPropertyChanged(nameof(HealthScoreValue));
-        OnPropertyChanged(nameof(HealthScore));
-        OnPropertyChanged(nameof(HealthStatusText));
-        OnPropertyChanged(nameof(HealthReason));
     }
 
     private IReadOnlyList<ProcessTelemetry> BuildProcessList(IReadOnlyList<ProcessTelemetry> liveTop)
@@ -472,7 +479,7 @@ public partial class DashboardViewModel : ViewModelBase
             .OrderByDescending(process => process.IsPinned)
             .ThenByDescending(process => process.CpuUsagePercent)
             .ThenByDescending(process => process.WorkingSetBytes)
-            .Take(18)
+            .Take(50)
             .ToArray();
     }
 
@@ -535,52 +542,110 @@ public partial class DashboardViewModel : ViewModelBase
             // snapshot without charts rather than crashing the async void refresh tick.
         }
 
+        // Resolve row icons off the UI thread (thumbnail extraction + disk cache);
+        // BitmapImage creation happens inside the UI marshal below.
+        var processRows = await Task.Run(async () =>
+        {
+            var rows = BuildProcessList(snapshot.TopProcesses)
+                .Select(process => new ProcessRowViewModel(process))
+                .ToArray();
+            await Task.WhenAll(rows.Select(async row =>
+            {
+                var executablePath = ProcessIconLoader.TryGetExecutablePath(row.ProcessId);
+                row.IconPngPath = executablePath is null
+                    ? null
+                    : await ProcessIconLoader.EnsurePngAsync(executablePath);
+            }));
+            return rows;
+        });
+
         RunOnUiThread(() =>
         {
             CpuUsagePercent = snapshot.CpuUsagePercent;
             MemoryUsagePercent = snapshot.MemoryUsagePercent;
             MemorySummary = SystemTelemetryFormatter.MemorySummary(snapshot);
-            DiskUsagePercent = snapshot.DiskUsagePercent;
-            DiskSummary = SystemTelemetryFormatter.DiskSummary(snapshot);
-            DiskFooter = $"{DiskUsageText} used - {DiskSummary}";
+
+            // Disk: aggregate every fixed volume (Mole shows whole-disk free/total).
+            var aggregateTotal = snapshot.AllDisksTotalBytes > 0 ? snapshot.AllDisksTotalBytes : snapshot.DiskTotalBytes;
+            var aggregateFree = snapshot.AllDisksTotalBytes > 0
+                ? snapshot.AllDisksFreeBytes
+                : Math.Max(0, snapshot.DiskTotalBytes - snapshot.DiskUsedBytes);
+            var aggregateUsed = Math.Max(0, aggregateTotal - aggregateFree);
+            var aggregatePercent = aggregateTotal > 0 ? aggregateUsed * 100d / aggregateTotal : 0;
+            DiskUsagePercent = Math.Clamp(aggregatePercent, 0, 100);
+            DiskSummary = $"{SystemTelemetryFormatter.Bytes(aggregateUsed)} / {SystemTelemetryFormatter.Bytes(aggregateTotal)}";
+            DiskFooter = $"已用 {SystemTelemetryFormatter.Bytes(aggregateUsed)} · {DiskUsageText}";
+            DiskTotalBadge = snapshot.PhysicalDiskCount > 0
+                ? $"{snapshot.PhysicalDiskCount} 盘 · {SystemTelemetryFormatter.Bytes(aggregateTotal)}"
+                : SystemTelemetryFormatter.Bytes(aggregateTotal);
+            var maxDriveTemperature = snapshot.Volumes
+                .Select(volume => volume.TemperatureCelsius)
+                .Where(temperature => temperature.HasValue)
+                .Select(temperature => temperature!.Value)
+                .DefaultIfEmpty()
+                .Max();
+            if (maxDriveTemperature > 0)
+            {
+                DiskTotalBadge += string.Create(CultureInfo.InvariantCulture, $" · {maxDriveTemperature:0}°C");
+            }
+            SetDiskFreeText(aggregateFree);
+
+            DiskVolumes.Clear();
+            foreach (var volume in snapshot.Volumes)
+            {
+                DiskVolumes.Add(volume);
+            }
+
             NetworkSummary =
                 $"Down {SystemTelemetryFormatter.Rate(snapshot.NetworkReceivedBytesPerSecond)} | Up {SystemTelemetryFormatter.Rate(snapshot.NetworkSentBytesPerSecond)}";
             NetworkRateText = SystemTelemetryFormatter.Rate(snapshot.NetworkReceivedBytesPerSecond + snapshot.NetworkSentBytesPerSecond);
             (NetworkRateValueText, NetworkRateUnitText) = SplitRateText(NetworkRateText);
             NetworkAdapterText = BuildNetworkEndpointText(snapshot);
+            NetworkBadge = DeriveNetworkBadge(snapshot.NetworkInterfaceName);
             NetworkFooter =
-                $"↓ {SystemTelemetryFormatter.Rate(snapshot.NetworkReceivedBytesPerSecond)}  ↑ {SystemTelemetryFormatter.Rate(snapshot.NetworkSentBytesPerSecond)} · {NetworkAdapterText}";
+                $"↑ {SystemTelemetryFormatter.Rate(snapshot.NetworkSentBytesPerSecond)} · {NetworkBadge}";
+
+            CpuTemperatureBadge = FormatTemperatureBadge(snapshot.CpuTemperatureCelsius);
+            CpuTemperatureBrush = ResolveTemperatureBrush(snapshot.CpuTemperatureCelsius);
+            GpuTemperatureBadge = FormatTemperatureBadge(snapshot.GpuTemperatureCelsius);
+            GpuTemperatureBrush = ResolveTemperatureBrush(snapshot.GpuTemperatureCelsius);
+            UpdateGpuSurface(snapshot);
+            UpdateFanSurface(snapshot);
+
             GpuStatus = snapshot.GpuStatus;
-            GpuMetricText = string.Equals(snapshot.GpuStatus, "Unavailable", StringComparison.OrdinalIgnoreCase)
-                ? "-"
-                : snapshot.GpuStatus;
             CapturedAt = snapshot.CapturedAt.ToString("HH:mm:ss", CultureInfo.InvariantCulture);
+            var loadAverage = snapshot.CpuUsagePercent / 100 * Environment.ProcessorCount;
             CpuFooter = string.Create(
                 CultureInfo.InvariantCulture,
-                $"load {snapshot.CpuUsagePercent / 100 * Environment.ProcessorCount:0.00} - {snapshot.TopProcesses.Count} processes");
+                $"{CpuLoadTier(snapshot.CpuUsagePercent)} · 负载 {loadAverage:0.0} / {Environment.ProcessorCount} 核");
             CpuCoresBadge = $"{Environment.ProcessorCount} cores";
-            DeviceSummary = $"Windows - {SystemTelemetryFormatter.Bytes(snapshot.MemoryTotalBytes)}";
             HealthFooter = BuildUptimeText(snapshot.CapturedAt);
-            MemoryStateBadge = snapshot.MemoryUsagePercent >= 85 ? "high" : "normal";
-            DiskTotalBadge = SystemTelemetryFormatter.Bytes(snapshot.DiskTotalBytes);
-            SetDiskFreeText(snapshot);
+            MemoryStateBadge = string.Create(CultureInfo.InvariantCulture, $"压力 {snapshot.MemoryUsagePercent:0}%");
             SetBatteryText(snapshot);
-            FanMetricText = "—";
-            FanBadge = "系统托管";
-            FanFooter = "由 Windows 管理 · 无 SMC 转速";
+            (HealthScore, HealthStatusText, HealthReason) = SystemHealthEvaluator.Evaluate(snapshot);
 
             TopProcesses.Clear();
-            foreach (var process in BuildProcessList(snapshot.TopProcesses))
+            foreach (var row in processRows)
             {
-                TopProcesses.Add(process);
+                if (row.IconPngPath is { } iconPath)
+                {
+                    try
+                    {
+                        row.IconSource = new Microsoft.UI.Xaml.Media.Imaging.BitmapImage(new Uri(iconPath));
+                        row.HasIcon = true;
+                    }
+                    catch (Exception ex) when (ex is UriFormatException or IOException or ArgumentException)
+                    {
+                        row.HasIcon = false;
+                    }
+                }
+
+                TopProcesses.Add(row);
             }
 
             TopProcessesTitle = $"名称 ({TopProcesses.Count})";
-            // Device chip closer to Mole "M5 Pro · 48 GB · …"
-            if (snapshot.MemoryTotalBytes > 0)
-            {
-                DeviceSummary = $"{Environment.MachineName} · {SystemTelemetryFormatter.Bytes(snapshot.MemoryTotalBytes)}";
-            }
+            // Mole device chip: "M5 Pro · 48 GB" → CPU model + RAM.
+            DeviceSummary = $"{CpuModelNameResolver.Get()} · {SystemTelemetryFormatter.Bytes(snapshot.MemoryTotalBytes)}";
 
             var chartSamples = BuildStatusSamples(recentSnapshots, snapshot);
             RebuildCpuBars(chartSamples);
@@ -588,7 +653,11 @@ public partial class DashboardViewModel : ViewModelBase
             (NetworkDownloadChart, NetworkUploadChart) = BuildNetworkCharts(chartSamples);
             NetworkStatusChart = NetworkDownloadChart;
             GpuStatusChart = BuildChart(chartSamples, sample => ParseGpuPercent(sample.GpuStatus), 100, SystemTelemetryFormatter.Percent);
-            FanStatusChart = HistoryChartSeries.Empty("0 RPM", "avg 0 RPM");
+            FanStatusChart = BuildChart(
+                chartSamples,
+                sample => sample.Fans.Count == 0 ? 0 : sample.Fans.Max(fan => fan.Rpm),
+                null,
+                rpm => $"{rpm:0} RPM");
 
             TelemetryHistorySummary = BuildTelemetryHistorySummary(recentSnapshots);
             ActivitySummary = BuildActivitySummary(recentActivity);
@@ -601,12 +670,123 @@ public partial class DashboardViewModel : ViewModelBase
         });
     }
 
-    private void SetDiskFreeText(SystemTelemetrySnapshot snapshot)
+    private void SetDiskFreeText(long freeBytes)
     {
-        var freeBytes = Math.Max(0, snapshot.DiskTotalBytes - snapshot.DiskUsedBytes);
-        var formatted = SystemTelemetryFormatter.Bytes(freeBytes).Split(' ', 2, StringSplitOptions.RemoveEmptyEntries);
+        var formatted = SystemTelemetryFormatter.Bytes(Math.Max(0, freeBytes)).Split(' ', 2, StringSplitOptions.RemoveEmptyEntries);
         DiskFreeAmountText = formatted.Length > 0 ? formatted[0] : "-";
         DiskFreeUnitText = formatted.Length > 1 ? $"{formatted[1]} 可用" : "可用";
+    }
+
+    private static string FormatTemperatureBadge(double? celsius)
+    {
+        return celsius is { } value
+            ? string.Create(CultureInfo.InvariantCulture, $"{value:0}°C")
+            : "—°C";
+    }
+
+    // Mole temperature colors: cool ≤60°C, warm 61–80°C, hot >80°C.
+    private static SolidColorBrush ResolveTemperatureBrush(double? celsius)
+    {
+        if (celsius is not { } value)
+        {
+            return TemperatureUnknownBrush;
+        }
+
+        return value <= 60
+            ? TemperatureLowBrush
+            : value <= 80
+                ? TemperatureMidBrush
+                : TemperatureHighBrush;
+    }
+
+    private static string CpuLoadTier(double cpuPercent) => cpuPercent switch
+    {
+        < 30 => "低负载",
+        < 70 => "中负载",
+        _ => "高负载"
+    };
+
+    private void UpdateGpuSurface(SystemTelemetrySnapshot snapshot)
+    {
+        var discrete = snapshot.GpuAdapters.FirstOrDefault(adapter => adapter.Kind == GpuAdapterKind.Discrete);
+        var integrated = snapshot.GpuAdapters.FirstOrDefault(adapter => adapter.Kind == GpuAdapterKind.Integrated);
+        var primary = discrete ?? integrated ?? snapshot.GpuAdapters.FirstOrDefault();
+
+        if (primary is null)
+        {
+            GpuMetricText = string.Equals(snapshot.GpuStatus, "Unavailable", StringComparison.OrdinalIgnoreCase)
+                ? "-"
+                : snapshot.GpuStatus;
+            GpuAdapterFooter = "GPU 引擎计数不可用";
+            return;
+        }
+
+        GpuMetricText = string.Create(CultureInfo.InvariantCulture, $"{primary.Engine3DPercent:0.0}%");
+        GpuAdapterFooter = discrete is not null && integrated is not null
+            ? $"独显 {discrete.ShortName}{TemperatureSuffix(discrete)} · 集显 {integrated.Engine3DPercent:0.0}%{TemperatureSuffix(integrated)}"
+            : discrete is not null
+                ? $"独显 {discrete.ShortName}{TemperatureSuffix(discrete)}"
+                : $"集显 {primary.ShortName}{TemperatureSuffix(primary)}";
+    }
+
+    private static string TemperatureSuffix(GpuAdapterTelemetry adapter)
+    {
+        return adapter.TemperatureCelsius is { } celsius
+            ? string.Create(CultureInfo.InvariantCulture, $" {celsius:0}°C")
+            : string.Empty;
+    }
+
+    private void UpdateFanSurface(SystemTelemetrySnapshot snapshot)
+    {
+        if (snapshot.Fans.Count == 0)
+        {
+            FanMetricText = "—";
+            FanBadge = "系统托管";
+            FanFooter = "此设备未暴露风扇转速接口";
+            return;
+        }
+
+        var maxRpm = snapshot.Fans.Max(fan => fan.Rpm);
+        FanMetricText = maxRpm.ToString(CultureInfo.InvariantCulture);
+        var detail = string.Join(" · ", snapshot.Fans.Select(fan => $"{fan.Name} {fan.Rpm}"));
+        FanFooter = snapshot.FanMaxRpm is { } peak
+            ? string.Create(CultureInfo.InvariantCulture, $"{detail} RPM · 峰值 {peak}")
+            : $"{detail} RPM";
+        FanBadge = snapshot.FanMaxRpm is { } peakRpm && peakRpm > 0
+            ? $"负载 {(int)Math.Round(maxRpm * 100d / peakRpm)}%"
+            : $"{snapshot.Fans.Count} fans";
+    }
+
+    private static string DeriveNetworkBadge(string interfaceName)
+    {
+        if (string.IsNullOrWhiteSpace(interfaceName) ||
+            string.Equals(interfaceName, "network", StringComparison.OrdinalIgnoreCase))
+        {
+            return "-";
+        }
+
+        var name = interfaceName.Trim();
+        if (name.Contains("wi-fi", StringComparison.OrdinalIgnoreCase) ||
+            name.Contains("wlan", StringComparison.OrdinalIgnoreCase) ||
+            name.Contains("wireless", StringComparison.OrdinalIgnoreCase) ||
+            name.Contains("无线", StringComparison.Ordinal))
+        {
+            return "Wi-Fi";
+        }
+
+        if (name.Contains("ethernet", StringComparison.OrdinalIgnoreCase) ||
+            name.Contains("以太", StringComparison.Ordinal))
+        {
+            return "以太网";
+        }
+
+        if (name.Contains("bluetooth", StringComparison.OrdinalIgnoreCase) ||
+            name.Contains("蓝牙", StringComparison.Ordinal))
+        {
+            return "蓝牙";
+        }
+
+        return name;
     }
 
     private void SetBatteryText(SystemTelemetrySnapshot snapshot)
@@ -615,7 +795,8 @@ public partial class DashboardViewModel : ViewModelBase
         {
             BatteryMetricText = "-";
             BatteryStateText = "不可用";
-            BatteryFooter = "台式机或指标不可用";
+            BatteryFooter = string.Empty;
+            BatteryFooterVisibility = Visibility.Collapsed;
             BatteryBadge = "正常";
             BatteryHealthBadge = "不可用";
             BatteryPercentText = "-";
@@ -629,8 +810,10 @@ public partial class DashboardViewModel : ViewModelBase
         BatteryMetricText = percent.ToString("0", CultureInfo.InvariantCulture);
         BatteryStateText = LocalizeBatteryStatus(snapshot.BatteryStatusText);
         BatteryFooter = BuildBatteryFooter(snapshot);
-        BatteryBadge = LocalizeBatteryHealth(snapshot.BatteryHealthText);
-        BatteryHealthBadge = LocalizeBatteryHealth(snapshot.BatteryHealthText);
+        BatteryFooterVisibility = BatteryFooter.Length == 0 ? Visibility.Collapsed : Visibility.Visible;
+        var badge = BuildBatteryBadge(snapshot);
+        BatteryBadge = badge;
+        BatteryHealthBadge = badge;
         BatteryPercentText = string.Create(CultureInfo.InvariantCulture, $"{percent:0}%");
         BatteryRingDash = ToDashCollection(CircularProgressGeometry.CreateDash(percent, 22));
     }
@@ -640,18 +823,39 @@ public partial class DashboardViewModel : ViewModelBase
 
     private static string BuildBatteryFooter(SystemTelemetrySnapshot snapshot)
     {
-        var parts = new List<string>();
-        if (snapshot.BatteryEstimatedSecondsRemaining is > 0)
+        // The status already sits next to the big percentage; the footer carries the
+        // Mole-style segments: live power, cycle count, then the discharge estimate.
+        return BatteryDetailFormatter.BuildFooterText(
+            snapshot.BatteryRateMw,
+            snapshot.BatteryCycleCount,
+            LocalizeBatteryStatus(snapshot.BatteryStatusText),
+            BuildBatteryRemainingText(snapshot));
+    }
+
+    private static string BuildBatteryRemainingText(SystemTelemetrySnapshot snapshot)
+    {
+        if (snapshot.BatteryEstimatedSecondsRemaining is > 0 &&
+            string.Equals(snapshot.BatteryStatusText, "discharging", StringComparison.OrdinalIgnoreCase))
         {
-            var duration = FormatBatteryDuration(snapshot.BatteryEstimatedSecondsRemaining.Value);
-            var status = LocalizeBatteryStatus(snapshot.BatteryStatusText);
-            parts.Add(string.Equals(status, "充电中", StringComparison.Ordinal)
-                ? $"{duration} 后充满"
-                : $"剩余 {duration}");
+            return $"预计剩余 {FormatBatteryDuration(snapshot.BatteryEstimatedSecondsRemaining.Value)}";
         }
 
-        parts.Add(LocalizeBatteryStatus(snapshot.BatteryStatusText));
-        return string.Join(" · ", parts);
+        return string.Empty;
+    }
+
+    private static string BuildBatteryBadge(SystemTelemetrySnapshot snapshot)
+    {
+        // A critically low pack keeps the urgency badge; otherwise surface the
+        // design-capacity health percent when the probe delivered the capacities.
+        if (string.Equals(snapshot.BatteryHealthText, "Critical", StringComparison.OrdinalIgnoreCase))
+        {
+            return LocalizeBatteryHealth(snapshot.BatteryHealthText);
+        }
+
+        var healthPercent = BatteryDetailFormatter.ComputeHealthPercent(
+            snapshot.BatteryDesignCapacityMwh,
+            snapshot.BatteryFullChargeCapacityMwh);
+        return BatteryDetailFormatter.BuildBadgeText(healthPercent, snapshot.HasBattery);
     }
 
     private static string FormatBatteryDuration(int seconds)
@@ -659,10 +863,10 @@ public partial class DashboardViewModel : ViewModelBase
         var duration = TimeSpan.FromSeconds(seconds);
         if (duration.TotalHours >= 1)
         {
-            return $"{(int)duration.TotalHours}h {duration.Minutes:0}m";
+            return $"{(int)duration.TotalHours} 小时";
         }
 
-        return $"{Math.Max(1, duration.Minutes)}m";
+        return $"{Math.Max(1, duration.Minutes)} 分钟";
     }
 
     private static string LocalizeBatteryStatus(string status) => status.ToLowerInvariant() switch
@@ -779,7 +983,17 @@ public partial class DashboardViewModel : ViewModelBase
             points.Add(new Point(x, y));
         }
 
-        return new HistoryChartSeries(formatter(values[^1]), $"avg {formatter(values.Average())}", points);
+        // Mole gradient area: same silhouette closed along the chart baseline.
+        var areaPoints = new PointCollection();
+        foreach (var point in points)
+        {
+            areaPoints.Add(point);
+        }
+
+        areaPoints.Add(new Point(points[^1].X, chartHeight));
+        areaPoints.Add(new Point(0, chartHeight));
+
+        return new HistoryChartSeries(formatter(values[^1]), $"avg {formatter(values.Average())}", points, areaPoints);
     }
 
     private static string BuildNetworkEndpointText(SystemTelemetrySnapshot snapshot)
@@ -839,7 +1053,10 @@ public partial class DashboardViewModel : ViewModelBase
     {
         var uptime = TimeSpan.FromMilliseconds(Environment.TickCount64);
         var since = capturedAt - uptime;
-        return string.Create(CultureInfo.InvariantCulture, $"up {(int)uptime.TotalDays}d {uptime.Hours}h - since {since:MMM dd}");
+        var sinceText = string.Create(CultureInfo.InvariantCulture, $"自 {since.Month}月{since.Day}日");
+        return uptime.TotalDays >= 1
+            ? string.Create(CultureInfo.InvariantCulture, $"已运行 {(int)uptime.TotalDays}d {uptime.Hours}h · {sinceText}")
+            : string.Create(CultureInfo.InvariantCulture, $"已运行 {uptime.Hours} 小时 {uptime.Minutes} 分 · {sinceText}");
     }
 
     private static string BuildTelemetryHistorySummary(IReadOnlyList<SystemTelemetrySnapshot> snapshots)

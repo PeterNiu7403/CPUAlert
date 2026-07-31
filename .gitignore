@@ -22,3 +22,7 @@ TestResults/
 # Local environment capture outputs (screenshots, DPI reports)
 artifacts/
 
+# Agent/tooling state (code indexers, assistant workspaces)
+.codegraph/
+.serena/
+

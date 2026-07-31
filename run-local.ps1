@@ -2,6 +2,7 @@ param(
     [switch]$NoBuild,
     [switch]$SmokeTest,
     [switch]$ShowTrayHud,
+    [switch]$ShowCleanScreen,
     [switch]$NoTray,
     [switch]$Restart,
     [switch]$RequireHealth,
@@ -14,7 +15,9 @@ param(
     [switch]$CleanAutoScan,
     [switch]$OptimizeAutoScan,
     [string]$ScreenshotPath,
-    [int]$TimeoutSeconds = 30
+    [int]$TimeoutSeconds = 30,
+    [int]$SettleSeconds = 0,
+    [string]$WindowTitle = "WinMoe"
 )
 
 $ErrorActionPreference = "Stop"
@@ -56,9 +59,26 @@ public class WinMoeSmokeWin32 {
     public delegate bool EnumWindowsProc(IntPtr hWnd, IntPtr lParam);
     [DllImport("user32.dll")] public static extern bool EnumWindows(EnumWindowsProc enumProc, IntPtr lParam);
     [DllImport("user32.dll")] public static extern bool IsWindowVisible(IntPtr hWnd);
-    [DllImport("user32.dll")] public static extern int GetWindowText(IntPtr hWnd, StringBuilder text, int count);
+    [DllImport("user32.dll", CharSet=CharSet.Unicode)] public static extern int GetWindowText(IntPtr hWnd, StringBuilder text, int count);
     [DllImport("user32.dll")] public static extern uint GetWindowThreadProcessId(IntPtr hWnd, out uint processId);
     [DllImport("user32.dll")] public static extern bool GetWindowRect(IntPtr hWnd, out RECT rect);
+    [DllImport("dwmapi.dll")] public static extern int DwmGetWindowAttribute(IntPtr hWnd, int dwAttribute, out RECT pvAttribute, int cbAttribute);
+
+    public const int DWMWA_EXTENDED_FRAME_BOUNDS = 9;
+
+    // GetWindowRect is DPI-virtualized when the caller is not DPI-aware, which
+    // under-reports the window size on scaled displays. The DWM extended frame
+    // bounds are always physical pixels — required for a correct screenshot.
+    public static RECT GetPhysicalWindowRect(IntPtr hWnd) {
+        RECT rect;
+        if (DwmGetWindowAttribute(hWnd, DWMWA_EXTENDED_FRAME_BOUNDS, out rect, Marshal.SizeOf(typeof(RECT))) == 0) {
+            return rect;
+        }
+        if (GetWindowRect(hWnd, out rect)) {
+            return rect;
+        }
+        return rect;
+    }
     [DllImport("user32.dll")] public static extern bool ShowWindow(IntPtr hWnd, int nCmdShow);
     [DllImport("user32.dll")] public static extern bool SetWindowPos(IntPtr hWnd, IntPtr hWndInsertAfter, int x, int y, int cx, int cy, uint flags);
     [DllImport("user32.dll")] public static extern bool SetForegroundWindow(IntPtr hWnd);
@@ -75,9 +95,16 @@ public class WinMoeSmokeWin32 {
 }
 
 function Get-WinMoeWindow {
-    param([int]$ProcessId)
+    param(
+        [int]$ProcessId,
+        [string]$Title = "WinMoe"
+    )
 
+    Write-Host "Get-WinMoeWindow: pid=$ProcessId title='$Title' len=$($Title.Length)"
     Ensure-SmokeWin32
+    # Scriptblocks turned into .NET delegates do not see function-locals;
+    # a script-scoped copy is required for the callback to read the wanted title.
+    $script:SmokeWantedTitle = $Title
     $windows = New-Object System.Collections.Generic.List[object]
     [WinMoeSmokeWin32]::EnumWindows({
         param($hWnd, $lParam)
@@ -95,7 +122,7 @@ function Get-WinMoeWindow {
         $titleBuilder = New-Object System.Text.StringBuilder 256
         [void][WinMoeSmokeWin32]::GetWindowText($hWnd, $titleBuilder, $titleBuilder.Capacity)
         $title = $titleBuilder.ToString()
-        if ($title -eq "WinMoe") {
+        if ($title -eq $script:SmokeWantedTitle) {
             $windows.Add([pscustomobject]@{ Handle = $hWnd; Title = $title; ProcessId = $windowProcessId }) | Out-Null
         }
 
@@ -133,10 +160,8 @@ function Save-WinMoeWindowScreenshot {
         New-Item -ItemType Directory -Force -Path $outputDirectory | Out-Null
     }
 
-    $rect = New-Object "WinMoeSmokeWin32+RECT"
-    if (-not [WinMoeSmokeWin32]::GetWindowRect($Window.Handle, [ref]$rect)) {
-        throw "Could not read the WinMoe window bounds for screenshot capture."
-    }
+    $rect = [WinMoeSmokeWin32]::GetPhysicalWindowRect($Window.Handle)
+    Write-Host "Smoke window: handle=$($Window.Handle) title='$($Window.Title)' rect=$($rect.Left),$($rect.Top) $($rect.Right - $rect.Left)x$($rect.Bottom - $rect.Top)"
 
     $width = $rect.Right - $rect.Left
     $height = $rect.Bottom - $rect.Top
@@ -273,6 +298,10 @@ if ($ShowTrayHud) {
     $startInfo.Environment["WINMOE_SHOW_TRAY_HUD"] = "1"
 }
 
+if ($ShowCleanScreen) {
+    $startInfo.Environment["WINMOE_SHOW_CLEAN_SCREEN"] = "1"
+}
+
 if ($NoTray) {
     $startInfo.Environment["WINMOE_DISABLE_TRAY"] = "1"
 }
@@ -346,13 +375,20 @@ if ($AnalyzeAutoScan) {
 }
 
 try {
+    # HUD title is "WinMoe " + U+72B6 U+6001 (状态); clean-screen title is
+    # "WinMoe " + U+64E6 U+5C4F (擦屏); built from char codes so this
+    # file stays ASCII-only (Windows PowerShell misreads UTF-8-no-BOM scripts).
+    $windowTitle = $WindowTitle
+    if ($ShowTrayHud) { $windowTitle = "WinMoe " + [char]0x72B6 + [char]0x6001 }
+    if ($ShowCleanScreen) { $windowTitle = "WinMoe " + [char]0x64E6 + [char]0x5C4F }
+    Write-Host "ShowTrayHud=$ShowTrayHud windowTitle='$windowTitle'"
     while ((Get-Date) -lt $deadline) {
         if ($process.HasExited) {
             throw "WinMoe exited early with code $($process.ExitCode)."
         }
 
         if ($null -eq $window) {
-            $window = Get-WinMoeWindow -ProcessId $process.Id
+            $window = Get-WinMoeWindow -ProcessId $process.Id -Title $windowTitle
         }
 
         if ($null -eq $health) {
@@ -404,6 +440,11 @@ try {
         Write-Host "Health: ok=$($health.ok), port=$($health.port), latest_sample_at=$($health.latest_sample_at)"
     } else {
         Write-Host "Health: not available or disabled."
+    }
+
+    if ($SettleSeconds -gt 0) {
+        Write-Host "Settling for $SettleSeconds second(s) before capture ..."
+        Start-Sleep -Seconds $SettleSeconds
     }
 
     Save-WinMoeWindowScreenshot -Window $window -Path $ScreenshotPath

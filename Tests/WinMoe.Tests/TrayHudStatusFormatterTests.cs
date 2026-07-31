@@ -57,8 +57,8 @@ public sealed class TrayHudStatusFormatterTests
 
         var status = TrayHudStatusFormatter.Build(snapshot, activity);
 
-        Assert.Equal("65", status.HealthScore);
-        Assert.Equal("需关注", status.HealthLabel);
+        Assert.Equal("100", status.HealthScore);
+        Assert.Equal("各项指标正常", status.HealthLabel);
         Assert.Equal("24.2%", status.CpuText);
         Assert.Equal("51.8%", status.MemoryText);
         Assert.Equal("70%", status.DiskText);
@@ -73,6 +73,51 @@ public sealed class TrayHudStatusFormatterTests
         Assert.False(string.IsNullOrWhiteSpace(status.MemoryDetailText));
         Assert.StartsWith("可用 ", status.DiskDetailText);
         Assert.Contains("↓ ", status.NetworkDetailText);
+        Assert.Equal("GPU pending", status.GpuText);
+        Assert.Equal("—", status.FanText);
+        Assert.Equal("未暴露转速接口", status.FanDetailText);
+    }
+
+    [Fact]
+    public void Build_UsesAggregatedDisksFansAndGpuAdapters()
+    {
+        var snapshot = new SystemTelemetrySnapshot(
+            DateTimeOffset.Parse("2026-06-15T08:30:05Z"),
+            10,
+            20,
+            4,
+            8,
+            30,
+            1,
+            4,
+            0,
+            0,
+            "Unavailable",
+            [])
+        {
+            AllDisksTotalBytes = 200,
+            AllDisksFreeBytes = 20,
+            Fans = [new FanSensorSample("CPU", 1800), new FanSensorSample("GPU", 2100)],
+            FanMaxRpm = 6000,
+            GpuAdapters =
+            [
+                new GpuAdapterTelemetry("NVIDIA GeForce RTX 5080", GpuAdapterKind.Discrete, 12.5, 51),
+                new GpuAdapterTelemetry("Intel(R) Graphics", GpuAdapterKind.Integrated, 1.5, null)
+            ]
+        };
+
+        var status = TrayHudStatusFormatter.Build(snapshot, null);
+
+        // Disk 90% used across volumes → check-based health penalty (80 · 需关注).
+        Assert.Equal("90%", status.DiskText);
+        Assert.Equal("可用 20 B", status.DiskDetailText);
+        Assert.Equal("80", status.HealthScore);
+        Assert.Equal("需关注", status.HealthLabel);
+        Assert.Equal("2100", status.FanText);
+        Assert.Equal("CPU 1800 · GPU 2100 RPM · 负载 35%", status.FanDetailText);
+        Assert.Equal("12.5%", status.GpuText);
+        Assert.Equal("独显 RTX 5080 · 集显 1.5% · 51°C", status.GpuDetailText);
+        Assert.Contains(" · ", status.DeviceChipText);
     }
 
     [Fact]

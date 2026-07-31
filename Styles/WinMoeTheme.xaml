@@ -69,6 +69,8 @@
     <SolidColorBrush x:Key="WinMoeTextBrush" Color="{StaticResource WinMoeColorText}" />
     <SolidColorBrush x:Key="WinMoeMutedBrush" Color="{StaticResource WinMoeColorMuted}" />
     <SolidColorBrush x:Key="WinMoeDimBrush" Color="{StaticResource WinMoeColorDim}" />
+    <SolidColorBrush x:Key="WinMoeGearHoverBrush" Color="#1FFFFFFF" />
+    <SolidColorBrush x:Key="WinMoeGearPressedBrush" Color="#2EFFFFFF" />
     <SolidColorBrush x:Key="WinMoeAccentBrush" Color="{StaticResource WinMoeColorAccent}" />
     <SolidColorBrush x:Key="WinMoeOnAccentBrush" Color="{StaticResource WinMoeColorOnAccent}" />
     <SolidColorBrush x:Key="WinMoeGreenBrush" Color="{StaticResource WinMoeColorGreen}" />

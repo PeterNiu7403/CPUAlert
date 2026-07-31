@@ -5,6 +5,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:models="using:WinMoe.Models"
+    xmlns:services="using:WinMoe.Services"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     Background="{StaticResource WinMoeBackgroundGreenBrush}"
     Loaded="ActivityPage_Loaded"
@@ -51,36 +52,48 @@
                     Text="{Binding HistoryPath}"
                     TextWrapping="Wrap" />
                 <ListView Grid.Row="1" ItemsSource="{Binding Entries}">
+                    <ListView.ItemContainerStyle>
+                        <Style TargetType="ListViewItem">
+                            <Setter Property="MinHeight" Value="0" />
+                            <Setter Property="Padding" Value="0" />
+                            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+                        </Style>
+                    </ListView.ItemContainerStyle>
                     <ListView.ItemTemplate>
                         <DataTemplate x:DataType="models:OperationHistoryEntry">
-                            <Grid MinHeight="70" ColumnSpacing="16">
+                            <Grid MinHeight="30" ColumnSpacing="16">
                                 <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="42" />
+                                    <ColumnDefinition Width="24" />
                                     <ColumnDefinition Width="170" />
                                     <ColumnDefinition Width="150" />
                                     <ColumnDefinition Width="120" />
                                     <ColumnDefinition Width="*" />
                                 </Grid.ColumnDefinitions>
                                 <Ellipse
-                                    Width="12"
-                                    Height="12"
+                                    Width="8"
+                                    Height="8"
+                                    VerticalAlignment="Center"
                                     Fill="{StaticResource WinMoeGreenBrush}" />
                                 <TextBlock
                                     Grid.Column="1"
+                                    VerticalAlignment="Center"
                                     FontFamily="{StaticResource WinMoeMonoFont}"
                                     Foreground="{StaticResource WinMoeMutedBrush}"
                                     Text="{x:Bind TimestampText}" />
                                 <TextBlock
                                     Grid.Column="2"
+                                    VerticalAlignment="Center"
                                     FontWeight="SemiBold"
                                     Text="{x:Bind Operation}"
                                     TextTrimming="CharacterEllipsis" />
                                 <TextBlock
                                     Grid.Column="3"
+                                    VerticalAlignment="Center"
                                     Foreground="{StaticResource WinMoeGoldBrush}"
-                                    Text="{x:Bind ResultText}" />
+                                    Text="{x:Bind services:AppActivityFormatter.FormatOperationResult(Succeeded)}" />
                                 <TextBlock
                                     Grid.Column="4"
+                                    VerticalAlignment="Center"
                                     FontFamily="{StaticResource WinMoeMonoFont}"
                                     Foreground="{StaticResource WinMoeDimBrush}"
                                     Text="{x:Bind Summary}"
